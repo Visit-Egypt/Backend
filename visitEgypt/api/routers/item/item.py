@@ -4,6 +4,7 @@ from api.container import get_dependencies
 from fastapi import APIRouter, status
 from core.items.services import item_service
 from pydantic import BaseModel, Field
+from loguru import logger
 
 repo = get_dependencies().item_repo
 
@@ -21,6 +22,7 @@ class ItemResponse(BaseModel):
     description="Item Test.",
 )
 async   def test_item():
+    logger.info("This is a log test")
     return {
         "title": await item_service.create(repo, "testlowercase"),
     }
