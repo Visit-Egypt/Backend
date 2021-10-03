@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Callable, cast
 
-from core.items.protocols.item_repo import ItemRepo
-from infra.database.repositories import item_repository
+from visitEgypt.core.items.protocols.item_repo import ItemRepo
+from visitEgypt.infra.database.repositories import item_repository
 
 
 @dataclass(frozen=True)

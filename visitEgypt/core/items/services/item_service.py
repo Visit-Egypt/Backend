@@ -1,6 +1,6 @@
 
 
-from core.items.protocols.item_repo import ItemRepo
+from visitEgypt.core.items.protocols.item_repo import ItemRepo
 
 from ..protocols.item_repo import ItemRepo
 

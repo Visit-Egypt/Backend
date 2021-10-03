@@ -14,7 +14,7 @@ API_PREFIX = "/api"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 VERSION = "0.0.0"
 
-config = Config("../.env")
+config = Config(".env")
 #print(config.file_values)
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 
