@@ -1,5 +1,7 @@
-import pytest
 
-from visitEgypt.core.items.protocols.item_repo import ItemRepo
-from visitEgypt.core.items.services import item_service
+def inc(x):
+    return x + 1
 
+
+def test_answer():
+    assert inc(3) == 4
