@@ -10,7 +10,7 @@ from .item.item import router as itemRouter
 
 router = APIRouter()
 
-router.include_router(itemRouter, tags=["items"], prefix="/items")
+router.include_router(itemRouter, prefix="/items")
 
 class StatusEnum(str, Enum):
     OK = "OK"
