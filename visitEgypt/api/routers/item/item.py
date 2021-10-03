@@ -14,11 +14,11 @@ class ItemResponse(BaseModel):
     title: str = Field(..., description="test")
 
 @router.get(
-    "/item",
+    "/",
     response_model=ItemResponse,
     status_code=status.HTTP_200_OK,
     tags=["Test Item"],
-    summary="Test Item",
+    summary="Endpoint Summary",
     description="Item Test.",
 )
 async   def test_item():
