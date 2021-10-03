@@ -1,8 +1,8 @@
 from pydantic.main import BaseModel
 from starlette.responses import JSONResponse
-from api.container import get_dependencies
+from visitEgypt.api.container import get_dependencies
 from fastapi import APIRouter, status
-from core.items.services import item_service
+from visitEgypt.core.items.services import item_service
 from pydantic import BaseModel, Field
 from loguru import logger
 

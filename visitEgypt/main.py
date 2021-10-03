@@ -4,11 +4,11 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 
-from config.environment import ALLOWED_HOSTS, API_PREFIX, DEBUG, PROJECT_NAME, VERSION
-from infra.database.events import connect_to_db, close_db_connection
-from api.errors.http_error import http_error_handler
-from api.errors.validation_error import http422_error_handler
-from api.routers.root import router
+from .config.environment import ALLOWED_HOSTS, API_PREFIX, DEBUG, PROJECT_NAME, VERSION
+from .infra.database.events import connect_to_db, close_db_connection
+from visitEgypt.api.errors.http_error import http_error_handler
+from visitEgypt.api.errors.validation_error import http422_error_handler
+from visitEgypt.api.routers.root import router
 def get_application() -> FastAPI:
     application = FastAPI(title=PROJECT_NAME, debug=DEBUG, version=VERSION)
 
