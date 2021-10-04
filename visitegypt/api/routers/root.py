@@ -4,9 +4,9 @@ from fastapi import status
 from fastapi.routing import APIRouter
 from pydantic import BaseModel, Field
 
-from visitEgypt.config.environment import PROJECT_NAME, API_PREFIX
+from visitegypt.config.environment import PROJECT_NAME, API_PREFIX
 
-from .item.item import router as itemRouter
+from visitegypt.api.routers.item.item import router as itemRouter
 
 router = APIRouter()
 

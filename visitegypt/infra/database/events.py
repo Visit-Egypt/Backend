@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from visitEgypt.config.environment import DATABASE_URL, MAX_CONNECTIONS_COUNT, MIN_CONNECTIONS_COUNT
+from ...config.environment import DATABASE_URL, MAX_CONNECTIONS_COUNT, MIN_CONNECTIONS_COUNT
 
 class DataBase:
     client: AsyncIOMotorClient = None
