@@ -1,7 +1,7 @@
 import logging
 import sys
 from typing import List
-
+import os
 
 from loguru import logger
 from starlette.config import Config
@@ -14,7 +14,7 @@ API_PREFIX = "/api"
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 VERSION = "0.0.0"
 
-config = Config(".env")
+config = Config(".env", os.environ)
 #print(config.file_values)
 DEBUG: bool = config("DEBUG", cast=bool, default=False)
 
