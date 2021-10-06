@@ -29,8 +29,8 @@ class UserUpdate(UserBase):
 class UserInDBBase(UserBase):
     id: str = Field(..., alias='_id') 
     user_role: str = Role.GUEST.get('name')
-    created_at: datetime
-    updated_at: datetime
+    #created_at: datetime
+   # updated_at: datetime
 
 
 # Additional properties to return via API
@@ -43,7 +43,6 @@ class UserInDB(UserInDBBase):
     hashed_password: str
     user_role: Optional[str]
 
-class UserResponse(UserBase):
-    id: str = Field(..., alias='_id') 
-    user_role: Optional[str] = Role.GUEST.get('name')
+class UserResponse(UserInDBBase):
+    pass
 

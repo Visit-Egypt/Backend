@@ -11,9 +11,8 @@ from bson import ObjectId
 async def create_user(new_user: User) -> Optional[UserResponse]:
     try:
         row = await db.client[DATABASE_NAME][users_collection_name].insert_one(new_user.dict())
-        dbuser = UserResponse(**new_user.dict())
-        dbuser.id = str(row.inserted_id)
-        return dbuser
+        if row.inserted_id:
+            return await get_user_by_id(row.inserted_id)
     except Exception as e:
         raise e
 
