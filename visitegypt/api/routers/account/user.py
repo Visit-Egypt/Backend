@@ -5,6 +5,8 @@ from visitegypt.core.accounts.entities.user import UserCreate,UserResponse
 from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
 from visitegypt.resources.strings import USER_DOES_NOT_EXIST_ERROR, EMAIL_TAKEN
 from visitegypt.api.routers.account.auth import router as AuthRouter
+from visitegypt.core.authentication.entities.token import Token
+
 
 repo = get_dependencies().user_repo
 
@@ -13,11 +15,12 @@ router.include_router(AuthRouter)
 
 # Handlers
 @router.post(
-    "/register", response_model=UserResponse
+    "/register", response_model=Token
 )
 async def register_user(new_user: UserCreate):
     try:
         return await user_service.register(repo, new_user)
+
     except Exception as err:
         if isinstance(err, EmailNotUniqueError): raise HTTPException(409, detail=EMAIL_TAKEN)
         else: raise HTTPException(422, detail=str(err))
