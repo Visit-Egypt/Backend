@@ -3,7 +3,7 @@ from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, Use
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
 from visitegypt.core.accounts.services.hash_service import get_password_hash
-
+from visitegypt.core.authentication.services.auth_service import login_access_token as login_service
 
 async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     email = new_user.email.lower()
@@ -16,7 +16,8 @@ async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
  
     password_hash = get_password_hash(new_user.password)
     user = await repo.create_user(User(**new_user.dict(), hashed_password= password_hash))
-    return user
+    token = await login_service(repo, new_user)
+    return token
 
 async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     user  = await repo.get_user_by_id(user_id)
