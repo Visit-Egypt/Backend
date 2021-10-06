@@ -1,0 +1,2 @@
+class WrongEmailOrPassword(Exception):
+    pass
