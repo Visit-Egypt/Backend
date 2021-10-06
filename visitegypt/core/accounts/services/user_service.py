@@ -7,11 +7,12 @@ from visitegypt.core.accounts.services.hash_service import get_password_hash
 
 async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     email = new_user.email.lower()
-
     try:
         user = await repo.get_user_by_email(email)
-    except UserNotFoundError as e:
-        raise EmailNotUniqueError()
+        print(user)
+        if user: raise EmailNotUniqueError
+    except Exception as e:
+        raise e
  
     password_hash = get_password_hash(new_user.password)
     user = await repo.create_user(User(**new_user.dict(), hashed_password= password_hash))
