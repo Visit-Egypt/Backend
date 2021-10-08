@@ -1,5 +1,5 @@
 from typing import Optional
-from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate
+from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate,UserUpdaterole
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
 from visitegypt.core.accounts.services.hash_service import get_password_hash
@@ -42,5 +42,8 @@ async def delete_user_by_id(repo: UserRepo, user_id: str) -> Optional[DeleteResu
 
 async def update_user_by_id(repo: UserRepo,updated_user:UserUpdate, user_id: str):
     return await repo.update_user(updated_user,user_id)
+
+async def update_user_role(repo: UserRepo,updated_user:UserUpdate, user_id: str):
+    return await repo.update_user_role(updated_user,user_id)
 
     

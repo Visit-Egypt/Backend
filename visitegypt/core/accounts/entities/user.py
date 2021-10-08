@@ -22,13 +22,18 @@ class UserCreate(UserBase):
 
 
 # Properties to receive via API on update
+
+class UserUpdaterole(BaseModel):
+    user_role : str
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name : Optional[str] = None
     phone_number: Optional[str] = None
     password: Optional[str] = None
-    user_role : Optional[str] = None
+    
+
+
 
 
 class UserInDBBase(UserBase):
