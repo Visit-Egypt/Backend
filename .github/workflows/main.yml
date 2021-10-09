@@ -33,6 +33,7 @@ jobs:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute
     needs: [test]
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
