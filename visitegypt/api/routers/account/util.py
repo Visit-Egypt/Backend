@@ -17,7 +17,7 @@ repo = get_dependencies().user_repo
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl="api/user/auth/login",
     scopes={
-        Role.GUEST["name"]: Role.GUEST["description"],
+        Role.USER["name"]: Role.USER["description"],
         Role.ACCOUNT_ADMIN["name"]: Role.ACCOUNT_ADMIN["description"],
         Role.ACCOUNT_MANAGER["name"]: Role.ACCOUNT_MANAGER["description"],
         Role.ADMIN["name"]: Role.ADMIN["description"],
