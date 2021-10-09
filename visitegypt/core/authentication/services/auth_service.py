@@ -7,7 +7,7 @@ from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.entities.token import Token, TokenPayload
 from visitegypt.core.accounts.entities.user import UserInDB
-from visitegypt.core.authentication.services.exceptions import WrongEmailOrPassword
+from visitegypt.core.errors.user_errors import WrongEmailOrPassword
 from visitegypt.core.accounts.services.hash_service import verify_password
 
 def create_access_token(

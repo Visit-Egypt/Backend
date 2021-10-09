@@ -1,7 +1,7 @@
 from typing import Optional
 from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate,UserUpdaterole
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
-from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
+from visitegypt.core.errors.user_errors import *
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import login_access_token as login_service
 from pydantic import EmailStr
@@ -12,7 +12,6 @@ async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     email = new_user.email.lower()
     try:
         user = await repo.get_user_by_email(email)
-        print(user)
         if user: raise EmailNotUniqueError
     except Exception as e:
         raise e
