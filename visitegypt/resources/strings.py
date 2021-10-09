@@ -13,3 +13,4 @@ WRONG_TOKEN_PREFIX = "unsupported authorization type"  # noqa: S105
 MALFORMED_PAYLOAD = "could not validate credentials"
 
 AUTHENTICATION_REQUIRED = "authentication required"
+USER_DELETED = "User Is Deleted"

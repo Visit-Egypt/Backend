@@ -1,11 +1,15 @@
 from typing import Optional
 from pydantic import EmailStr
-from visitegypt.core.accounts.entities.user import UserResponse, UserInDB, UserUpdate, User
-
+from fastapi import HTTPException
+from visitegypt.core.accounts.entities.user import UserResponse, UserInDB, UserUpdate, User,UserUpdaterole
+from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import users_collection_name
-
+from pymongo.results import DeleteResult
+from visitegypt.resources.strings import USER_DOES_NOT_EXIST_ERROR
+from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
+from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
 
 async def create_user(new_user: User) -> Optional[UserResponse]:
@@ -16,11 +20,47 @@ async def create_user(new_user: User) -> Optional[UserResponse]:
     except Exception as e:
         raise e
 
-async def update_user(updated_user: UserUpdate) -> Optional[UserInDB]: 
-    pass
+async def update_user(updated_user: UserUpdate,user_id:str): 
+    try:
+        if updated_user.email:
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"email": updated_user.email}})
+        if updated_user.first_name:
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"first_name": updated_user.first_name}})
+        if updated_user.last_name:
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"last_name": updated_user.last_name}})
+        if updated_user.phone_number:
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"phone_number": updated_user.phone_number}})
+        if updated_user.password:
+            password_hash = get_password_hash(updated_user.password)
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"password": password_hash}})
+        if result.modified_count == 1:
+            row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
+            row['_id'] = str(row['_id'])
+            return UserResponse(**row)
+        raise UserNotFoundError
+    except Exception as e:
+        raise e
 
-async def delete_user(user_id: str) -> Optional[str]:
-    pass
+async def update_user_role(updated_user: UserUpdaterole,user_id:str): 
+    try:
+        if updated_user.user_role:
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"user_role": updated_user.user_role}})
+        if result.modified_count == 1:
+            row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
+            row['_id'] = str(row['_id'])
+            return UserResponse(**row)
+        raise UserNotFoundError
+    except Exception as e:
+        raise e
+
+async def delete_user(user_id: str) -> Optional[DeleteResult]:
+    try:
+        res = await db.client[DATABASE_NAME][users_collection_name].delete_one({"_id": ObjectId(user_id)})
+        if res.deleted_count == 1:
+            return USER_DELETED
+        raise UserNotFoundError
+    except Exception as e:
+        raise e
 
 async def get_user_by_id(user_id: str) -> Optional[UserResponse]:
     try:

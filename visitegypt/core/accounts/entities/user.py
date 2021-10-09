@@ -10,7 +10,7 @@ from .roles import Role
 
 # Shared properties
 class UserBase(BaseModel):
-    email: Optional[EmailStr] = None
+    email:EmailStr
     first_name: Optional[str] = None
     last_name : Optional[str] = None
     phone_number: Optional[str] = None
@@ -19,16 +19,27 @@ class UserBase(BaseModel):
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str
+    user_role : Optional[str] = ""
 
 
 # Properties to receive via API on update
-class UserUpdate(UserBase):
-    user_role : Optional[str] = Role.GUEST.get('name')
+
+class UserUpdaterole(BaseModel):
+    user_role : str
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name : Optional[str] = None
+    phone_number: Optional[str] = None
+    password: Optional[str] = None
+    
+
+
 
 
 class UserInDBBase(UserBase):
     id: str = Field(..., alias='_id') 
-    user_role: str = Role.GUEST.get('name')
+    user_role: str = Role.USER.get('name')
     #created_at: datetime
    # updated_at: datetime
 
