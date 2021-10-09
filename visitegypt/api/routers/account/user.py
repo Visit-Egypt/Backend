@@ -29,7 +29,7 @@ async def register_user(new_user: UserCreate):
 
 @router.get("/", response_model=UserResponse)
 async def get_user(user_id: str=None,user_email: EmailStr=None, current_user: UserResponse = Depends(get_current_user)):
-    if user_id == current_user.id or user_email == current_user.email or current_user.user_role == "ADMIN" or current_user.user_role == "SUPER_ADMIN":
+    if user_email == current_user.email or current_user.user_role == "ADMIN" or current_user.user_role == "SUPER_ADMIN":
         try:
             if user_id:
                 return await user_service.get_user_by_id(repo, user_id)
@@ -71,7 +71,7 @@ async def update_user(user_id: str,updated_user: UserUpdaterole,current_user: Us
         scopes=[Role.SUPER_ADMIN["name"]],
     )):
     try:
-        return await user_service.update_use_(repo,updated_user, user_id)
+        return await user_service.update_user_role(repo,updated_user, user_id)
     except Exception as e:
         if isinstance(e, UserNotFoundError): raise HTTPException(404, detail=USER_DOES_NOT_EXIST_ERROR)
         else: raise HTTPException(422, detail=str(e))
