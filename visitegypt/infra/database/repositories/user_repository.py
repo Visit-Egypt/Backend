@@ -1,14 +1,13 @@
 from typing import Optional
+from bson.objectid import _raise_invalid_id
 from pydantic import EmailStr
-from fastapi import HTTPException
-from visitegypt.core.accounts.entities.user import UserResponse, UserInDB, UserUpdate, User,UserUpdaterole
+from visitegypt.core.accounts.entities.user import UserResponse, UserUpdate, User,UserUpdaterole
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import users_collection_name
 from pymongo.results import DeleteResult
-from visitegypt.resources.strings import USER_DOES_NOT_EXIST_ERROR
-from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
+from visitegypt.core.errors.user_errors import UserNotFoundError
 from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
 
@@ -68,7 +67,7 @@ async def get_user_by_id(user_id: str) -> Optional[UserResponse]:
         if row:
             row['_id'] = str(row['_id'])
             return UserResponse(**row)
-        return None
+        raise UserNotFoundError
     except Exception as e:
         raise e
 
@@ -79,7 +78,7 @@ async def get_user_by_email(user_email: EmailStr) -> Optional[UserResponse]:
         if row:
             row['_id'] = str(row['_id'])
             return UserResponse(**row)
-        return None
+        return UserNotFoundError
     except Exception as e:
         raise e
 
@@ -88,6 +87,6 @@ async def get_user_hashed_password(user_id: str) -> str:
         row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
         if row:
             return row['hashed_password']
-        return None
+        return UserNotFoundError
     except Exception as e:
         raise e
