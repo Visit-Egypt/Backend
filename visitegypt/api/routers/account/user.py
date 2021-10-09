@@ -28,8 +28,11 @@ async def register_user(new_user: UserCreate):
         else: raise HTTPException(422, detail=str(err))
 
 @router.get("/", response_model=UserResponse)
-async def get_user(user_id: str=None,user_email: EmailStr=None, current_user: UserResponse = Depends(get_current_user)):
-    if user_email == current_user.email or current_user.user_role == "ADMIN" or current_user.user_role == "SUPER_ADMIN":
+async def get_user(user_id: str=None,user_email: EmailStr=None,current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[Role.USER["name"],Role.ADMIN["name"],Role.SUPER_ADMIN["name"]],
+    )):
+    if user_email == current_user.email or user_id == current_user.id:
         try:
             if user_id:
                 return await user_service.get_user_by_id(repo, user_id)

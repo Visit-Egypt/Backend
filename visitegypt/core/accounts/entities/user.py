@@ -19,6 +19,7 @@ class UserBase(BaseModel):
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str
+    user_role : Optional[str] = ""
 
 
 # Properties to receive via API on update
@@ -38,7 +39,7 @@ class UserUpdate(BaseModel):
 
 class UserInDBBase(UserBase):
     id: str = Field(..., alias='_id') 
-    user_role: str = Role.GUEST.get('name')
+    user_role: str = Role.USER.get('name')
     #created_at: datetime
    # updated_at: datetime
 
