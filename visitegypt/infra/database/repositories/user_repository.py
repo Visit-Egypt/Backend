@@ -1,5 +1,6 @@
 from typing import Optional
 from bson.objectid import _raise_invalid_id
+from loguru import logger
 from pydantic import EmailStr
 from visitegypt.core.accounts.entities.user import UserResponse, UserUpdate, User,UserUpdaterole
 from visitegypt.core.accounts.services.hash_service import get_password_hash
