@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 
 from visitegypt.config.environment import PROJECT_NAME, API_PREFIX
 
-from visitegypt.api.routers.item.item import router as itemRouter
+from visitegypt.api.routers.account.user import router as userRouter
 
 router = APIRouter()
 
-router.include_router(itemRouter, prefix="/items")
+router.include_router(userRouter, prefix="/user")
 
 class StatusEnum(str, Enum):
     OK = "OK"
