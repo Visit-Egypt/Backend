@@ -2,7 +2,7 @@ from typing import Optional
 from bson.objectid import _raise_invalid_id
 from loguru import logger
 from pydantic import EmailStr
-from visitegypt.core.accounts.entities.user import UserResponse, UserUpdate, User,UserUpdaterole
+from visitegypt.core.accounts.entities.user import UserInDB, UserResponse, UserUpdate, User,UserUpdaterole
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -20,7 +20,7 @@ async def create_user(new_user: User) -> Optional[UserResponse]:
     except Exception as e:
         raise e
 
-async def update_user(updated_user: UserUpdate,user_id:str): 
+async def update_user(updated_user: UserUpdate,user_id:str) -> Optional[UserResponse] : 
     try:
         if updated_user.email:
             result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"email": updated_user.email}})
@@ -35,21 +35,23 @@ async def update_user(updated_user: UserUpdate,user_id:str):
             result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"password": password_hash}})
         if result.modified_count == 1:
             row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
-            row['_id'] = str(row['_id'])
-            return UserResponse(**row)
+            return UserResponse.from_mongo(row)
         raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         raise e
 
-async def update_user_role(updated_user: UserUpdaterole,user_id:str): 
+async def update_user_role(updated_user: str,user_id:str) -> Optional[UserResponse]: 
     try:
-        if updated_user.user_role:
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"user_role": updated_user.user_role}})
+        if updated_user:
+            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"user_role": updated_user}})
         if result.modified_count == 1:
             row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
-            row['_id'] = str(row['_id'])
-            return UserResponse(**row)
+            return UserResponse.from_mongo(row)
         raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         raise e
 
@@ -59,6 +61,8 @@ async def delete_user(user_id: str) -> Optional[DeleteResult]:
         if res.deleted_count == 1:
             return USER_DELETED
         raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         raise e
 
@@ -66,9 +70,10 @@ async def get_user_by_id(user_id: str) -> Optional[UserResponse]:
     try:
         row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
         if row:
-            row['_id'] = str(row['_id'])
-            return UserResponse(**row)
+            return UserResponse.from_mongo(row)
         raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         raise e
 
@@ -77,9 +82,10 @@ async def get_user_by_email(user_email: EmailStr) -> Optional[UserResponse]:
     try:
         row = await db.client[DATABASE_NAME][users_collection_name].find_one({"email": user_email})
         if row:
-            row['_id'] = str(row['_id'])
-            return UserResponse(**row)
-        return UserNotFoundError
+            return UserResponse.from_mongo(row)
+        raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         raise e
 
@@ -88,6 +94,8 @@ async def get_user_hashed_password(user_id: str) -> str:
         row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
         if row:
             return row['hashed_password']
-        return UserNotFoundError
+        raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         raise e

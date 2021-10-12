@@ -22,7 +22,6 @@ router = APIRouter(tags=["User"])
 async def register_user(new_user: UserCreate):
     try:
         return await user_service.register(repo, new_user)
-
     except Exception as err:
         if isinstance(err, EmailNotUniqueError): raise HTTPException(409, detail=EMAIL_TAKEN)
         else: raise err
@@ -32,7 +31,7 @@ async def get_user(user_id: str=None,user_email: EmailStr=None,current_user: Use
         get_current_user,
         scopes=[Role.USER["name"],Role.ADMIN["name"],Role.SUPER_ADMIN["name"]],
     )):
-    if user_email == current_user.email or user_id == current_user.id:
+    if user_email == current_user.email or user_id == current_user.id or current_user.user_role == Role.ADMIN["name"] or current_user.user_role == Role.SUPER_ADMIN["name"]:
         try:
             if user_id:
                 return await user_service.get_user_by_id(repo, user_id)
@@ -57,7 +56,7 @@ async def delete_user(user_id: str,current_user: UserResponse = Security(
         if isinstance(e, UserNotFoundError): raise HTTPException(404, detail=USER_DOES_NOT_EXIST_ERROR)
         else: raise HTTPException(422, detail=str(e))
 
-@router.put("/{user_id}")
+@router.put("/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str,updated_user: UserUpdate, current_user: UserResponse = Depends(get_current_user)):
     if user_id == current_user.id:
         try:
@@ -68,13 +67,14 @@ async def update_user(user_id: str,updated_user: UserUpdate, current_user: UserR
     else:
         raise HTTPException(401, detail="Unautherized")
 
-@router.put("/role/{user_id}")
-async def update_user(user_id: str,updated_user: UserUpdaterole,current_user: UserResponse = Security(
+@router.put("/role/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str,updated_user_role: str,current_user: UserResponse = Security(
         get_current_user,
         scopes=[Role.SUPER_ADMIN["name"]],
     )):
     try:
-        return await user_service.update_user_role(repo,updated_user, user_id)
+        if updated_user_role:
+            return await user_service.update_user_role(repo,updated_user_role, user_id)
     except Exception as e:
         if isinstance(e, UserNotFoundError): raise HTTPException(404, detail=USER_DOES_NOT_EXIST_ERROR)
         else: raise e
