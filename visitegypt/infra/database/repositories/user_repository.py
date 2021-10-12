@@ -97,11 +97,10 @@ async def get_user_hashed_password(user_id: str) -> str:
 async def get_all_users():
     try:
         rows = db.client[DATABASE_NAME][users_collection_name].find()
-        users = []
         cursor = await rows.to_list(150)
-        for user in cursor:
+        for index, user in enumerate(cursor):
             user['_id'] = str(user['_id'])
-            users.append(UserResponse(**user))
-        return users
+            cursor[index] = UserResponse(**user)
+        return cursor
     except Exception as e:
         raise e

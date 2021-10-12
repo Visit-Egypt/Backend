@@ -81,7 +81,10 @@ async def update_user(user_id: str,updated_user: UserUpdaterole,current_user: Us
         else: raise HTTPException(422, detail=str(e))
 
 @router.get("/all")
-async def get_all_users():
+async def get_all_users(current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[Role.ADMIN["name"],Role.SUPER_ADMIN["name"]],
+    )):
     try:
         return await user_service.get_all_users(repo)
     except Exception as e:
