@@ -1,10 +1,11 @@
 from typing import Optional
-from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate,UserUpdaterole
+from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate,UserUpdaterole,UsersResponse
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import login_access_token as login_service
 from pydantic import EmailStr
+from typing import List
 from pymongo.results import DeleteResult
 
 
@@ -25,6 +26,11 @@ async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
 async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     user  = await repo.get_user_by_id(user_id)
     if user: return user
+    raise UserNotFoundError
+
+async def get_all_users(repo: UserRepo):
+    users  = await repo.get_all_users()
+    if users: return users
     raise UserNotFoundError
 
 async def get_user_by_email(repo: UserRepo, user_email: EmailStr) -> UserResponse:

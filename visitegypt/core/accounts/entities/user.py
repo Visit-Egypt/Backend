@@ -56,4 +56,5 @@ class UserInDB(UserInDBBase):
 
 class UserResponse(UserInDBBase):
     pass
-
+class UsersResponse(UserBase):
+    user_role: str = Role.USER.get('name')

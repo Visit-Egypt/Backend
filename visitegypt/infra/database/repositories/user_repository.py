@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import EmailStr
 from fastapi import HTTPException
-from visitegypt.core.accounts.entities.user import UserResponse, UserInDB, UserUpdate, User,UserUpdaterole
+from visitegypt.core.accounts.entities.user import UserResponse, UserInDB, UserUpdate, User,UserUpdaterole,UsersResponse
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -11,6 +11,8 @@ from visitegypt.resources.strings import USER_DOES_NOT_EXIST_ERROR
 from visitegypt.core.accounts.services.exceptions import EmailNotUniqueError, UserNotFoundError
 from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
+from typing import List
+from bson.json_util import dumps, loads
 
 async def create_user(new_user: User) -> Optional[UserResponse]:
     try:
@@ -89,5 +91,17 @@ async def get_user_hashed_password(user_id: str) -> str:
         if row:
             return row['hashed_password']
         return None
+    except Exception as e:
+        raise e
+
+async def get_all_users():
+    try:
+        rows = db.client[DATABASE_NAME][users_collection_name].find()
+        users = []
+        cursor = await rows.to_list(150)
+        for user in cursor:
+            user['_id'] = str(user['_id'])
+            users.append(UserResponse(**user))
+        return users
     except Exception as e:
         raise e

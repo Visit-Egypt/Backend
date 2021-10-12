@@ -1,7 +1,7 @@
 from typing import Protocol, Optional
-
+from typing import List
 from pydantic import EmailStr
-from visitegypt.core.accounts.entities.user import UserResponse, UserUpdate, User,UserUpdaterole
+from visitegypt.core.accounts.entities.user import UserResponse, UserUpdate, User,UserUpdaterole,UsersResponse
 from pymongo.results import DeleteResult
 
 class UserRepo (Protocol):
@@ -22,4 +22,6 @@ class UserRepo (Protocol):
     async def get_user_hashed_password(user_id: str) -> str:
         pass
     async def update_user_role(updated_user: UserUpdaterole,user_id:str):
+        pass
+    async def get_all_users():
         pass
