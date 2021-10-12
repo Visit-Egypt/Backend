@@ -36,7 +36,7 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
         minutes= ACCESS_TOKEN_EXPIRE_MINUTES
     )
     if not user_to_auth.user_role:
-        role = "GUEST"
+        role = "USER"
     else:
         role = user_to_auth.user_role
     
@@ -44,4 +44,5 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
 
     return Token(
         access_token=create_access_token(token_payload.dict(), 
-        expires_delta=access_token_expires),token_type="bearer")
+        expires_delta=access_token_expires),token_type="bearer",
+        user_id=str(user_to_auth.id))
