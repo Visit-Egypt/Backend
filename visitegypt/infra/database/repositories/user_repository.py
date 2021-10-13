@@ -22,18 +22,11 @@ async def create_user(new_user: User) -> Optional[UserResponse]:
 
 async def update_user(updated_user: UserUpdate,user_id:str) -> Optional[UserResponse] : 
     try:
-        if updated_user.email:
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"email": updated_user.email}})
-        if updated_user.first_name:
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"first_name": updated_user.first_name}})
-        if updated_user.last_name:
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"last_name": updated_user.last_name}})
-        if updated_user.phone_number:
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"phone_number": updated_user.phone_number}})
-        if updated_user.password:
-            password_hash = get_password_hash(updated_user.password)
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"password": password_hash}})
-        if result.modified_count == 1:
+        for term in updated_user:
+            if(term[1]):
+                result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {term[0]: term[1]}})
+                print(term)
+        if result.modified_count >= 1:
             row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
             return UserResponse.from_mongo(row)
         raise UserNotFoundError
@@ -99,3 +92,11 @@ async def get_user_hashed_password(user_id: str) -> str:
         raise ue
     except Exception as e:
         raise e
+
+async def get_all_users():
+    try:
+        rows = db.client[DATABASE_NAME][users_collection_name].find()
+        cursor = await rows.to_list(150)
+        return [UserResponse.from_mongo(user) for user in cursor]
+    except Exception as e:
+        raise e 

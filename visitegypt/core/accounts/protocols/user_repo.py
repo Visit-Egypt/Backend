@@ -23,3 +23,5 @@ class UserRepo (Protocol):
         pass
     async def update_user_role(updated_user: UserUpdaterole,user_id:str) -> Optional[UserResponse]:
         pass
+    async def get_all_users():
+        pass 
