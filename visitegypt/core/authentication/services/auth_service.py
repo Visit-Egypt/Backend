@@ -7,7 +7,7 @@ from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.entities.token import Token, TokenPayload
 from visitegypt.core.accounts.entities.user import UserInDB
-from visitegypt.core.authentication.services.exceptions import WrongEmailOrPassword
+from visitegypt.core.errors.user_errors import WrongEmailOrPassword
 from visitegypt.core.accounts.services.hash_service import verify_password
 
 def create_access_token(
@@ -36,7 +36,7 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
         minutes= ACCESS_TOKEN_EXPIRE_MINUTES
     )
     if not user_to_auth.user_role:
-        role = "GUEST"
+        role = "USER"
     else:
         role = user_to_auth.user_role
     
@@ -44,4 +44,5 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
 
     return Token(
         access_token=create_access_token(token_payload.dict(), 
-        expires_delta=access_token_expires),token_type="bearer")
+        expires_delta=access_token_expires),token_type="bearer",
+        user_id=str(user_to_auth.id))

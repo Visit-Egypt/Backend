@@ -3,3 +3,6 @@ class EmailNotUniqueError(Exception):
 
 class UserNotFoundError(Exception):
     pass
+
+class WrongEmailOrPassword(Exception):
+    pass

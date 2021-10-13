@@ -8,7 +8,7 @@ class UserRepo (Protocol):
     async def create_user(self, new_user: User) -> Optional[UserResponse]:
         pass
 
-    async def update_user(self, updated_user: UserUpdate,user_id:str): 
+    async def update_user(self, updated_user: UserUpdate,user_id:str) -> Optional[UserResponse]: 
         pass
 
     async def delete_user(self, user_id: str) -> Optional[DeleteResult]:
@@ -24,4 +24,6 @@ class UserRepo (Protocol):
     async def update_user_role(updated_user: UserUpdaterole,user_id:str):
         pass
     async def get_all_users():
+        pass
+    async def update_user_role(updated_user: UserUpdaterole,user_id:str) -> Optional[UserResponse]:
         pass
