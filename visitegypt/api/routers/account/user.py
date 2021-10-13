@@ -90,3 +90,12 @@ async def login_user(
         else:
             raise err
 
+@router.get("/all")
+async def get_all_users(current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[Role.ADMIN["name"],Role.SUPER_ADMIN["name"]],
+    )):
+    try:
+        return await user_service.get_all_users(repo)
+    except Exception as e:
+        raise e

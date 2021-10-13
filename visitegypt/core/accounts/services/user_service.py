@@ -30,6 +30,13 @@ async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     except Exception as e:
         raise e
 
+async def get_all_users(repo: UserRepo):
+    try:
+        users  = await repo.get_all_users()
+        if users: return users
+    except Exception as e:
+        raise e
+        
 async def get_user_by_email(repo: UserRepo, user_email: EmailStr) -> UserResponse:
     try:
         user = await repo.get_user_by_email(user_email)
