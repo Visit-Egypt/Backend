@@ -1,27 +1,25 @@
-from pydantic.main import BaseModel
-from visitegypt.api.container import get_dependencies
-from fastapi import APIRouter, status
-from visitegypt.core.items.services import item_service
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, status, HTTPException
 from loguru import logger
+from visitegypt.api.container import get_dependencies
+from visitegypt.core.items.services import item_service
+from visitegypt.core.items.entities.item import ItemsPageResponse
+from visitegypt.resources.strings import MESSAGE_404
+from visitegypt.core.errors.item_error import *
 
 repo = get_dependencies().item_repo
 
-router = APIRouter()
+router = APIRouter(tags=['Item'])
 
-class ItemResponse(BaseModel):
-    title: str = Field(..., description="test")
 
 @router.get(
     "/",
-    response_model=ItemResponse,
+    response_model=ItemsPageResponse,
     status_code=status.HTTP_200_OK,
-    tags=["Test Item"],
-    summary="Endpoint Summary",
-    description="Item Test.",
+    summary="Get all items"
 )
-async   def test_item():
-    logger.info("This is a log test")
-    return {
-        "title": await item_service.create(repo, "testlowercase"),
-    }
+async def get_items(page_num : int = 1, limit : int = 15):
+    try:
+        return await item_service.get_all_items_paged(repo, page_num=page_num, limit=limit)
+    except Exception as e:
+        if isinstance(e, ItemNotFoundError): raise HTTPException(404, detail=MESSAGE_404("Items"))
+        else: raise e
