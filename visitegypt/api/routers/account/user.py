@@ -13,6 +13,8 @@ from visitegypt.core.accounts.entities.roles import *
 
 repo = get_dependencies().user_repo
 
+
+
 router = APIRouter(tags=["User"])
 
 # Handlers
