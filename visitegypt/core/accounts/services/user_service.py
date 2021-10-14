@@ -1,12 +1,12 @@
 from typing import Optional
-from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate,UserUpdaterole
+from visitegypt.core.accounts.entities.user import UserCreate, UserResponse, User,UserUpdate,UsersPageResponse
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.errors.user_errors import *
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import login_access_token as login_service
 from pydantic import EmailStr
 from pymongo.results import DeleteResult
-
+from typing import List
 
 async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     email = new_user.email.lower()
@@ -30,9 +30,9 @@ async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     except Exception as e:
         raise e
 
-async def get_all_users(repo: UserRepo):
+async def get_all_users(repo: UserRepo, page_num : int = 1, limit : int = 15)-> List[UsersPageResponse]:
     try:
-        users  = await repo.get_all_users()
+        users  = await repo.get_all_users(page_num, limit)
         if users: return users
     except Exception as e:
         raise e
