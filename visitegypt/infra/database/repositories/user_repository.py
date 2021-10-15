@@ -7,7 +7,6 @@ from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import users_collection_name, calculate_start_index, check_has_next
-from pymongo.results import DeleteResult
 from visitegypt.core.errors.user_errors import UserNotFoundError
 from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
@@ -42,7 +41,7 @@ async def update_user_role(updated_user: str,user_id:str) -> Optional[UserRespon
     except Exception as e:
         raise e
 
-async def delete_user(user_id: str) -> Optional[DeleteResult]:
+async def delete_user(user_id: str):
     try:
         res = await db.client[DATABASE_NAME][users_collection_name].delete_one({"_id": ObjectId(user_id)})
         if res.deleted_count == 1:
