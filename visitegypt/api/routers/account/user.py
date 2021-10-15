@@ -88,10 +88,10 @@ async def login_user(
 ):
     try:
         return await login_service(repo, auth_body)
+    except WrongEmailOrPassword: raise HTTPException(409, detail=INCORRECT_LOGIN_INPUT)
+    except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
     except Exception as err:
-        if isinstance(err, WrongEmailOrPassword): raise HTTPException(409, detail=INCORRECT_LOGIN_INPUT)
-        else:
-            raise err
+        raise err
 
 @router.get("/all", response_model= UsersPageResponse)
 async def get_all_users(page_num: int = 1, limit: int = 15, current_user: UserResponse = Security(

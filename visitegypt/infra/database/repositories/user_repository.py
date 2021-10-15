@@ -34,10 +34,8 @@ async def update_user(updated_user: UserUpdate,user_id:str) -> Optional[UserResp
 async def update_user_role(updated_user: str,user_id:str) -> Optional[UserResponse]: 
     try:
         if updated_user:
-            result = await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"user_role": updated_user}})
-        if result.modified_count == 1:
-            row = await db.client[DATABASE_NAME][users_collection_name].find_one({"_id": ObjectId(user_id)})
-            return UserResponse.from_mongo(row)
+            result = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update({"_id": ObjectId(user_id)}, {'$set': {"user_role": updated_user}}, return_document=ReturnDocument.AFTER)
+        if result: return UserResponse.from_mongo(result)
         raise UserNotFoundError
     except UserNotFoundError as ue:
         raise ue

@@ -1,19 +1,14 @@
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from ...config.environment import DATABASE_URL, MAX_CONNECTIONS_COUNT, MIN_CONNECTIONS_COUNT
+from ...config.environment import DATABASE_NAME, DATABASE_URL, MAX_CONNECTIONS_COUNT, MIN_CONNECTIONS_COUNT
+from visitegypt.infra.database.utils import users_collection_name, items_collection_name
 
 class DataBase:
     client: AsyncIOMotorClient = None
 
 
 db = DataBase()
-
-
-async def get_database() -> AsyncIOMotorClient:
-    return db.client
-
-
 
 async def connect_to_db():
     logger.info("Connecting to {0}", repr(DATABASE_URL))
@@ -33,3 +28,4 @@ async def close_db_connection():
     db.client.close()
 
     logger.info("Connection closed")
+
