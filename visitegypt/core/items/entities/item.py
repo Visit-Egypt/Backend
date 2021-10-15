@@ -9,6 +9,7 @@ class ItemBase(MongoModel):
     long_description: Optional[str]
     default_image: Optional[str]
     list_of_images: Optional[List[str]]
+    place_id: Optional[str]
 
 
 class ItemInDB(ItemBase):
@@ -19,3 +20,12 @@ class ItemsPageResponse(MongoModel):
     current_page: int
     has_next: bool
     items: Optional[List[ItemInDB]]
+
+
+class ItemUpdate(MongoModel):
+    title: Optional[str]
+    short_description: Optional[str]
+    long_description: Optional[str]
+    default_image: Optional[str]
+    list_of_images: Optional[List[str]]
+    place_id: Optional[str]

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Union, Dict, Optional
 from jose import jwt
-import time
 from visitegypt.config.environment import SECRET_KEY, ALGORITHM, JWT_EXPIRATION_DELTA
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
@@ -31,7 +30,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, str(SECRET_KEY), algorithm=str(ALGORITHM))
     return encoded_jwt
 
 async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:

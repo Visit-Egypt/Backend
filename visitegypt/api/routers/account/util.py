@@ -1,9 +1,10 @@
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt
 from pydantic import ValidationError
-
+from typing import Optional, List
+import json
 from visitegypt.core.accounts.entities.roles import *
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.config.environment import SECRET_KEY, ALGORITHM
@@ -11,6 +12,9 @@ from visitegypt.core.authentication.entities.token import TokenPayload
 from visitegypt.core.accounts.services.user_service import get_user_by_id
 from loguru import logger
 from visitegypt.api.container import get_dependencies
+from collections import ChainMap
+from bson import ObjectId
+
 
 repo = get_dependencies().user_repo
 
@@ -71,3 +75,18 @@ async def get_current_user(
             headers={"WWW-Authenticate": authenticate_value},
         )
     return user
+
+
+
+def filters_dict(filters: Optional[List[str]] = Query(None)):
+    try:
+        return list(map(json.loads, filters)) # If fails, returns JSONDECODEERROR
+    except:
+        return []
+
+async def common_parameters(q: Optional[List] = Depends(filters_dict), page_num: int = 1, limit: int = 10):
+    dict_of_filters = dict(ChainMap(*q))
+    if '_id' not in dict_of_filters and 'id' in dict_of_filters:
+        dict_of_filters['_id'] = ObjectId(dict_of_filters.pop('id'))
+    filter_filters_from_none = {k: v for k, v in dict_of_filters.items() if v}
+    return {"filters": filter_filters_from_none, "page_num": page_num, "limit": limit}
