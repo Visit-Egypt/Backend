@@ -8,11 +8,13 @@ from visitegypt.config.environment import PROJECT_NAME, API_PREFIX
 
 from visitegypt.api.routers.account.user import router as userRouter
 from visitegypt.api.routers.item.item import router as itemRouter
+from visitegypt.api.routers.place.place import router as placeRouter
 
 router = APIRouter()
 
 router.include_router(userRouter, prefix="/user")
 router.include_router(itemRouter, prefix="/item")
+router.include_router(placeRouter, prefix="/place")
 
 class StatusEnum(str, Enum):
     OK = "OK"
