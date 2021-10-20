@@ -9,32 +9,33 @@ class review(MongoModel):
     user_id: str
     user_name: str
 
-
-class CreatePlace(MongoModel):
+class PlaceBase(MongoModel):
     title: str
     description: str
-    locationDescription: Optional[str] = None
-    longitude: Optional[float] = None
-    latitude: Optional[float] = None
-    imageUrls: Optional[List[str]] = []
-    default_image: Optional[str] = None
+    location_description: Optional[str]
+    longitude: Optional[float]
+    latitude: Optional[float]
+    image_urls: Optional[List[str]]
+    default_image: Optional[str]
+    opening_hours: Optional[str]
+    city: Optional[str]
 
-
-class PlaceBase(CreatePlace):
+class PlaceWithReviews(PlaceBase):
     reviews: Optional[List[review]] = []
 
 
 class UpdatePlace(MongoModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    locationDescription: Optional[str] = None
-    longitude: Optional[float] = None
-    latitude: Optional[float] = None
-    imageUrls: Optional[List[str]] = None
-    default_image: Optional[str] = None
+    title: Optional[str]
+    description: Optional[str]
+    location_description: Optional[str]
+    longitude: Optional[float]
+    latitude: Optional[float]
+    image_urls: Optional[List[str]]
+    default_image: Optional[str]
+    opening_hours: Optional[str]
+    city: Optional[str]
 
-
-class PlaceInDB(PlaceBase):
+class PlaceInDB(PlaceWithReviews):
     id: OID = Field()
 
 
@@ -42,3 +43,7 @@ class PlacesPageResponse(MongoModel):
     current_page: int
     has_next: bool
     places: Optional[List[PlaceInDB]]
+
+
+class TicketModel(MongoModel):
+    pass
