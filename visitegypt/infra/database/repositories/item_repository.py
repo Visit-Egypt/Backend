@@ -12,7 +12,8 @@ from visitegypt.infra.database.utils import items_collection_name
 from visitegypt.infra.database.utils import calculate_start_index, check_has_next
 from pymongo import ReturnDocument
 from bson import ObjectId
-
+from loguru import logger
+from visitegypt.infra.errors import InfrastructureException
 
 async def get_filtered_items(
     page_num: int, limit: int, filters: Dict
@@ -37,7 +38,8 @@ async def get_filtered_items(
             current_page=page_num, has_next=has_next, items=items_list_response
         )
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def create_item(item_to_create: ItemBase) -> ItemInDB:
@@ -51,8 +53,8 @@ async def create_item(item_to_create: ItemBase) -> ItemInDB:
             )
             return new_inserted_item.items[0]
     except Exception as e:
-        raise e
-
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 async def update_item(item_to_update: ItemUpdate, item_id: str) -> ItemInDB:
     try:
@@ -69,7 +71,8 @@ async def update_item(item_to_update: ItemUpdate, item_id: str) -> ItemInDB:
     except ItemNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def delete_item(item_id: str) -> bool:
@@ -83,4 +86,5 @@ async def delete_item(item_id: str) -> bool:
     except ItemNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
