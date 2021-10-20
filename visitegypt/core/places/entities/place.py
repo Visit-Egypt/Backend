@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional, Dict
 from pydantic import Field
 from visitegypt.core.base_model import MongoModel, OID
 
@@ -19,6 +19,7 @@ class PlaceBase(MongoModel):
     default_image: Optional[str]
     opening_hours: Optional[str]
     city: Optional[str]
+    ticket_prices: Optional[Dict[Any, Any]]
 
 class PlaceWithReviews(PlaceBase):
     reviews: Optional[List[review]] = []
