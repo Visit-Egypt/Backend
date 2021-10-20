@@ -14,6 +14,8 @@ from visitegypt.infra.database.utils import calculate_start_index, check_has_nex
 from visitegypt.resources.strings import PLACE_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
+from loguru import logger
+from visitegypt.infra.errors import InfrastructureException
 
 
 async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
@@ -37,7 +39,8 @@ async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
             current_page=page_num, has_next=has_next, places=places_list_response
         )
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def get_place_by_id(place_id: str) -> Optional[PlaceInDB]:
@@ -51,7 +54,8 @@ async def get_place_by_id(place_id: str) -> Optional[PlaceInDB]:
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
@@ -65,7 +69,8 @@ async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def create_place(new_place: PlaceBase) -> PlaceInDB:
@@ -78,7 +83,8 @@ async def create_place(new_place: PlaceBase) -> PlaceInDB:
             added_place = await get_place_by_id(row.inserted_id)
             return added_place
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def delete_place(place_id: str):
@@ -92,7 +98,8 @@ async def delete_place(place_id: str):
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def update_place(
@@ -112,7 +119,9 @@ async def update_place(
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
 
 
 async def add_review(place_id: str, new_reviw: review):
@@ -130,7 +139,8 @@ async def add_review(place_id: str, new_reviw: review):
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 
 
 async def delete_review(place_id: str, review: review):
@@ -148,4 +158,5 @@ async def delete_review(place_id: str, review: review):
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
-        raise e
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
