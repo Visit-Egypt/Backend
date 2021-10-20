@@ -16,6 +16,7 @@ router.include_router(userRouter, prefix="/user")
 router.include_router(itemRouter, prefix="/item")
 router.include_router(placeRouter, prefix="/place")
 
+
 class StatusEnum(str, Enum):
     OK = "OK"
     FAILURE = "FAILURE"
@@ -45,4 +46,3 @@ def health_check():
         "version": API_PREFIX,
         "status": StatusEnum.OK,
     }
-

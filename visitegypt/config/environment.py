@@ -1,10 +1,8 @@
 import logging
 import sys
-from typing import List, cast
 import os
-from fastapi.datastructures import Default
 from datetime import timedelta
-
+from typing import List
 from loguru import logger
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings, Secret
@@ -15,17 +13,21 @@ API_PREFIX = "/api"
 
 JWT_TOKEN_PREFIX = "Token"  # noqa: S105
 VERSION = "0.0.0"
-ALGORITHM="HS256"
+ALGORITHM = "HS256"
 config = Config(".env", os.environ)
 DEBUG: bool = config("DEBUG", cast=bool, default=True)
 # ACCESS_TOKEN_EXPIRE_MINUTES : int = config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=15)
-JWT_EXPIRATION_DELTA = timedelta(minutes = config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=15)) 
-DATABASE_URL: str = config("DB_CONNECTION", cast=str, default='')
+JWT_EXPIRATION_DELTA = timedelta(
+    minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=15)
+)
+DATABASE_URL: str = config("DB_CONNECTION", cast=str, default="")
 DATABASE_NAME: str = config("DB_NAME", cast=str)
 MAX_CONNECTIONS_COUNT: int = config("MAX_CONNECTIONS_COUNT", cast=int, default=10)
 MIN_CONNECTIONS_COUNT: int = config("MIN_CONNECTIONS_COUNT", cast=int, default=10)
 
-SECRET_KEY: Secret = config("SECRET_KEY", cast=Secret, default="This is a secret key for development")
+SECRET_KEY: Secret = config(
+    "SECRET_KEY", cast=Secret, default="This is a secret key for development"
+)
 
 PROJECT_NAME: str = config("PROJECT_NAME", default="Visit Egypt")
 ALLOWED_HOSTS: List[str] = config(
