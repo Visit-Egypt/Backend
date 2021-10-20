@@ -14,8 +14,8 @@ class CreatePlace(MongoModel):
     title: str
     description: str
     locationDescription: Optional[str] = None
-    longitude: Optional[int] = None
-    altitude: Optional[int] = None
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
     imageUrls: Optional[List[str]] = []
     default_image: Optional[str] = None
 
@@ -28,8 +28,8 @@ class UpdatePlace(MongoModel):
     title: Optional[str] = None
     description: Optional[str] = None
     locationDescription: Optional[str] = None
-    longitude: Optional[int] = None
-    altitude: Optional[int] = None
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
     imageUrls: Optional[List[str]] = None
     default_image: Optional[str] = None
 
