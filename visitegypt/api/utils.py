@@ -1,11 +1,10 @@
-
 from fastapi import Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt
 from pydantic import ValidationError
 from typing import Optional, List
 import json
-from visitegypt.core.accounts.entities.roles import *
+from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.config.environment import SECRET_KEY, ALGORITHM
 from visitegypt.core.authentication.entities.token import TokenPayload
@@ -29,6 +28,7 @@ reusable_oauth2 = OAuth2PasswordBearer(
     },
 )
 
+
 async def get_current_user(
     security_scopes: SecurityScopes,
     token: str = Depends(reusable_oauth2),
@@ -43,9 +43,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": authenticate_value},
     )
     try:
-        payload = jwt.decode(
-            token, str(SECRET_KEY), algorithms=[ALGORITHM]
-        )
+        payload = jwt.decode(token, str(SECRET_KEY), algorithms=[ALGORITHM])
         if payload.get("user_id") is None:
             raise credentials_exception
         token_data = TokenPayload(**payload)
@@ -56,7 +54,7 @@ async def get_current_user(
             detail="Could not validate credentials",
         )
     user = await get_user_by_id(repo, token_data.user_id)
-    
+
     if not user:
         raise credentials_exception
     if security_scopes.scopes and not token_data.role:
@@ -65,10 +63,7 @@ async def get_current_user(
             detail="Not enough permissions",
             headers={"WWW-Authenticate": authenticate_value},
         )
-    if (
-        security_scopes.scopes
-        and token_data.role not in security_scopes.scopes
-    ):
+    if security_scopes.scopes and token_data.role not in security_scopes.scopes:
         raise HTTPException(
             status_code=401,
             detail="Not enough permissions",
@@ -77,16 +72,18 @@ async def get_current_user(
     return user
 
 
-
 def filters_dict(filters: Optional[List[str]] = Query(None)):
     try:
-        return list(map(json.loads, filters)) # If fails, returns JSONDECODEERROR
-    except:
+        return list(map(json.loads, filters))  # If fails, returns JSONDECODEERROR
+    except Exception:
         return []
 
-async def common_parameters(q: Optional[List] = Depends(filters_dict), page_num: int = 1, limit: int = 10):
+
+async def common_parameters(
+    q: Optional[List] = Depends(filters_dict), page_num: int = 1, limit: int = 10
+):
     dict_of_filters = dict(ChainMap(*q))
-    if '_id' not in dict_of_filters and 'id' in dict_of_filters:
-        dict_of_filters['_id'] = ObjectId(dict_of_filters.pop('id'))
+    if "_id" not in dict_of_filters and "id" in dict_of_filters:
+        dict_of_filters["_id"] = ObjectId(dict_of_filters.pop("id"))
     filter_filters_from_none = {k: v for k, v in dict_of_filters.items() if v}
     return {"filters": filter_filters_from_none, "page_num": page_num, "limit": limit}

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import Field
-from visitegypt.core.base_model import *
+from visitegypt.core.base_model import MongoModel, OID
 
 
 class ItemBase(MongoModel):

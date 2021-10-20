@@ -2,9 +2,12 @@ from dataclasses import dataclass
 from typing import Callable, cast
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.items.protocols.item_repo import ItemRepo
-from visitegypt.core.places.protocols import place_repo
 from visitegypt.core.places.protocols.place_repo import PlaceRepo
-from visitegypt.infra.database.repositories import  item_repository, user_repository, place_repository
+from visitegypt.infra.database.repositories import (
+    item_repository,
+    user_repository,
+    place_repository,
+)
 
 
 @dataclass(frozen=True)
@@ -13,11 +16,12 @@ class Dependencies:
     item_repo: ItemRepo
     place_repo: PlaceRepo
 
+
 def _build_dependencies() -> Callable[[], Dependencies]:
     deps = Dependencies(
         user_repo=cast(UserRepo, user_repository),
         item_repo=cast(ItemRepo, item_repository),
-        place_repo=cast(PlaceRepo, place_repository)
+        place_repo=cast(PlaceRepo, place_repository),
     )
 
     def fn() -> Dependencies:
