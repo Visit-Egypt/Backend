@@ -11,7 +11,8 @@ class review(MongoModel):
 
 class PlaceBase(MongoModel):
     title: str
-    description: str
+    long_description: Optional[str]
+    short_description: Optional[str]
     location_description: Optional[str]
     longitude: Optional[float]
     latitude: Optional[float]
