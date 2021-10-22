@@ -7,25 +7,23 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
-from visitegypt.core.errors.user_errors import UserNotFoundError
+from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
 from pydantic import EmailStr
-from pymongo.results import DeleteResult
 from typing import List
 
 
 async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     email = new_user.email.lower()
     try:
-        await repo.get_user_by_email(email)
-    except Exception as e:
-        if isinstance(e, UserNotFoundError):
-            pass
-        else:
-            raise e
+        user : Optional[UserResponse] = await repo.get_user_by_email(email)
+        if user: raise EmailNotUniqueError
+    except UserNotFoundError: pass
+    except EmailNotUniqueError as email_not_unique: raise email_not_unique
+    except Exception as e: raise e
 
     password_hash = get_password_hash(new_user.password)
     await repo.create_user(User(**new_user.dict(), hashed_password=password_hash))
