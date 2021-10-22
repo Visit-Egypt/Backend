@@ -38,6 +38,8 @@ async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
         return PlacesPageResponse(
             current_page=page_num, has_next=has_next, places=places_list_response
         )
+    except PlaceNotFoundError as ue:
+        raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
