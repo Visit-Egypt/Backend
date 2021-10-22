@@ -28,7 +28,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        echo "Testing Placeholder"
+        pytest tests/
   deploy:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute

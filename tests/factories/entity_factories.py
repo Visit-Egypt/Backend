@@ -1,4 +1,4 @@
-from faker import factory
+import factory
 from tests.factories.providers import PasswordHashProvider
 from visitegypt.core.accounts.entities.user import User, UserResponse
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
@@ -28,7 +28,7 @@ class UserFactory(factory.Factory):
     first_name = factory.Faker("pystr", min_chars=3, max_chars=50)
     last_name = factory.Faker("pystr", min_chars=3, max_chars=50)
     phone_number = factory.Faker("phone_number", min_chars=3, max_chars=50)
-
+    user_role = factory.Faker("pystr", min_chars=5, max_chars=7)
 
 class UserResponseFactory(factory.Factory):
     class Meta:

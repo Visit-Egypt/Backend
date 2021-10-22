@@ -4,14 +4,14 @@ from functools import partial
 import pytest
 from pytest_factoryboy import register
 
-from tests.factories.entity_factories import UserRegistryFactory
+from tests.factories.entity_factories import UserFactory
 from tests.factories.utils import make_many
 
 
-FACTORIES = [UserRegistryFactory]
+FACTORIES = [UserFactory]
 
-for factory in FACTORIES:
-    register(factory)
+for factory_elem in FACTORIES:
+    register(factory_elem)
 
 
 @pytest.fixture(name="repo_fn_factory")
@@ -20,10 +20,10 @@ def repo_fn_factory_fixture(mocker):
 
 
 @pytest.fixture()
-def user_registry(user_registry_factory):
-    return user_registry_factory()
+def user_registry(user_factory):
+    return user_factory()
 
 
 @pytest.fixture()
-def user_registries(user_registry_factory):
-    return partial(make_many, user_registry_factory)
+def user_registries(user_factory):
+    return partial(make_many, user_factory)
