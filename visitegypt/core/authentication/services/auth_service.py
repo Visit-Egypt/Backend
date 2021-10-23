@@ -81,7 +81,7 @@ def get_refreshed_token(access_token: str,refresh_token:str):
         print(access_payload)
         refresh_payload = jwt.decode(refresh_token, str(SECRET_KEY), algorithms=[ALGORITHM])
         print(refresh_payload)
-        if access_payload.get("token_id") is None or refresh_payload.get("token_id") is None:
+        if access_payload.get("token_id") is None or refresh_payload.get("token_id") is None or access_payload.get("token_id") != refresh_payload.get("token_id"):
             raise credentials_exception
         token_id = str(uuid.uuid1())
         token_data = TokenPayload(**access_payload)
