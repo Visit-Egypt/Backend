@@ -76,11 +76,8 @@ def get_refreshed_token(access_token: str,refresh_token:str):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        print(access_token)
-        access_payload = jwt.decode(access_token, str(SECRET_KEY), algorithms=[ALGORITHM])
-        print(access_payload)
-        refresh_payload = jwt.decode(refresh_token, str(SECRET_KEY), algorithms=[ALGORITHM])
-        print(refresh_payload)
+        access_payload = jwt.decode(access_token, str(SECRET_KEY), algorithms=[ALGORITHM], options={'verify_exp': False})
+        refresh_payload = jwt.decode(refresh_token, str(SECRET_KEY), algorithms=[ALGORITHM], options={'verify_exp': False})
         if access_payload.get("token_id") is None or refresh_payload.get("token_id") is None or access_payload.get("token_id") != refresh_payload.get("token_id"):
             raise credentials_exception
         token_id = str(uuid.uuid1())
