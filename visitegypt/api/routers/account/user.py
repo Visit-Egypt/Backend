@@ -21,11 +21,12 @@ from visitegypt.resources.strings import (
     INCORRECT_LOGIN_INPUT,
     MESSAGE_404,
 )
-from visitegypt.core.authentication.entities.token import Token
+from visitegypt.core.authentication.entities.token import Token, RefreshRequest
 from pydantic import EmailStr
 from visitegypt.api.utils import get_current_user
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
+from visitegypt.core.authentication.services.auth_service import get_refreshed_token
 repo = get_dependencies().user_repo
 
 
@@ -138,5 +139,13 @@ async def get_all_users(
 ):
     try:
         return await user_service.get_all_users(repo, page_num=page_num, limit=limit)
+    except Exception as e:
+        raise e
+
+@router.post("/refresh", response_model=Token, status_code=status.HTTP_200_OK, tags=["User"])
+def refresh_token(refresh_request: RefreshRequest):
+    print("haha")
+    try:
+        return get_refreshed_token(refresh_token=refresh_request.refresh_token,access_token=refresh_request.access_token)
     except Exception as e:
         raise e
