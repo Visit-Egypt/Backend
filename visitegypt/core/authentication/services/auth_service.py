@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt
 from pydantic import ValidationError
-from visitegypt.config.environment import SECRET_KEY, ALGORITHM, JWT_EXPIRATION_DELTA
+from visitegypt.config.environment import SECRET_KEY, ALGORITHM, JWT_EXPIRATION_DELTA,JWT_REFRESH_EXPIRATION_DELTA
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.entities.token import Token, TokenPayload
@@ -53,6 +53,7 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
     else:
         role = user_to_auth.user_role
     token_id = str(uuid.uuid1())
+    await repo.update_user_tokenID(user_id=user_to_auth.id,new_toke_id=token_id)
     token_payload = TokenPayload(user_id=str(user_to_auth.id), role=role,token_id=token_id)
 
     return Token(
@@ -60,39 +61,14 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
             token_payload.dict(), expires_delta=JWT_EXPIRATION_DELTA
         ),
         token_type="bearer",
-        refresh_token=create_refresh_token(tokent_id=token_id,expires_delta=JWT_EXPIRATION_DELTA),
+        refresh_token=create_refresh_token(tokent_id=token_id),
         user_id=str(user_to_auth.id),
     )
 
-def create_refresh_token(tokent_id:str, expires_delta: Optional[timedelta] = None):
+def create_refresh_token(tokent_id:str):
     to_encode = {"token_id":tokent_id}
+    expire = datetime.utcnow() + JWT_REFRESH_EXPIRATION_DELTA
+    to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, str(SECRET_KEY), algorithm=str(ALGORITHM))
     return encoded_jwt
 
-def get_refreshed_token(access_token: str,refresh_token:str):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Tokens are not valid pair",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        access_payload = jwt.decode(access_token, str(SECRET_KEY), algorithms=[ALGORITHM], options={'verify_exp': False})
-        refresh_payload = jwt.decode(refresh_token, str(SECRET_KEY), algorithms=[ALGORITHM], options={'verify_exp': False})
-        if access_payload.get("token_id") is None or refresh_payload.get("token_id") is None or access_payload.get("token_id") != refresh_payload.get("token_id"):
-            raise credentials_exception
-        token_id = str(uuid.uuid1())
-        token_data = TokenPayload(**access_payload)
-        token_data.token_id = token_id
-        return Token(
-            access_token=create_access_token(
-                token_data.dict(), expires_delta=JWT_EXPIRATION_DELTA
-         ),
-            token_type="bearer",
-            refresh_token=create_refresh_token(tokent_id=token_id,expires_delta=JWT_EXPIRATION_DELTA),
-            user_id=str(token_data.user_id),
-    )
-    except (jwt.JWTError, ValidationError):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Could not validate credentials",
-        )

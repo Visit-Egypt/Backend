@@ -6,13 +6,18 @@ from typing import Optional, List
 import json
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.core.accounts.entities.user import UserResponse
-from visitegypt.config.environment import SECRET_KEY, ALGORITHM
-from visitegypt.core.authentication.entities.token import TokenPayload
+from visitegypt.config.environment import SECRET_KEY, ALGORITHM, JWT_EXPIRATION_DELTA, DATABASE_NAME
+from visitegypt.core.authentication.entities.token import TokenPayload, Token
 from visitegypt.core.accounts.services.user_service import get_user_by_id
 from loguru import logger
 from visitegypt.api.container import get_dependencies
 from collections import ChainMap
 from bson import ObjectId
+import uuid
+from visitegypt.core.authentication.services.auth_service import create_access_token, create_refresh_token
+from visitegypt.infra.database.events import db
+from visitegypt.infra.database.utils import users_collection_name
+from visitegypt.core.accounts.protocols.user_repo import UserRepo
 
 
 repo = get_dependencies().user_repo
@@ -47,12 +52,16 @@ async def get_current_user(
         if payload.get("user_id") is None:
             raise credentials_exception
         token_data = TokenPayload(**payload)
+        await repo.check_user_token(token_data.user_id,token_data.token_id)
     except (jwt.JWTError, ValidationError):
         logger.error("Error Decoding Token", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
+    except Exception as e:
+        raise e
+
     user = await get_user_by_id(repo, token_data.user_id)
 
     if not user:
@@ -72,6 +81,36 @@ async def get_current_user(
     return user
 
 
+async def get_refreshed_token(repo:UserRepo,access_token: str,refresh_token:str):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Tokens are not valid pair",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        access_payload = jwt.decode(access_token, str(SECRET_KEY), algorithms=[ALGORITHM], options={'verify_exp': False})
+        refresh_payload = jwt.decode(refresh_token, str(SECRET_KEY), algorithms=[ALGORITHM])
+        if access_payload.get("token_id") is None or refresh_payload.get("token_id") is None or access_payload.get("token_id") != refresh_payload.get("token_id"):
+            raise credentials_exception
+        token_id = str(uuid.uuid1())
+        token_data = TokenPayload(**access_payload)
+        await repo.update_user_tokenID(user_id=token_data.user_id,old_token_id=token_data.token_id,new_toke_id=token_id)
+        token_data.token_id = token_id
+        return Token(
+            access_token=create_access_token(
+                token_data.dict(), expires_delta=JWT_EXPIRATION_DELTA
+         ),
+            token_type="bearer",
+            refresh_token=create_refresh_token(tokent_id=token_id),
+            user_id=str(token_data.user_id),
+    )
+    except (jwt.JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+
+
 def filters_dict(filters: Optional[List[str]] = Query(None)):
     try:
         return list(map(json.loads, filters))  # If fails, returns JSONDECODEERROR
@@ -87,3 +126,4 @@ async def common_parameters(
         dict_of_filters["_id"] = ObjectId(dict_of_filters.pop("id"))
     filter_filters_from_none = {k: v for k, v in dict_of_filters.items() if v}
     return {"filters": filter_filters_from_none, "page_num": page_num, "limit": limit}
+
