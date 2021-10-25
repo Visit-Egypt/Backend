@@ -26,7 +26,7 @@ from pydantic import EmailStr
 from visitegypt.api.utils import get_current_user,get_refreshed_token
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
-
+from visitegypt.api.errors.http_error import HTTPErrorModel
 repo = get_dependencies().user_repo
 
 
@@ -34,7 +34,15 @@ router = APIRouter(responses=generate_response_for_openapi("User"))
 
 
 # Handlers
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED, tags=["User"])
+@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED, tags=["User"], responses={**generate_response_for_openapi("User"), 409: {
+    "model": HTTPErrorModel,
+    "description": "User with this email already exists",
+    "content": {
+        "application/json": {
+        "example": {"errors": ["User with this email already exists"], "status_code": "409"}
+        }
+     }   
+    }})
 async def register_user(new_user: UserCreate):
     try:
         return await user_service.register(repo, new_user)
