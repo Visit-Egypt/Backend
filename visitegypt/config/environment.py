@@ -18,7 +18,10 @@ config = Config(".env", os.environ)
 DEBUG: bool = config("DEBUG", cast=bool, default=True)
 # ACCESS_TOKEN_EXPIRE_MINUTES : int = config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=15)
 JWT_EXPIRATION_DELTA = timedelta(
-    minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=15)
+    minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=60)
+)
+JWT_REFRESH_EXPIRATION_DELTA = timedelta(
+    minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=10080)
 )
 DATABASE_URL: str = config("DB_CONNECTION", cast=str, default="")
 DATABASE_NAME: str = config("DB_NAME", cast=str)
