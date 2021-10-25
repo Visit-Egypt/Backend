@@ -25,6 +25,9 @@ DATABASE_NAME: str = config("DB_NAME", cast=str)
 MAX_CONNECTIONS_COUNT: int = config("MAX_CONNECTIONS_COUNT", cast=int, default=10)
 MIN_CONNECTIONS_COUNT: int = config("MIN_CONNECTIONS_COUNT", cast=int, default=10)
 
+REDIS_HOST: str = config("REDIS_HOST", cast=str, default="localhost")
+REDIS_PORT: str = config("REDIS_PORT", cast=str, default="6379")
+
 SECRET_KEY: Secret = config(
     "SECRET_KEY", cast=Secret, default="This is a secret key for development"
 )

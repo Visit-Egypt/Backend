@@ -1,4 +1,6 @@
 from typing import Optional
+
+from pydantic.types import Json
 from visitegypt.core.errors.place_error import PlaceNotFoundError
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
@@ -7,7 +9,7 @@ from visitegypt.core.places.entities.place import (
     UpdatePlace,
     review
 )
-from visitegypt.infra.database.events import db
+from visitegypt.infra.database.events import db, redis_client
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import places_collection_name
 from visitegypt.infra.database.utils import calculate_start_index, check_has_next
@@ -15,6 +17,7 @@ from visitegypt.resources.strings import PLACE_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
 from loguru import logger
+import json
 from visitegypt.infra.errors import InfrastructureException
 
 

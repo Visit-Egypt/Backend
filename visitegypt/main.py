@@ -11,7 +11,7 @@ from visitegypt.config.environment import (
     PROJECT_NAME,
     VERSION,
 )
-from visitegypt.infra.database.events import connect_to_db, close_db_connection
+from visitegypt.infra.database.events import connect_to_db, close_db_connection, connect_to_redis
 from visitegypt.api.errors.http_error import http_error_handler
 from visitegypt.api.errors.validation_error import (
     http422_error_handler,
@@ -33,8 +33,8 @@ def get_application() -> FastAPI:
     )
 
     application.add_event_handler("startup", connect_to_db)
+    application.add_event_handler("startup",  connect_to_redis)
     application.add_event_handler("shutdown", close_db_connection)
-
     application.add_exception_handler(HTTPException, http_error_handler)
     application.add_exception_handler(InfrastructureException, http500_error_handler)
     application.add_exception_handler(RequestValidationError, http422_error_handler)
