@@ -20,6 +20,7 @@ from bson import ObjectId
 from pymongo import ReturnDocument
 from visitegypt.infra.errors import InfrastructureException
 from loguru import logger
+from fastapi import HTTPException, status
 async def create_user(new_user: User) -> Optional[UserResponse]:
     try:
         row = await db.client[DATABASE_NAME][users_collection_name].insert_one(
@@ -152,3 +153,36 @@ async def get_all_users(page_num: int, limit: int) -> List[UsersPageResponse]:
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
+async def update_user_tokenID(user_id: str,new_toke_id:str,old_token_id:str=None):
+    try:
+        if  old_token_id != None:
+            await check_user_token(user_id=user_id,token_id=old_token_id)
+        await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"tokenID": new_toke_id}})
+    except Exception as e:
+        raise e
+
+async def check_user_token(user_id: str,token_id:str):
+    security_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token ID is please login again",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one(
+                {"_id": ObjectId(user_id)}
+            )
+        
+        if  token_id != None and str(user["tokenID"]) !=  token_id:
+                await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"tokenID": "Loged Out"}})
+                raise security_exception
+        return True
+    except Exception as e:
+        raise e
+
+async def user_logout(user_id: str):
+    try:
+        await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"tokenID": "Loged Out"}})
+    except Exception as e:
+        raise e
+
