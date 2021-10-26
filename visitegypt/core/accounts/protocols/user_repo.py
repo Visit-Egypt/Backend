@@ -40,7 +40,7 @@ class UserRepo(Protocol):
         pass
     async def update_user_tokenID(user_id: str,new_toke_id:str,old_token_id:str=None):
         pass
-    async def check_user_token(user_id: str,token_id:str):
+    async def check_user_token(user_id: str,token_id:str) -> UserResponse:
         pass
     async def user_logout(user_id: str):
         pass
