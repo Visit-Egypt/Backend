@@ -162,7 +162,7 @@ async def update_user_tokenID(user_id: str,new_toke_id:str,old_token_id:str=None
     except Exception as e:
         raise e
 
-async def check_user_token(user_id: str,token_id:str):
+async def check_user_token(user_id: str,token_id:str) -> UserResponse:
     security_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid token ID is please login again",
@@ -176,7 +176,7 @@ async def check_user_token(user_id: str,token_id:str):
         if  token_id != None and str(user["tokenID"]) !=  token_id:
                 await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"tokenID": "Loged Out"}})
                 raise security_exception
-        return True
+        return UserResponse.from_mongo(user)
     except Exception as e:
         raise e
 

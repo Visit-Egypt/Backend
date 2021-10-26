@@ -52,7 +52,7 @@ async def get_current_user(
         if payload.get("user_id") is None:
             raise credentials_exception
         token_data = TokenPayload(**payload)
-        await repo.check_user_token(token_data.user_id,token_data.token_id)
+        user = await repo.check_user_token(token_data.user_id,token_data.token_id)
     except (jwt.JWTError, ValidationError):
         logger.error("Error Decoding Token", exc_info=True)
         raise HTTPException(
@@ -61,8 +61,6 @@ async def get_current_user(
         )
     except Exception as e:
         raise e
-
-    user = await get_user_by_id(repo, token_data.user_id)
 
     if not user:
         raise credentials_exception
