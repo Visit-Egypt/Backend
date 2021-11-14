@@ -21,6 +21,7 @@ class PlaceBase(MongoModel):
     opening_hours: Optional[str]
     city: Optional[str]
     ticket_prices: Optional[Dict[Any, Any]]
+    category: Optional[str]
 
 class PlaceWithReviews(PlaceBase):
     reviews: Optional[List[review]] = []
