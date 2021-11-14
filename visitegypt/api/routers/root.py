@@ -9,12 +9,14 @@ from visitegypt.config.environment import PROJECT_NAME, API_PREFIX
 from visitegypt.api.routers.account.user import router as userRouter
 from visitegypt.api.routers.item.item import router as itemRouter
 from visitegypt.api.routers.place.place import router as placeRouter
+from visitegypt.api.routers.post.post import router as postRouter
 
 router = APIRouter()
 
 router.include_router(userRouter, prefix="/user")
 router.include_router(itemRouter, prefix="/item")
 router.include_router(placeRouter, prefix="/place")
+router.include_router(postRouter, prefix="/post")
 
 
 class StatusEnum(str, Enum):
