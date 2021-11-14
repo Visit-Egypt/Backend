@@ -12,6 +12,7 @@ MALFORMED_PAYLOAD = "Could not validate credentials"
 AUTHENTICATION_REQUIRED = "authentication required"
 USER_DELETED = "User is deleted"
 PLACE_DELETED = "Place is deleted"
+POST_DELETED = "Post is deleted"
 
 
 def MESSAGE_404(m: str):

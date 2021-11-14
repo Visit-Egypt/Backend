@@ -121,11 +121,7 @@ async def add_new_review(
         scopes=[Role.USER["name"], Role.SUPER_ADMIN["name"], Role.ADMIN["name"]],
     ),
 ):
-    if (
-        str(new_review.user_id) == str(current_user.id)
-        or current_user.user_role == Role.ADMIN["name"]
-        or current_user.user_role == Role.SUPER_ADMIN["name"]
-    ):
+    if (str(new_review.user_id) == str(current_user.id)):
         try:
             return await place_service.add_review(repo, place_id, new_review)
         except Exception as e:
