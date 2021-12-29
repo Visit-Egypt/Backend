@@ -39,6 +39,8 @@ ALLOWED_HOSTS: List[str] = config(
     default="",
 )
 
+RESOURCES_NAMES: List[str] = ["Place", "User", "Item", "Post"]
+
 # logging configuration
 
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
