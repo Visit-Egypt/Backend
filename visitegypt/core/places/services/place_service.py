@@ -34,6 +34,11 @@ async def get_place_by_id(repo: PlaceRepo, place_id: str) -> PlaceInDB:
     except Exception as e:
         raise e
 
+async def get_place_by_title(repo: PlaceRepo, place_title: str) -> Optional[PlaceInDB]:
+    try:
+        return await repo.get_place_by_title(place_title)
+    except PlaceNotFoundError as ue: raise ue
+    except Exception as e: raise e
 
 async def create_place(repo: PlaceRepo, new_place: PlaceBase) -> PlaceInDB:
     try:
@@ -90,3 +95,6 @@ async def delete_review(repo: PlaceRepo, place_id: str, review: review):
         raise ue
     except Exception as e:
         raise e
+
+
+

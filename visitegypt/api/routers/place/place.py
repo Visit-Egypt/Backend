@@ -34,6 +34,18 @@ async def get_places(page_num: int = 1, limit: int = 15):
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Places"))
     except Exception as e: raise e
 
+@router.post(
+    "/title",
+    response_model=PlaceInDB,
+    status_code=status.HTTP_200_OK,
+    summary="Get Place By Title",
+    tags=["Place"]
+)
+async def get_place_by_title(place_title: str):
+    try:
+        return await place_service.get_place_by_title(repo, place_title)
+    except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Place"))
+    except Exception as e: raise e
 
 @router.get(
     "/{place_id}",
@@ -42,11 +54,13 @@ async def get_places(page_num: int = 1, limit: int = 15):
     summary="Get Place",
     tags=["Place"]
 )
-async def get_place_by_id(place_id):
+async def get_place_by_id(place_id: str):
     try:
         return await place_service.get_place_by_id(repo, place_id)
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Place"))
     except Exception as e: raise e
+
+
 
 
 
