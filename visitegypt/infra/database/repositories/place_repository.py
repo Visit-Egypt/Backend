@@ -77,7 +77,7 @@ async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
 
 async def create_place(new_place: PlaceBase) -> PlaceInDB:
     try:
-        new_place.reviews = []
+        # new_place.reviews = []
         row = await db.client[DATABASE_NAME][places_collection_name].insert_one(
             new_place.dict()
         )
