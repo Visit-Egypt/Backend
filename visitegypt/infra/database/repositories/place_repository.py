@@ -89,6 +89,7 @@ async def create_place(new_place: PlaceBase) -> PlaceInDB:
         raise InfrastructureException(e.__repr__)
 
 
+
 async def delete_place(place_id: str):
     try:
         res = await db.client[DATABASE_NAME][places_collection_name].delete_one(
