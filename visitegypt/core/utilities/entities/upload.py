@@ -14,3 +14,5 @@ class UploadResponse(MongoModel):
     image_key: str
 
 
+class UploadConfirmation(MongoModel):
+    images_keys : List[str]
