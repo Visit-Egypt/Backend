@@ -26,9 +26,6 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install -r requirements.txt
         python3 -m spacy download en_core_web_sm
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws configure set default.region us-east-2
 
     - name: Test with pytest
       run: |
