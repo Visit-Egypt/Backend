@@ -25,6 +25,7 @@ jobs:
         sudo apt install -y $(grep -o ^[^#][[:alnum:]-]* "packages.list")
         python3 -m pip install --upgrade pip
         pip3 install -r requirements.txt
+        python3 -m spacy download en_core_web_sm
 
     - name: Test with pytest
       run: |
