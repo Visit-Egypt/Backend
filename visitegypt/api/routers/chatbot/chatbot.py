@@ -10,7 +10,6 @@ import spacy
 from nltk.stem.lancaster import LancasterStemmer
 import json
 
-nltk.download('punkt')
 stemmer =  LancasterStemmer()
 sagemaker_session = sagemaker.Session()
 endpoint = 'sagemaker-tensorflow-serving-2022-01-06-16-55-44-249'
@@ -31,7 +30,6 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 9: ["weather"]}
 
 model_intity =  predictor
-model_entity =  spacy.load('en_core_web_sm')
 
 
 router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
@@ -45,7 +43,6 @@ router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
 )
 def get_chatbot(message:chatBotBase):
     try:
-        model_entity =  spacy.load('en_core_web_sm')
         res = chat(message.message)
         return {'response':res[0]["response"]}
     except:
