@@ -45,6 +45,7 @@ router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
 )
 def get_chatbot(message:chatBotBase):
     try:
+        model_entity =  spacy.load('en_core_web_sm')
         res = chat(message.message)
         return {'response':res[0]["response"]}
     except:
