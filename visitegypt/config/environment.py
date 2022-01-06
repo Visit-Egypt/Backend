@@ -28,6 +28,11 @@ DATABASE_NAME: str = config("DB_NAME", cast=str)
 MAX_CONNECTIONS_COUNT: int = config("MAX_CONNECTIONS_COUNT", cast=int, default=10)
 MIN_CONNECTIONS_COUNT: int = config("MIN_CONNECTIONS_COUNT", cast=int, default=10)
 
+AWS_ACCESS_KEY_ID: str = config("AWS_ACCESS_KEY_ID", cast=str, default='')
+AWS_SECRET_ACCESS_KEY: str = config("AWS_SECRET_ACCESS_KEY", cast=str, default='')
+AWS_S3_BUCKET_NAME: str = config("AWS_S3_BUCKET_NAME", cast=str, default='')
+
+
 SECRET_KEY: Secret = config(
     "SECRET_KEY", cast=Secret, default="This is a secret key for development"
 )
@@ -38,6 +43,8 @@ ALLOWED_HOSTS: List[str] = config(
     cast=CommaSeparatedStrings,
     default="",
 )
+
+RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts"]
 
 # logging configuration
 
