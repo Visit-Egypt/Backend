@@ -11,5 +11,6 @@ class UploadRequest(MongoModel):
 class UploadResponse(MongoModel):
     url: str
     fields: dict
+    image_key: str
 
 

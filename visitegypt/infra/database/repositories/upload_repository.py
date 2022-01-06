@@ -29,4 +29,9 @@ async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
                                                   ["starts-with", "$Content-Type", "image/"],
                                               ]
                                           )
-    return UploadResponse(**url)
+
+    return UploadResponse(**url, image_key = image_id)
+
+
+async def uploaded_object_url(upload_req: UploadRequest) -> bool:
+  return True
