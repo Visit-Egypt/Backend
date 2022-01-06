@@ -37,9 +37,13 @@ async def get_filtered_items(
         return ItemsPageResponse(
             current_page=page_num, has_next=has_next, items=items_list_response
         )
+    except ItemNotFoundError as ue:
+        logger.exception(ue.__cause__)
+        raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
 
 
 async def create_item(item_to_create: ItemBase) -> ItemInDB:

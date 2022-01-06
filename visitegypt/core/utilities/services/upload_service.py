@@ -6,16 +6,20 @@ from typing import Optional
 from visitegypt.core.utilities.entities.upload import UploadResponse, UploadRequest
 from visitegypt.core.utilities.protocols.upload_repo import UploadRepo
 
+from visitegypt.api.container import get_dependencies
+repos = get_dependencies()
 
 async def generate_presigned_url(repo: UploadRepo, upload_req: UploadRequest) -> UploadResponse:
     try:
         # Check for the integrity of the coming data.
-        # Resource Name 
-        # Resource Id
         # Content Type
+        # Resource Name
         if upload_req.resource_name not in RESOURCES_NAMES:
             raise ResourceNotFoundError
-       # if upload_req.resource_name == "User" and upload_req.user_id is not None: pass
-        return await repo.generate_presigned_url(upload_req)
+        # Resource ID
+        if upload_req.resource_name == "users" and upload_req.user_id is not None:
+            return await repo.generate_presigned_url(upload_req)
         
     except ResourceNotFoundError as re: raise re
+
+

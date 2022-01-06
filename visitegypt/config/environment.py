@@ -39,7 +39,7 @@ ALLOWED_HOSTS: List[str] = config(
     default="",
 )
 
-RESOURCES_NAMES: List[str] = ["Place", "User", "Item", "Post"]
+RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts"]
 
 # logging configuration
 
