@@ -1,20 +1,18 @@
 from fastapi import APIRouter, status
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
-import sagemaker
 from sagemaker.tensorflow.model import TensorFlowModel
 import nltk
 import numpy as np
 import random
+import tensorflow
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
+from tensorflow.keras.models  import load_model
 import json
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
-sagemaker_session = sagemaker.Session()
-endpoint = 'sagemaker-tensorflow-serving-2022-01-06-16-55-44-249'
-predictor=sagemaker.tensorflow.model.TensorFlowPredictor(endpoint, sagemaker_session)
 
 words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
 
@@ -30,7 +28,7 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 8 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
 9: ["weather"]}
 
-model_intity =  predictor
+model_intity =  load_model("model.h5")
 model_entity =  spacy.load('en_core_web_sm')
 
 router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
