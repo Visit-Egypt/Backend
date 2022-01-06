@@ -42,7 +42,6 @@ async def get_filtered_items(
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
-
 async def create_item(item_to_create: ItemBase) -> ItemInDB:
     try:
         row = await db.client[DATABASE_NAME][items_collection_name].insert_one(

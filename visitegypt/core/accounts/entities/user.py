@@ -31,6 +31,7 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
     password: Optional[str] = None
+    photo_link: Optional[str] = None
 
 
 class UserInDBBase(UserBase):
