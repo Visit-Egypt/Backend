@@ -6,13 +6,14 @@ from sagemaker.tensorflow.model import TensorFlowModel
 import nltk
 import numpy as np
 import random
+import boto3
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
 import json
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
-sagemaker_session = sagemaker.Session()
+sagemaker_session = sagemaker.Session(boto3.session.Session())
 endpoint = 'sagemaker-tensorflow-serving-2022-01-06-16-55-44-249'
 predictor=sagemaker.tensorflow.model.TensorFlowPredictor(endpoint, sagemaker_session)
 
