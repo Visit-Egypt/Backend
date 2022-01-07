@@ -22,6 +22,18 @@ async def get_place_posts_paged(
     except Exception as e:
         raise e
 
+async def get_user_posts_paged(
+    user_id: str, repo: PostRepo, page_num: int = 1, limit: int = 15
+) -> PostsPageResponse:
+    try:
+        post = await repo.get_user_posts(page_num, limit,user_id)
+        if post:
+            return post
+        raise PostNotFoundError
+    except PostNotFoundError as ie:
+        raise ie
+    except Exception as e:
+        raise e
 
 async def get_post_by_id(repo: PostRepo, post_id: str) -> PostInDB:
     try:

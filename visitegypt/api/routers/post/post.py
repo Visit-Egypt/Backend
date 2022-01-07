@@ -35,6 +35,21 @@ async def get_place_posts(place_id, page_num: int = 1, limit: int = 15):
     except Exception as e: raise e
 
 @router.get(
+    "/user/{user_id}",
+    response_model=PostsPageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get user posts",
+    tags=["Post"]
+)
+async def get_user_posts(user_id, page_num: int = 1, limit: int = 15):
+    try:
+        return await post_service.get_user_posts_paged(
+            user_id,repo, page_num=page_num, limit=limit
+        )
+    except PostNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Posts"))
+    except Exception as e: raise e
+
+@router.get(
     "/place/{post_id}",
     response_model=PostInDB,
     status_code=status.HTTP_200_OK,

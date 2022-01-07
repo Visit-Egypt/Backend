@@ -44,6 +44,33 @@ async def get_place_posts(page_num: int, limit: int, place_id: str) -> PostsPage
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def get_user_posts(page_num: int, limit: int, user_id: str) -> PostsPageResponse:
+    try:
+        indcies = calculate_start_index(limit, page_num)
+        start_index: int = indcies[0]
+        cursor = (
+            db.client[DATABASE_NAME][posts_collection_name]
+            .find({"user_id": user_id})
+            .skip(start_index)
+            .limit(limit)
+        )
+        posts_list = await cursor.to_list(limit)
+        print(posts_list)
+        if not posts_list:
+            raise PostNotFoundError
+        posts_list_response = [PostInDB.from_mongo(post) for post in posts_list]
+        has_next = await check_has_next(
+            start_index, db.client[DATABASE_NAME][posts_collection_name]
+        )
+        return PostsPageResponse(
+            current_page=page_num, has_next=has_next, places=posts_list_response
+        )
+    except PostNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
 async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
     try:
         print("Alooooooo")
