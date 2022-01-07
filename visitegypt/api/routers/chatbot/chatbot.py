@@ -8,9 +8,11 @@ import random
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
 import json
+import requests
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
+APIURL = 'https://a9cwkzo25d.execute-api.us-east-2.amazonaws.com/prod/'
 
 words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
 
@@ -40,7 +42,7 @@ router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
 def get_chatbot(message:chatBotBase):
     try:
         res = chat(message.message)
-        return {'response':res[0]["response"]}
+        return res
     except:
         return "Failed"
 
@@ -54,7 +56,7 @@ def bag_of_words(s, words):
         for i, w in enumerate(words):
             if w == se:
                 bag[i] = 1
-    return np.array(bag)
+    return bag
 
 def net(word) :
     sentnece = [{"response": "" , "reco": ""}]
@@ -65,8 +67,7 @@ def net(word) :
 def chat(inputt):
     bag =  bag_of_words(inputt, words)
     sentnece =  net(inputt) 
-    results = "blahhh"
-    results_index = np.argmax(results["predictions"])
+    results_index = callAPI(str(bag).replace("]","").replace("[",""))
     tag = labels[results_index] 
     if  results_index == 3 :
          curr = sentnece[0]["reco"]
@@ -77,3 +78,11 @@ def chat(inputt):
     else:
        sentnece[0]['response'] = random.choice(reponses[results_index])
        return sentnece
+
+def callAPI(message):
+    data = {
+        "message":message
+    }
+    response = requests.post(APIURL, json=data)
+    print(response.json()["body"])
+    return int(response.json()["body"])
