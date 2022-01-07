@@ -9,8 +9,8 @@ import spacy
 from nltk.stem.lancaster import LancasterStemmer
 import json
 
-#nltk.download('punkt')
-#stemmer =  LancasterStemmer()
+nltk.download('punkt')
+stemmer =  LancasterStemmer()
 
 words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
 
