@@ -5,14 +5,12 @@ from sagemaker.tensorflow.model import TensorFlowModel
 import nltk
 import numpy as np
 import random
-import tensorflow.keras.models
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
-from tensorflow.keras.models  import load_model
 import json
 
-nltk.download('punkt')
-stemmer =  LancasterStemmer()
+#nltk.download('punkt')
+#stemmer =  LancasterStemmer()
 
 words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
 
@@ -28,8 +26,8 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 8 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
 9: ["weather"]}
 
-model_intity =  load_model("model.h5")
-model_entity =  spacy.load('en_core_web_sm')
+#model_intity =  load_model("model.h5")
+#model_entity =  spacy.load('en_core_web_sm')
 
 router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
 
