@@ -5,7 +5,7 @@ from sagemaker.tensorflow.model import TensorFlowModel
 import nltk
 import numpy as np
 import random
-import tensorflow
+import tensorflow.keras.models
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
 from tensorflow.keras.models  import load_model
