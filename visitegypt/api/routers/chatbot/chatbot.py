@@ -9,7 +9,6 @@ import spacy
 from nltk.stem.lancaster import LancasterStemmer
 import json
 import requests
-import en_core_web_sm
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
@@ -29,7 +28,7 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 8 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
 9: ["weather"]}
 
-model_entity =  en_core_web_sm.load()
+model_entity =  spacy.load('en_core_web_sm')
 
 router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
 
