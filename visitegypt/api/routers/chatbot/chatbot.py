@@ -44,7 +44,9 @@ def get_chatbot(message:chatBotBase):
         res = chat(message.message)[0]
         return res
     except:
-        return "Failed"
+        return {
+            "response":"Chatbot is currently down"
+        }
 
 def bag_of_words(s, words):
     bag = [0 for _ in range(len(words))]
