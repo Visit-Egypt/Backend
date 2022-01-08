@@ -34,13 +34,14 @@ router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
 @router.post(
     "/",
+    response_model=chatBotRes,
     status_code=status.HTTP_200_OK,
     summary="recive requestes",
     tags=["Chatbot"]
 )
 def get_chatbot(message:chatBotBase):
     try:
-        res = chat(message.message)
+        res = chat(message.message)[0]
         return res
     except:
         return "Failed"
