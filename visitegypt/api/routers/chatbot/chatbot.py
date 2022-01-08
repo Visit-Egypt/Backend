@@ -1,5 +1,4 @@
 from fastapi import APIRouter, status
-from nltk.sem.evaluate import Error
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
 from sagemaker.tensorflow.model import TensorFlowModel
@@ -10,6 +9,7 @@ import spacy
 from nltk.stem.lancaster import LancasterStemmer
 import json
 import requests
+import os
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
@@ -29,6 +29,7 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 8 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
 9: ["weather"]}
 
+os.system("python -m spacy download en_core_web_sm")
 model_entity =  spacy.load('en_core_web_sm')
 
 router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
@@ -40,12 +41,11 @@ router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
     tags=["Chatboot"]
 )
 def get_chatbot(message:chatBotBase):
-    print(message)
     try:
         res = chat(message.message)
         return res
-    except Error:
-        return Error
+    except:
+        return "Failed"
 
 def bag_of_words(s, words):
     bag = [0 for _ in range(len(words))]
@@ -68,10 +68,7 @@ def net(word) :
 def chat(inputt):
     bag =  bag_of_words(inputt, words)
     sentnece =  net(inputt) 
-    print(sentnece)
-    print(bag)
     results_index = callAPI(str(bag).replace("]","").replace("[",""))
-    print(results_index)
     tag = labels[results_index] 
     if  results_index == 3 :
          curr = sentnece[0]["reco"]
