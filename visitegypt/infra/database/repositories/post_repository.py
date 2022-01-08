@@ -55,15 +55,16 @@ async def get_user_posts(page_num: int, limit: int, user_id: str) -> PostsPageRe
             .limit(limit)
         )
         posts_list = await cursor.to_list(limit)
-        print(posts_list)
+        
         if not posts_list:
             raise PostNotFoundError
         posts_list_response = [PostInDB.from_mongo(post) for post in posts_list]
         has_next = await check_has_next(
             start_index, db.client[DATABASE_NAME][posts_collection_name]
         )
+        
         return PostsPageResponse(
-            current_page=page_num, has_next=has_next, places=posts_list_response
+            current_page=page_num, has_next=has_next, posts=posts_list_response
         )
     except PostNotFoundError as ue:
         raise ue
