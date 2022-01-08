@@ -20,5 +20,5 @@ class UpdatePost(MongoModel):
 class PostsPageResponse(MongoModel):
     current_page: int
     has_next: bool
-    places: Optional[List[PostInDB]]
+    posts: Optional[List[PostInDB]]
 
