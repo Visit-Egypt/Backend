@@ -1,9 +1,7 @@
 from fastapi import APIRouter, status
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
-from sagemaker.tensorflow.model import TensorFlowModel
 import nltk
-import numpy as np
 import random
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
@@ -32,7 +30,7 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 os.system("python -m spacy download en_core_web_sm")
 model_entity =  spacy.load('en_core_web_sm')
 
-router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
+router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
 @router.post(
     "/",
