@@ -10,5 +10,5 @@ class UploadRepo(Protocol):
     async def generate_presigned_url(self, upload_req: UploadRequest) -> UploadResponse:
         pass
 
-    async def uploaded_object_urls(self, images_keys: DefaultDict(list)) -> bool:
+    async def uploaded_object_urls(self, images_keys: DefaultDict(list), user_id: str) -> bool:
         pass

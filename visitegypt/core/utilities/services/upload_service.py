@@ -17,8 +17,8 @@ async def generate_presigned_url(repo: UploadRepo, upload_req: UploadRequest) ->
         if upload_req.resource_name not in RESOURCES_NAMES:
             raise ResourceNotFoundError
         # Resource ID
-        if upload_req.resource_name == "users" and upload_req.user_id is not None:
-            return await repo.generate_presigned_url(upload_req)
+        # if upload_req.resource_name == "users" and upload_req.user_id is not None:
+        return await repo.generate_presigned_url(upload_req)
         
     except ResourceNotFoundError as re: raise re
 
@@ -30,6 +30,6 @@ async def update_database(repo: UploadRepo, upload_confirmation: UploadConfirmat
         for image in upload_confirmation.images_keys:
             splitted_image = image.split('/')
             dict_of_resources[splitted_image[1]].append(image)
-        return await repo.uploaded_object_urls(dict_of_resources)
+        return await repo.uploaded_object_urls(dict_of_resources, upload_confirmation.user_id)
     except Exception as e:
         raise e

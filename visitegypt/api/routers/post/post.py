@@ -7,6 +7,9 @@ from visitegypt.core.posts.entities.post import (
     PostBase,
     UpdatePost,
 )
+from visitegypt.core.utilities.entities.upload import UploadRequest, UploadResponse
+from visitegypt.core.errors.upload_error import ResourceNotFoundError
+from visitegypt.core.utilities.services import upload_service
 
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.api.utils import get_current_user
@@ -14,7 +17,9 @@ from visitegypt.resources.strings import MESSAGE_404
 from visitegypt.core.errors.post_error import PostNotFoundError
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
+
 repo = get_dependencies().post_repo
+upload_repo = get_dependencies().upload_repo
 
 router = APIRouter(responses=generate_response_for_openapi("Post"))
 
@@ -152,3 +157,16 @@ async def delete_post_like(
         return await post_service.delete_like(repo, post_id, str(current_user.id))
     except Exception as e:
         raise e
+
+
+@router.get("/{post_id}/upload-photo", response_model = UploadResponse, status_code=status.HTTP_200_OK, tags=["Post"])
+async def upload_post_photo(post_id: str, content_type: str, 
+        current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]],
+    )):
+    try:
+        # Send data to the upload service.
+        upload_req : UploadRequest = UploadRequest(user_id=current_user.id, resource_id=post_id, resource_name='posts', content_type=content_type)
+        return await upload_service.generate_presigned_url(upload_repo, upload_req)
+    except ResourceNotFoundError: raise HTTPException(404, detail="You are trying to upload in unknown resource")

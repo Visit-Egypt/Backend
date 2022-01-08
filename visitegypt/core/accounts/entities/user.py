@@ -11,6 +11,7 @@ class UserBase(MongoModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
+    photo_link: Optional[str] = None
 
 
 # Properties to receive via API on creation
