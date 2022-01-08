@@ -36,7 +36,7 @@ router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
     "/",
     status_code=status.HTTP_200_OK,
     summary="recive requestes",
-    tags=["Chatboot"]
+    tags=["Chatbot"]
 )
 def get_chatbot(message:chatBotBase):
     try:
