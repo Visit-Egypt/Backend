@@ -11,7 +11,7 @@ import os
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
-APIURL = 'https://jkc5zn9q4i.execute-api.us-east-2.amazonaws.com/prod'
+APIURL = 'https://ee78syuuu9.execute-api.us-east-2.amazonaws.com/prod'
 
 words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
 
