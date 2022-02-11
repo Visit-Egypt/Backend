@@ -1,9 +1,7 @@
 from fastapi import APIRouter, status
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
-from sagemaker.tensorflow.model import TensorFlowModel
 import nltk
-import numpy as np
 import random
 import spacy 
 from nltk.stem.lancaster import LancasterStemmer
@@ -13,7 +11,7 @@ import os
 
 nltk.download('punkt')
 stemmer =  LancasterStemmer()
-APIURL = 'https://a9cwkzo25d.execute-api.us-east-2.amazonaws.com/prod/'
+APIURL = 'https://ee78syuuu9.execute-api.us-east-2.amazonaws.com/prod'
 
 words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
 
@@ -32,20 +30,23 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 os.system("python -m spacy download en_core_web_sm")
 model_entity =  spacy.load('en_core_web_sm')
 
-router = APIRouter(responses=generate_response_for_openapi("Chatboot"))
+router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
 @router.post(
     "/",
+    response_model=chatBotRes,
     status_code=status.HTTP_200_OK,
     summary="recive requestes",
-    tags=["Chatboot"]
+    tags=["Chatbot"]
 )
 def get_chatbot(message:chatBotBase):
     try:
-        res = chat(message.message)
+        res = chat(message.message)[0]
         return res
     except:
-        return "Failed"
+        return {
+            "response":"Chatbot is currently down"
+        }
 
 def bag_of_words(s, words):
     bag = [0 for _ in range(len(words))]
