@@ -5,6 +5,16 @@ from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 
 
+class Badge(MongoModel):
+    id: int
+    imgUrl: str
+    type: int
+
+class ProfileFrame(MongoModel):
+    id: int
+    imgUrl: str
+    type: int
+
 # Shared properties
 class UserBase(MongoModel):
     email: EmailStr
@@ -12,6 +22,7 @@ class UserBase(MongoModel):
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
     photo_link: Optional[str] = None
+
 
 
 # Properties to receive via API on creation
@@ -33,6 +44,10 @@ class UserUpdate(BaseModel):
     phone_number: Optional[str] = None
     password: Optional[str] = None
     photo_link: Optional[str] = None
+    xp:Optional[int] = 0
+    badges:Optional[List[Badge]] = []
+    profileFrame:Optional[ProfileFrame] = None
+    postسViews:Optional[int] = 0
 
 
 class UserInDBBase(UserBase):
@@ -47,11 +62,16 @@ class UserInDBBase(UserBase):
 class User(UserBase):
     hashed_password: str
     user_role: Optional[str] = Role.USER.get("name")
+    xp:Optional[int] = 0
+    badges:Optional[List[Badge]] = []
+    profileFrame:Optional[ProfileFrame] = None
+    postViews:Optional[List[str]] = []
 
 
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
     hashed_password: str
+    
 
 
 class UserResponse(UserInDBBase):

@@ -6,6 +6,7 @@ from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
     UsersPageResponse,
+    Badge
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.services.auth_service import (
@@ -185,3 +186,22 @@ async def upload_user_personal_photo(user_id: str, content_type: str,
         except ResourceNotFoundError: raise HTTPException(404, detail="You are trying to upload in unknown resource")
     else:
         raise HTTPException(401, detail="Unautherized")
+
+@router.post(
+    "/badge/{user_id}",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add new badge to a user",
+    tags=["User"]
+)
+async def add_new_badge(
+    user_id,
+    new_badge: Badge,
+    current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[Role.SUPER_ADMIN["name"], Role.ADMIN["name"]],
+    ),
+):
+    try:
+        return await user_service.add_badge(repo, user_id, new_badge)
+    except Exception as e:
+        raise e

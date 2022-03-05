@@ -6,6 +6,7 @@ from visitegypt.core.accounts.entities.user import (
     UserUpdate,
     User,
     UsersPageResponse,
+    Badge
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -186,3 +187,20 @@ async def user_logout(user_id: str):
     except Exception as e:
         raise e
 
+async def add_badge(user_id: str, new_badge: Badge):
+    try:
+        result = await db.client[DATABASE_NAME][
+            users_collection_name
+        ].find_one_and_update(
+            {"_id": ObjectId(user_id)},
+            {"$push": {"badges": new_badge.dict()}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if result:
+            return result["badges"]
+        raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)

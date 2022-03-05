@@ -22,9 +22,12 @@ class PlaceBase(MongoModel):
     city: Optional[str]
     ticket_prices: Optional[Dict[Any, Any]]
     category: Optional[str]
+    views: Optional[int] = 0
+
 
 class PlaceWithReviews(PlaceBase):
     reviews: Optional[List[review]] = []
+
 
 
 class UpdatePlace(MongoModel):
@@ -37,6 +40,7 @@ class UpdatePlace(MongoModel):
     default_image: Optional[str]
     opening_hours: Optional[str]
     city: Optional[str]
+    views: Optional[int] = 0
 
 class PlaceInDB(PlaceWithReviews):
     id: OID = Field()
