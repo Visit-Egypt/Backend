@@ -5,6 +5,7 @@ from visitegypt.core.accounts.entities.user import (
     User,
     UserUpdate,
     UsersPageResponse,
+    Badge
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError
@@ -100,6 +101,16 @@ async def update_user_role(
 ) -> Optional[UserResponse]:
     try:
         return await repo.update_user_role(updated_user, user_id)
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def add_badge(repo: UserRepo, user_id: str, new_badge: Badge):
+    try:
+        user_badges = await repo.add_badge(user_id, new_badge)
+        if user_badges:
+            return user_badges
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
