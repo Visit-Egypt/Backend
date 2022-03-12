@@ -1,4 +1,4 @@
-import json
+import ujson
 from fastapi import APIRouter, status, HTTPException, Security, WebSocket
 from visitegypt.api.container import get_dependencies
 from visitegypt.core.places.services import place_service
@@ -182,16 +182,17 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.accept()
         while True:
             data = await websocket.receive_text()
-            res = await place_service.search_places(repo, data)
-            if res is not None:
-                await websocket.send_json([result.json() for result in res])
-            else:
-                await websocket.send_json(json.dumps({
-                            "errors": [
-                                "Place not exist"
-                            ],
-                            "status_code": "404"
-                            }))        
+            if data is not None or len(data) <= 0:
+                res = await place_service.search_places(repo, data)
+                if res is not None:
+                    await websocket.send_json([ujson.loads(result.json()) for result in res])
+                else:
+                    await websocket.send_json({
+                                "errors": [
+                                    "Place not exist"
+                                ],
+                                "status_code": "404"
+                                })        
     except Exception as e:
         print(e)
         await websocket.close()    
