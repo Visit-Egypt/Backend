@@ -5,6 +5,7 @@ from visitegypt.core.places.entities.place import (
     PlaceBase,
     UpdatePlace,
     review,
+    PlacesForSearchList
 )
 
 
@@ -33,4 +34,7 @@ class PlaceRepo(Protocol):
         pass
 
     async def delete_review(place_id: str, review: review):
+        pass
+
+    async def search_place(search_text:str) -> Optional[PlacesForSearchList]:
         pass

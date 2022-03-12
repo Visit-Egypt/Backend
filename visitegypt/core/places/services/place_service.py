@@ -1,12 +1,14 @@
+from typing import Optional
 from visitegypt.core.places.entities.place import (
     PlacesPageResponse,
     PlaceInDB,
     UpdatePlace,
     review,
     PlaceBase,
+    PlacesForSearchList
 )
 from visitegypt.core.places.protocols.place_repo import PlaceRepo
-from typing import Optional
+from typing import List, Optional
 from visitegypt.core.errors.place_error import PlaceNotFoundError, PlaceAlreadyExists
 
 
@@ -97,4 +99,7 @@ async def delete_review(repo: PlaceRepo, place_id: str, review: review):
         raise e
 
 
-
+async def search_places(repo:PlaceRepo, search_str:str) -> Optional[PlacesForSearchList]:
+    try:
+        return await repo.search_place(search_str)
+    except Exception as e: raise e

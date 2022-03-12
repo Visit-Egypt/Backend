@@ -54,3 +54,10 @@ class PlacesPageResponse(MongoModel):
 
 class TicketModel(MongoModel):
     pass
+
+class PlaceForSearch(MongoModel):
+    id: OID = Field()
+    title: str
+
+class PlacesForSearchList(MongoModel):
+    places: Optional[List[PlaceForSearch]]

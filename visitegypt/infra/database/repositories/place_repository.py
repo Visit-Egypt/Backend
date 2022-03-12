@@ -5,7 +5,9 @@ from visitegypt.core.places.entities.place import (
     PlacesPageResponse,
     PlaceBase,
     UpdatePlace,
-    review
+    review,
+    PlacesForSearchList,
+    PlaceForSearch
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -160,6 +162,25 @@ async def delete_review(place_id: str, review: review):
         raise PlaceNotFoundError
     except PlaceNotFoundError as ue:
         raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+
+async def search_place(search_text:str) -> Optional[PlacesForSearchList]:
+    search_qu = f"*{search_text}*"
+    pipeline = [{"$search": {"wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
+    try:
+       # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
+       #     {"title": place_title}
+       # )
+        row = await db.client[DATABASE_NAME][places_collection_name].aggregate(pipeline).to_list(length=None)
+        if not row:
+            return None
+        places_list_response = [PlaceForSearch.from_mongo(place) for place in row]
+        return PlacesForSearchList(
+            places=places_list_response
+        )
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
