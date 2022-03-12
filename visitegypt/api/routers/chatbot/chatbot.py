@@ -1,3 +1,4 @@
+"""
 from fastapi import APIRouter, status
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
@@ -9,7 +10,7 @@ import json
 import requests
 import os
 
-nltk.download('punkt')
+#nltk.download('punkt')
 stemmer =  LancasterStemmer()
 APIURL = 'https://ee78syuuu9.execute-api.us-east-2.amazonaws.com/prod'
 
@@ -27,8 +28,8 @@ reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Stree
 8 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
 9: ["weather"]}
 
-os.system("python -m spacy download en_core_web_sm")
-model_entity =  spacy.load('en_core_web_sm')
+#os.system("python -m spacy download en_core_web_sm")
+#model_entity =  spacy.load('en_core_web_sm')
 
 router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
@@ -88,3 +89,4 @@ def callAPI(message):
     response = requests.post(APIURL, json=data)
     print(response.json()["body"])
     return int(response.json()["body"])
+"""

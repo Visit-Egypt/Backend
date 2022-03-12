@@ -1,4 +1,5 @@
-from fastapi import APIRouter, status, HTTPException, Security
+import json
+from fastapi import APIRouter, status, HTTPException, Security, WebSocket
 from visitegypt.api.container import get_dependencies
 from visitegypt.core.places.services import place_service
 from visitegypt.core.places.entities.place import (
@@ -7,6 +8,8 @@ from visitegypt.core.places.entities.place import (
     UpdatePlace,
     review,
     PlaceBase,
+    PlacesForSearchList,
+    PlaceForSearch
 )
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.api.utils import get_current_user
@@ -34,7 +37,7 @@ async def get_places(page_num: int = 1, limit: int = 15):
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Places"))
     except Exception as e: raise e
 
-@router.post(
+@router.get(
     "/title",
     response_model=PlaceInDB,
     status_code=status.HTTP_200_OK,
@@ -172,3 +175,23 @@ async def delete_review(
                 raise HTTPException(422, detail=str(e))
     else:
         raise HTTPException(401, detail="Unautherized")
+
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    try:
+        await websocket.accept()
+        while True:
+            data = await websocket.receive_text()
+            res = await place_service.search_places(repo, data)
+            if res is not None:
+                await websocket.send_json(res.json())
+            else:
+                await websocket.send_json(json.dumps({
+                            "errors": [
+                                "Place not exist"
+                            ],
+                            "status_code": "404"
+                            }))        
+    except Exception as e:
+        await websocket.close()    
