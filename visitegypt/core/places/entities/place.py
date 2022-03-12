@@ -58,6 +58,4 @@ class TicketModel(MongoModel):
 class PlaceForSearch(MongoModel):
     id: OID = Field()
     title: str
-
-class PlacesForSearchList(MongoModel):
-    places: Optional[List[PlaceForSearch]]
+    default_image: Optional[str]

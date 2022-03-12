@@ -8,7 +8,6 @@ from visitegypt.core.places.entities.place import (
     UpdatePlace,
     review,
     PlaceBase,
-    PlacesForSearchList,
     PlaceForSearch
 )
 from visitegypt.core.accounts.entities.user import UserResponse
@@ -185,7 +184,7 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             res = await place_service.search_places(repo, data)
             if res is not None:
-                await websocket.send_json(res.json())
+                await websocket.send_json([result.json() for result in res])
             else:
                 await websocket.send_json(json.dumps({
                             "errors": [
@@ -194,4 +193,5 @@ async def websocket_endpoint(websocket: WebSocket):
                             "status_code": "404"
                             }))        
     except Exception as e:
+        print(e)
         await websocket.close()    

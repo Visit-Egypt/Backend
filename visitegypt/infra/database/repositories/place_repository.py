@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from visitegypt.core.errors.place_error import PlaceNotFoundError
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
@@ -6,7 +6,6 @@ from visitegypt.core.places.entities.place import (
     PlaceBase,
     UpdatePlace,
     review,
-    PlacesForSearchList,
     PlaceForSearch
 )
 from visitegypt.infra.database.events import db
@@ -167,7 +166,7 @@ async def delete_review(place_id: str, review: review):
         raise InfrastructureException(e.__repr__)
 
 
-async def search_place(search_text:str) -> Optional[PlacesForSearchList]:
+async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
     search_qu = f"*{search_text}*"
     pipeline = [{"$search": {"wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
     try:
@@ -178,9 +177,7 @@ async def search_place(search_text:str) -> Optional[PlacesForSearchList]:
         if not row:
             return None
         places_list_response = [PlaceForSearch.from_mongo(place) for place in row]
-        return PlacesForSearchList(
-            places=places_list_response
-        )
+        return places_list_response
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
