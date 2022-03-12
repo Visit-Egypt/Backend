@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import Optional, List
 from visitegypt.core.places.entities.place import (
     PlacesPageResponse,
     PlaceInDB,
     UpdatePlace,
     review,
     PlaceBase,
-    PlacesForSearchList
+    PlaceForSearch
 )
 from visitegypt.core.places.protocols.place_repo import PlaceRepo
 from typing import List, Optional
@@ -99,7 +99,7 @@ async def delete_review(repo: PlaceRepo, place_id: str, review: review):
         raise e
 
 
-async def search_places(repo:PlaceRepo, search_str:str) -> Optional[PlacesForSearchList]:
+async def search_places(repo:PlaceRepo, search_str:str) -> Optional[List[PlaceForSearch]]:
     try:
         return await repo.search_place(search_str)
     except Exception as e: raise e

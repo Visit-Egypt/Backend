@@ -1,11 +1,11 @@
-from typing import Protocol, Optional
+from typing import Protocol, Optional, List
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
     PlacesPageResponse,
     PlaceBase,
     UpdatePlace,
     review,
-    PlacesForSearchList
+    PlaceForSearch
 )
 
 
@@ -36,5 +36,5 @@ class PlaceRepo(Protocol):
     async def delete_review(place_id: str, review: review):
         pass
 
-    async def search_place(search_text:str) -> Optional[PlacesForSearchList]:
+    async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
         pass
