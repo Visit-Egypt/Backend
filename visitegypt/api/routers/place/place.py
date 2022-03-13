@@ -1,3 +1,4 @@
+from typing import List
 import ujson
 from fastapi import APIRouter, status, HTTPException, Security, WebSocket
 from visitegypt.api.container import get_dependencies
@@ -59,6 +60,19 @@ async def get_place_by_title(place_title: str):
 async def get_place_by_id(place_id: str):
     try:
         return await place_service.get_place_by_id(repo, place_id)
+    except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Place"))
+    except Exception as e: raise e
+
+@router.get(
+    "/city/{city_name}",
+    response_model=PlacesPageResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get Places of City",
+    tags=["Place"]
+)
+async def get_place_by_id(city_name: str):
+    try:
+        return await place_service.get_places_by_city(repo, city_name)
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Place"))
     except Exception as e: raise e
 
@@ -196,3 +210,15 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(e)
         await websocket.close()    
+
+@router.get(
+    "/cities/all",
+    response_model=List,
+    status_code=status.HTTP_200_OK,
+    summary="Get All Cities",
+    tags=["Place"]
+)
+async def get_cities():
+    try:
+        return await place_service.get_cities(repo)
+    except Exception as e: raise e

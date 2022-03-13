@@ -45,6 +45,32 @@ async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def get_all_city_places(city_name: str,page_num: int, limit: int) -> PlacesPageResponse:
+    try:
+        indcies = calculate_start_index(limit, page_num)
+        start_index: int = indcies[0]
+        cursor = (
+            db.client[DATABASE_NAME][places_collection_name]
+            .find({"city": city_name})
+            .skip(start_index)
+            .limit(limit)
+        )
+        places_list = await cursor.to_list(limit)
+        if not places_list:
+            raise PlaceNotFoundError
+        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
+        has_next = await check_has_next(
+            start_index, db.client[DATABASE_NAME][places_collection_name]
+        )
+        return PlacesPageResponse(
+            current_page=page_num, has_next=has_next, places=places_list_response
+        )
+    except PlaceNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
 
 async def get_place_by_id(place_id: str) -> Optional[PlaceInDB]:
     try:
@@ -78,7 +104,6 @@ async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
 
 async def create_place(new_place: PlaceBase) -> PlaceInDB:
     try:
-        # new_place.reviews = []
         row = await db.client[DATABASE_NAME][places_collection_name].insert_one(
             new_place.dict()
         )
@@ -178,6 +203,16 @@ async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
             return None
         places_list_response = [PlaceForSearch.from_mongo(place) for place in row]
         return places_list_response
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def get_cities():
+    try:
+        row = await db.client[DATABASE_NAME][places_collection_name].distinct('city')
+        if row:
+            return row
+        raise Exception
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)

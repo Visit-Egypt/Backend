@@ -13,6 +13,9 @@ class PlaceRepo(Protocol):
     async def get_all_places(self, page_num: int, limit: int) -> PlacesPageResponse:
         pass
 
+    async def get_all_city_places(city_name: str,page_num: int, limit: int) -> PlacesPageResponse:
+        pass
+
     async def get_place_by_id(place_id: str) -> Optional[PlaceInDB]:
         pass
 
@@ -37,4 +40,7 @@ class PlaceRepo(Protocol):
         pass
 
     async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
+        pass
+
+    async def get_cities():
         pass
