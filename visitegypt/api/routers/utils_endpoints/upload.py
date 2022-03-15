@@ -23,7 +23,7 @@ async def upload_request(upload_req: UploadRequest):
     except Exception as e: raise e
 """    
 
-# response_model= UploadResponse,
+# response_model = UploadResponse,
 
 @router.post('/confirm-upload', tags=['Utilities'])
 async def confirm_upload(confirmation_req : UploadConfirmation):

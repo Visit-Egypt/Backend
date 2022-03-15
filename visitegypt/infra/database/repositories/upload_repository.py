@@ -1,11 +1,9 @@
-
-
 from visitegypt.core.accounts.entities.user import UserUpdate
 from visitegypt.core.posts.entities.post import UpdatePost
-from visitegypt.core.utilities.entities.upload import UploadConfirmation, UploadRequest, UploadResponse
+from visitegypt.core.utilities.entities.upload import UploadConfirmation, UploadRequest, UploadResponse, UploadOptions
 from visitegypt.infra.database.repositories import user_repository, post_repository
 from visitegypt.infra.database.events import db
-from visitegypt.config.environment import DATABASE_NAME, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME, AWS_ACCESS_KEY_ID
+from visitegypt.config.environment import DATABASE_NAME, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, PRESIGNED_URL_TIME_INTERVAL, FILE_UPLOAD_SIZE
 import boto3
 import uuid
 from typing import DefaultDict, List
@@ -23,19 +21,18 @@ async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
                                               Key=f'uploads/{upload_req.resource_name}/{upload_req.resource_id}/{str(image_id)}.{content_extension}',
                                               Fields={
                                                 'acl': 'public-read',
-                                                'Content-Type': 'image/jpeg'
+                                                'Content-Type': f'image/{content_extension}'
                                                 },
-                                                ExpiresIn=3600,
+                                                ExpiresIn= int(PRESIGNED_URL_TIME_INTERVAL),
                                                 Conditions=[
                                                   {"acl": "public-read"},
                                                   ["starts-with", "$Content-Type", "image/"],
                                               ]
                                           )
 
-    return UploadResponse(**url)
+    return UploadResponse(**url, options=UploadOptions(file_size=FILE_UPLOAD_SIZE, presigned_url_interval=PRESIGNED_URL_TIME_INTERVAL))
 
-
-async def uploaded_object_urls(images_keys: DefaultDict(list), user_id: str) -> bool:
+async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: DefaultDict(list), user_id: str) -> bool:
   try:
     if images_keys.get('users') != None and len(images_keys.get('users')) > 0:
       user_image : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("users")[0]}'
