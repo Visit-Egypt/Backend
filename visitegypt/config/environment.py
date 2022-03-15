@@ -45,9 +45,10 @@ ALLOWED_HOSTS: List[str] = config(
 )
 
 RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts"]
+FILE_UPLOAD_SIZE : str = config("FILE_UPLOAD_SIZE", cast = str, default="4MB")
+PRESIGNED_URL_TIME_INTERVAL: str = config("PRESIGNED_URL_TIME_INTERVAL", cast = str, default="3600")
 
 # logging configuration
-
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO
 LOGGERS = ("uvicorn.asgi", "uvicorn.access")
 
