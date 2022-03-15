@@ -45,4 +45,8 @@ async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: Default
 
       updated_post : UpdatePost = UpdatePost(list_of_images = post_images)
       await post_repository.update_post(updated_post, post_id, user_id)
+    
+    if bad_keys.get('posts') != None and len(bad_keys.get('posts')) > 0:
+      post_id : str = bad_keys.get('posts')[0].split('/')[2]
+      await post_repository.delete_post(post_id, user_id)
   except Exception as e: raise e

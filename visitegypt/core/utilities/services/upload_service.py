@@ -27,9 +27,15 @@ async def update_database(repo: UploadRepo, upload_confirmation: UploadConfirmat
     try:
         # Filter Array to Dict
         dict_of_resources = DefaultDict(list)
+        dict_of_bad_resources = DefaultDict(list)
+        
         for image in upload_confirmation.images_keys:
             splitted_image = image.split('/')
             dict_of_resources[splitted_image[1]].append(image)
-        return await repo.uploaded_object_urls(dict_of_resources, upload_confirmation.user_id)
+        if len(upload_confirmation.error_images) > 0:
+            for image in upload_confirmation.error_images:
+                splitted_image = image.split('/')
+                dict_of_bad_resources[splitted_image[1]].append(image)
+            return await repo.uploaded_object_urls(dict_of_resources, dict_of_bad_resources, upload_confirmation.user_id)
     except Exception as e:
         raise e
