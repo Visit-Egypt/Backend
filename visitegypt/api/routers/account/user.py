@@ -179,15 +179,19 @@ async def user_logout(user_id: str,current_user: UserResponse = Depends(get_curr
     )
 """
 @router.get("/{user_id}/upload-photo", response_model = UploadResponse, status_code=status.HTTP_200_OK, tags=["User"])
-async def upload_user_personal_photo(user_id: str, content_type: str):
-    #if str(user_id) == str(current_user.id):
+async def upload_user_personal_photo(user_id: str, content_type: str, 
+        current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]],
+    )):
+    if str(user_id) == str(current_user.id):
         try:
             # Send data to the upload service.
             upload_req : UploadRequest = UploadRequest(user_id=user_id, resource_id=user_id, resource_name='users', content_type=content_type)
             return await upload_service.generate_presigned_url(upload_repo, upload_req)
         except ResourceNotFoundError: raise HTTPException(404, detail="You are trying to upload in unknown resource")
-    #else:
-        #raise HTTPException(401, detail="Unautherized")
+    else:
+        raise HTTPException(401, detail="Unautherized")
 
 @router.post(
     "/badge/{user_id}",
