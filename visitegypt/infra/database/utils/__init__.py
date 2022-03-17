@@ -5,6 +5,10 @@ users_collection_name = "Users"
 items_collection_name = "Items"
 places_collection_name = "Places"
 posts_collection_name = "Posts"
+hotels_collection_name= "Hotels"
+kings_collection_name = "Kings"
+restaurants_collection_name = "Restaurants"
+pharmacies_collection_name = "Pharmacies"
 
 
 def calculate_start_index(page_size, page_num) -> Tuple[int, int]:
