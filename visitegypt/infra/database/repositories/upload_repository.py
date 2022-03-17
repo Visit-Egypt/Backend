@@ -3,7 +3,7 @@ from visitegypt.core.posts.entities.post import UpdatePost
 from visitegypt.core.utilities.entities.upload import UploadConfirmation, UploadRequest, UploadResponse, UploadOptions
 from visitegypt.infra.database.repositories import user_repository, post_repository
 from visitegypt.infra.database.events import db
-from visitegypt.config.environment import DATABASE_NAME, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, PRESIGNED_URL_TIME_INTERVAL, FILE_UPLOAD_SIZE
+from visitegypt.config.environment import DATABASE_NAME, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, PRESIGNED_URL_TIME_INTERVAL, FILE_UPLOAD_SIZE, AWS_REGION_NAME
 import boto3
 import uuid
 from typing import DefaultDict, List
@@ -14,7 +14,7 @@ async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
     's3',
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name = "us-west-2")
+    region_name = AWS_REGION_NAME)
     content_extension: str = upload_req.content_type.split('/')[1]
     image_id = uuid.uuid4()
     # Generate a Pre-Signed Url Using Boto3
