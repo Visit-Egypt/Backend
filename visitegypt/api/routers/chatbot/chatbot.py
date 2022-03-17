@@ -9,7 +9,7 @@ import json
 import requests
 import os
 
-#nltk.download('punkt')
+nltk.download('punkt')
 stemmer =  LancasterStemmer()
 APIURL = 'https://ee78syuuu9.execute-api.us-east-2.amazonaws.com/prod'
 
