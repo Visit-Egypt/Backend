@@ -47,7 +47,7 @@ class UserUpdate(BaseModel):
     xp:Optional[int] = 0
     badges:Optional[List[Badge]] = []
     profileFrame:Optional[ProfileFrame] = None
-    postسViews:Optional[int] = 0
+    postViews:Optional[int] = 0
 
 
 class UserInDBBase(UserBase):

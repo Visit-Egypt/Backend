@@ -1,3 +1,4 @@
+from email import message
 from lib2to3.pgen2.token import OP
 from optparse import Option
 from typing import Any, List, Optional, Dict
@@ -24,3 +25,6 @@ class UploadConfirmation(MongoModel):
     error_images : Optional[List[str]]
     user_id : str
 
+class UploadConfirmationResponse(MongoModel):
+    message: str
+    status_code: int
