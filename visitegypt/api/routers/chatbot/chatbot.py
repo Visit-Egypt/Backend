@@ -33,7 +33,6 @@ router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
 @router.post(
     "/",
-    response_model=chatBotRes,
     status_code=status.HTTP_200_OK,
     summary="recive requestes",
     tags=["Chatbot"]
