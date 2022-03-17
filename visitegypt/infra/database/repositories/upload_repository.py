@@ -13,7 +13,8 @@ async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
     s3_client = boto3.client(
     's3',
     aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name = "us-west-2")
     content_extension: str = upload_req.content_type.split('/')[1]
     image_id = uuid.uuid4()
     # Generate a Pre-Signed Url Using Boto3
