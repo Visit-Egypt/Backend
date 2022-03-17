@@ -1,6 +1,6 @@
 from visitegypt.config.environment import RESOURCES_NAMES
 from visitegypt.core.errors.upload_error import ResourceNotFoundError
-from visitegypt.core.utilities.entities.upload import UploadConfirmation, UploadRequest, UploadResponse
+from visitegypt.core.utilities.entities.upload import UploadConfirmation, UploadRequest, UploadResponse, UploadConfirmationResponse
 from visitegypt.core.utilities.protocols.upload_repo import UploadRepo
 from typing import DefaultDict, Optional
 from visitegypt.core.utilities.entities.upload import UploadResponse, UploadRequest
@@ -23,7 +23,7 @@ async def generate_presigned_url(repo: UploadRepo, upload_req: UploadRequest) ->
     except ResourceNotFoundError as re: raise re
 
 
-async def update_database(repo: UploadRepo, upload_confirmation: UploadConfirmation) -> bool:
+async def update_database(repo: UploadRepo, upload_confirmation: UploadConfirmation) -> Optional[UploadConfirmationResponse]:
     try:
         # Filter Array to Dict
         dict_of_resources = DefaultDict(list)
@@ -32,10 +32,11 @@ async def update_database(repo: UploadRepo, upload_confirmation: UploadConfirmat
         for image in upload_confirmation.images_keys:
             splitted_image = image.split('/')
             dict_of_resources[splitted_image[1]].append(image)
-        if len(upload_confirmation.error_images) > 0:
-            for image in upload_confirmation.error_images:
-                splitted_image = image.split('/')
-                dict_of_bad_resources[splitted_image[1]].append(image)
-            return await repo.uploaded_object_urls(dict_of_resources, dict_of_bad_resources, upload_confirmation.user_id)
+        if upload_confirmation.error_images is not None:
+            if len(upload_confirmation.error_images) > 0:
+                for image in upload_confirmation.error_images:
+                    splitted_image = image.split('/')
+                    dict_of_bad_resources[splitted_image[1]].append(image)
+        return await repo.uploaded_object_urls(dict_of_resources, dict_of_bad_resources, upload_confirmation.user_id)
     except Exception as e:
         raise e
