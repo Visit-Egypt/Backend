@@ -1,4 +1,3 @@
-"""
 from fastapi import APIRouter, status
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
@@ -10,39 +9,37 @@ import json
 import requests
 import os
 
-#nltk.download('punkt')
+nltk.download('punkt')
 stemmer =  LancasterStemmer()
 APIURL = 'https://ee78syuuu9.execute-api.us-east-2.amazonaws.com/prod'
 
-words =  ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'convert', 'dang', 'day', 'do', 'doll', 'emerg', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
+words = ["'s", '50', 'a', 'about', 'am', 'anyon', 'ar', 'be', 'bye', 'chang', 'clin', 'convert', 'dang', 'day', 'do', 'doll', 'eat', 'emerg', 'euro', 'find', 'forecast', 'going', 'good', 'goodby', 'hello', 'help', 'hi', 'hotel', 'how', 'i', 'in', 'is', 'it', 'know', 'lat', 'lik', 'loc', 'me', 'medicin', 'nee', 'next', 'now', 'pol', 'pound', 'rain', 'resta', 'right', 'see', 'sleep', 'sup', 'tel', 'temp', 'thank', 'that', 'the', 'ther', 'to', 'tomorrow', 'top', 'want', 'weath', 'what', 'you']
+labels =  {0:'Clinic' ,1:'Hotel',2: 'Resturant',3: 'conversation',4: 'currency',5: 'goodbye',6: 'greeting',7: 'info',8: 'police',9:'thanks',10:'weather'}
+reponses = {0:['Clinic'] ,
+1 : ["Hotel"],
+2:["Resturant"],
+3:["good hope you are as well"],
+4:["Currency"],
+5: ["See you later thanks for visiting", "Have a nice day", "Bye! Come back again soon."],
+6: ["Hello, thanks for visiting", "Good to see you again", "Hi there, how can I help?"] , 
+7: ["search on this topic"],
+8: ["call the police on 122"],
+9 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
+10: ["weather"]}
 
-labels =  {0:'Hotel',1: 'Resturant',2: 'conversation',3: 'currency',4: 'goodbye',5: 'greeting',6: 'info',7: 'police',8:'thanks',9:'weather'}
-reponses = { 0 : ["Four Seasons Hotel Cairo at the First Residence(35 Giza Street, Giza 12311 Egypt), Marriott Mena House(6 Pyramids Road, Giza 12556 Egypt) , Great Pyramid Inn(14 Abou Al Hool Street, Giza Egypt)"],
-1:["The Blue Restaurant & Grill (12 Ahmed Ragheb Street Garden City, Cairo 11519 Egypt),Culina(1113 Corniche El Nil Street The Nile Ritz-Carlton, Downtown, Cairo 11221 Egypt),Saigon Restaurant & Lounge(2005 B, Corniche El Nil Fairmont Towers Nile City - 2005 B, Corniche El Nil, Ramlet Beaulac, Cairo 2466 Egypt)"],
-2:["good hope you are as well"],
-3:["Currency"],
-4: ["See you later thanks for visiting", "Have a nice day", "Bye! Come back again soon."],
-5: ["Hello, thanks for visiting", "Good to see you again", "Hi there, how can I help?"] , 
-6: ["search on this topic"],
-7: ["call the police on 122"],
-8 : ["Happy to help!", "Any time!", "My pleasure" ,"You are welcome"] ,
-9: ["weather"]}
-
-#os.system("python -m spacy download en_core_web_sm")
-#model_entity =  spacy.load('en_core_web_sm')
+model_entity =  spacy.load('./visitegypt/api/routers/chatbot/visit_egypt')
 
 router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
 @router.post(
     "/",
-    response_model=chatBotRes,
     status_code=status.HTTP_200_OK,
     summary="recive requestes",
     tags=["Chatbot"]
 )
 def get_chatbot(message:chatBotBase):
     try:
-        res = chat(message.message)[0]
+        res = chat(message.message)
         return res
     except:
         return {
@@ -61,26 +58,21 @@ def bag_of_words(s, words):
                 bag[i] = 1
     return bag
 
-def net(word) :
-    sentnece = [{"response": "" , "reco": ""}]
-    for ent in model_entity(word).ents:
-        sentnece[0]["reco"]=ent.text
-    return sentnece
+def  net(text):
+    doc = model_entity(text)
+    result = []
+    for ent in doc.ents:
+        result.append({"Name": ent.text , "Label": ent.label_})
+    return result
 
 def chat(inputt):
     bag =  bag_of_words(inputt, words)
-    sentnece =  net(inputt) 
+    reco =  net(inputt) 
     results_index = callAPI(str(bag).replace("]","").replace("[",""))
     tag = labels[results_index] 
-    if  results_index == 3 :
-         curr = sentnece[0]["reco"]
-         curr =  curr.split(' ')[0]
-         sentnece[0]['response'] =  int(curr) *16
-         sentnece[0]["reco"] =  'Money '
-         return sentnece
-    else:
-       sentnece[0]['response'] = random.choice(reponses[results_index])
-       return sentnece
+    sentence = random.choice(reponses[results_index])
+    result = {'tag':sentence , "recogniation " : reco}
+    return result
 
 def callAPI(message):
     data = {
@@ -89,4 +81,3 @@ def callAPI(message):
     response = requests.post(APIURL, json=data)
     print(response.json()["body"])
     return int(response.json()["body"])
-"""
