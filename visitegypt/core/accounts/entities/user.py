@@ -4,11 +4,26 @@ from pydantic import BaseModel, EmailStr, Field
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 
-
+class BadgeTask(MongoModel):
+    badge_id: str
+    taskTitle: str
+    progress: int
 class Badge(MongoModel):
-    id: int
-    imgUrl: str
-    type: int
+    id: str
+    progress: int = 0
+    owned: bool = False
+    pinned: bool = False
+
+class BadgeUpdate(MongoModel):
+    progress: Optional[int]
+    owned: Optional[bool]
+    pinned: Optional[bool]
+class BadgeResponse(MongoModel):
+    id: str
+    progress: int = 0
+    owned: bool = False
+    pinned: bool = False
+    badge_tasks: List[BadgeTask] = []
 
 class ProfileFrame(MongoModel):
     id: int
@@ -45,7 +60,6 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     photo_link: Optional[str] = None
     xp:Optional[int] = 0
-    badges:Optional[List[Badge]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[int] = 0
 
@@ -64,6 +78,7 @@ class User(UserBase):
     user_role: Optional[str] = Role.USER.get("name")
     xp:Optional[int] = 0
     badges:Optional[List[Badge]] = []
+    badge_tasks: Optional[List[BadgeTask]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
 

@@ -6,13 +6,15 @@ from visitegypt.core.places.protocols.place_repo import PlaceRepo
 from visitegypt.core.posts.protocols.post_repo import PostRepo
 from visitegypt.core.utilities.protocols.upload_repo import UploadRepo
 from visitegypt.core.chatbot.protocols.chatbot_repo import ChatbotRepo
+from visitegypt.core.badges.protocols.badge_repo import BadgeRepo
 from visitegypt.infra.database.repositories import (
     item_repository,
     user_repository,
     place_repository,
     post_repository,
     upload_repository,
-    chatbot_repository
+    chatbot_repository,
+    badge_repository
 )
 
 
@@ -24,6 +26,7 @@ class Dependencies:
     post_repo: PostRepo
     upload_repo: UploadRepo
     chatbot_repo: ChatbotRepo
+    badge_repo: BadgeRepo
 
 
 def _build_dependencies() -> Callable[[], Dependencies]:
@@ -33,7 +36,8 @@ def _build_dependencies() -> Callable[[], Dependencies]:
         place_repo=cast(PlaceRepo, place_repository),
         post_repo=cast(PostRepo, post_repository),
         upload_repo=cast(UploadRepo, upload_repository),
-        chatbot_repo=cast(ChatbotRepo, chatbot_repository)
+        chatbot_repo=cast(ChatbotRepo, chatbot_repository),
+        badge_repo=cast(BadgeRepo, badge_repository)
     )
 
     def fn() -> Dependencies:

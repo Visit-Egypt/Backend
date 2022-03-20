@@ -9,6 +9,7 @@ hotels_collection_name= "Hotels"
 kings_collection_name = "Kings"
 restaurants_collection_name = "Restaurants"
 pharmacies_collection_name = "Pharmacies"
+badges_collection_name = "Badges"
 
 
 def calculate_start_index(page_size, page_num) -> Tuple[int, int]:
