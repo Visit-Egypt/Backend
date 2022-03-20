@@ -4,6 +4,15 @@ from pydantic import BaseModel, EmailStr, Field
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 
+
+class PlaceActivity(MongoModel):
+    id: str
+    finished: bool
+    progress: int
+
+class PlaceActivityUpdate(MongoModel):
+    finished: Optional[bool]
+    progress: Optional[int]
 class BadgeTask(MongoModel):
     badge_id: str
     taskTitle: str
@@ -79,6 +88,7 @@ class User(UserBase):
     xp:Optional[int] = 0
     badges:Optional[List[Badge]] = []
     badge_tasks: Optional[List[BadgeTask]] = []
+    placeActivities: Optional[List[PlaceActivity]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
 

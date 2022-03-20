@@ -3,6 +3,24 @@ from pydantic import Field
 from visitegypt.core.base_model import MongoModel, OID
 
 
+class Hint(MongoModel):
+    hint: str
+    iamgeUrl: str
+class Explore(MongoModel):
+    id: str
+    title: str
+    imageUrl: str
+    hints: List[Hint]
+
+class PlaceActivity(MongoModel):
+    id: str
+    xp: int
+    customXp: bool
+    type: int
+    title: str
+    description: str
+    durration:str
+    maxProgress: int
 class review(MongoModel):
     rating: float
     review: Optional[str]
@@ -23,6 +41,8 @@ class PlaceBase(MongoModel):
     ticket_prices: Optional[Dict[Any, Any]]
     category: Optional[str]
     views: Optional[int] = 0
+    explores: Optional[List[Explore]]
+    placeActivities: Optional[List[PlaceActivity]]
 
 
 class PlaceWithReviews(PlaceBase):
@@ -41,6 +61,8 @@ class UpdatePlace(MongoModel):
     opening_hours: Optional[str]
     city: Optional[str]
     views: Optional[int] = 0
+    explores: Optional[List[Explore]]
+    placeActivities: Optional[List[PlaceActivity]]
 
 class PlaceInDB(PlaceWithReviews):
     id: OID = Field()

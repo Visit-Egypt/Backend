@@ -8,7 +8,9 @@ from visitegypt.core.accounts.entities.user import (
     UserUpdaterole,
     Badge,
     BadgeTask,
-    BadgeUpdate
+    BadgeUpdate,
+    PlaceActivity,
+    PlaceActivityUpdate
 )
 from pymongo.results import DeleteResult
 
@@ -52,4 +54,8 @@ class UserRepo(Protocol):
     async def update_badge(user_id: str ,badge_id: str,new_badge: BadgeUpdate):
         pass
     async def get_user_badges( user_id: str):
+        pass
+    async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceActivityUpdate):
+        pass
+    async def get_user_activities( user_id: str):
         pass
