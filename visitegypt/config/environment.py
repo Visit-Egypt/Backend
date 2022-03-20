@@ -18,7 +18,7 @@ config = Config(".env", os.environ)
 DEBUG: bool = config("DEBUG", cast=bool, default=True)
 # ACCESS_TOKEN_EXPIRE_MINUTES : int = config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=15)
 JWT_EXPIRATION_DELTA = timedelta(
-    minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=3)
+    minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=30)
 )
 JWT_REFRESH_EXPIRATION_DELTA = timedelta(
     minutes=config("ACCESS_TOKEN_EXPIRE_MINUTES", cast=int, default=10080)

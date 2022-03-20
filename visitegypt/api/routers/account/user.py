@@ -6,7 +6,9 @@ from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
     UsersPageResponse,
-    Badge
+    Badge,
+    BadgeTask,
+    BadgeUpdate
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.services.auth_service import (
@@ -193,21 +195,46 @@ async def upload_user_personal_photo(user_id: str, content_type: str,
     else:
         raise HTTPException(401, detail="Unautherized")
 
-@router.post(
-    "/badge/{user_id}",
+@router.put(
+    "/badge/task",
     status_code=status.HTTP_201_CREATED,
-    summary="Add new badge to a user",
+    summary="Update badge task progress for a user",
     tags=["User"]
 )
-async def add_new_badge(
-    user_id,
-    new_badge: Badge,
-    current_user: UserResponse = Security(
-        get_current_user,
-        scopes=[Role.SUPER_ADMIN["name"], Role.ADMIN["name"]],
-    ),
-):
+async def update_badge_task_progress(
+    new_task: BadgeTask,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
     try:
-        return await user_service.add_badge(repo, user_id, new_badge)
+        return await user_service.update_badge_task(repo, current_user.id, new_task)
+    except Exception as e:
+        raise e
+
+@router.put(
+    "/badges/{badge_id}",
+    status_code=status.HTTP_201_CREATED,
+    summary="Update badge for a user",
+    tags=["User"]
+)
+async def update_badge(
+    new_badge: BadgeUpdate,
+    badge_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.update_badge(repo, current_user.id, badge_id,new_badge)
+    except Exception as e:
+        raise e
+
+@router.get(
+    "/badges/{user_id}",
+    status_code=status.HTTP_201_CREATED,
+    summary="get badges of a user",
+    tags=["User"]
+)
+async def get_user_badges(
+    user_id:str):
+    try:
+        return await user_service.get_user_badges(repo, user_id)
     except Exception as e:
         raise e

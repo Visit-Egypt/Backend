@@ -6,7 +6,10 @@ from visitegypt.core.accounts.entities.user import (
     UserUpdate,
     User,
     UsersPageResponse,
-    Badge
+    Badge,
+    BadgeTask,
+    BadgeUpdate,
+    BadgeResponse
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -14,6 +17,7 @@ from visitegypt.infra.database.utils import (
     users_collection_name,
     calculate_start_index,
     check_has_next,
+    badges_collection_name
 )
 from visitegypt.core.errors.user_errors import UserNotFoundError
 from visitegypt.resources.strings import USER_DELETED
@@ -187,20 +191,76 @@ async def user_logout(user_id: str):
     except Exception as e:
         raise e
 
-async def add_badge(user_id: str, new_badge: Badge):
+async def update_badge_task(user_id:str, new_task:BadgeTask):
     try:
         result = await db.client[DATABASE_NAME][
             users_collection_name
         ].find_one_and_update(
-            {"_id": ObjectId(user_id)},
-            {"$push": {"badges": new_badge.dict()}},
+            { "_id": user_id, "badge_tasks.badge_id": new_task.badge_id, "badge_tasks.taskTitle": new_task.taskTitle },
+            { "$set": { "badge_tasks.$.progress": new_task.progress} },
             return_document=ReturnDocument.AFTER,
         )
-        if result:
-            return result["badges"]
-        raise UserNotFoundError
+        if result != None:
+            return result["badge_tasks"]
+        else:
+            if(await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id": user_id, "badges.id": new_task.badge_id}) == None):
+                new_badge = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update({ "_id": user_id },
+                { "$addToSet": {"badges":Badge(id=new_task.badge_id).dict() }},
+                return_document=ReturnDocument.AFTER,)
+
+            new = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": ObjectId(user_id)},
+            {"$push": {"badge_tasks": new_task.dict()}},
+            return_document=ReturnDocument.AFTER,)
+            if new:
+                return new["badge_tasks"]
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
+async def update_badge(user_id: str ,badge_id: str,new_badge: BadgeUpdate):
+    try:
+        user = await db.client[DATABASE_NAME][
+            users_collection_name
+        ].find_one({ "_id":ObjectId(user_id)})
+        badge = next((item for item in user["badges"] if item["id"] == badge_id), None)
+        for k,v in new_badge:
+            if(v != None):
+                badge[k] = v
+        result = await db.client[DATABASE_NAME][
+            users_collection_name
+        ].find_one_and_update(
+            { "_id": user_id, "badges.id": badge_id},
+            {"$set": {"badges.$":badge}},
+            return_document=ReturnDocument.AFTER,
+        )
+        return result["badges"]
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_user_badges( user_id: str):
+    try:
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        badges = user["badges"]
+        tasks = user["badge_tasks"]
+        res = []
+        for i in badges:
+            badge_tasks = [item for item in tasks if item["badge_id"] == i["id"]]
+            badge = BadgeResponse(
+                id = i["id"],
+                progress = i["progress"],
+                pinned = i["pinned"],
+                owned = i["owned"],
+                badge_tasks = badge_tasks
+            )
+            res.append(badge)
+
+        return res
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
