@@ -287,7 +287,7 @@ async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceAct
     except Exception as e:
         raise e
 
-async def get_user_badges( user_id: str):
+async def get_user_activities( user_id: str):
     try:
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         activities = user["placeActivities"]
