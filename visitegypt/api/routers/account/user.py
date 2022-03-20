@@ -1,4 +1,5 @@
 from visitegypt.api.container import get_dependencies
+from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Security, Depends, status
 from visitegypt.core.accounts.services import user_service
 from visitegypt.core.accounts.entities.user import (
@@ -8,7 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
     Badge,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.services.auth_service import (
@@ -226,6 +227,7 @@ async def update_badge(
 
 @router.get(
     "/badges/{user_id}",
+    response_model = List[BadgeResponse],
     summary="get badges of a user",
     tags=["User"]
 )
