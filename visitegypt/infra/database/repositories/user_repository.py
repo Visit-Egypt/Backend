@@ -9,7 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     Badge,
     BadgeTask,
     BadgeUpdate,
-    BadgeResponse
+    BadgeResponse,PlaceActivityUpdate
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -260,6 +260,38 @@ async def get_user_badges( user_id: str):
             res.append(badge)
 
         return res
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceActivityUpdate):
+    try:
+        user = await db.client[DATABASE_NAME][
+            users_collection_name
+        ].find_one({ "_id":ObjectId(user_id)})
+        activity = next((item for item in user["placeActivities"] if item["id"] == activity_id), None)
+        for k,v in new_activity:
+            if(v != None):
+                activity[k] = v
+        result = await db.client[DATABASE_NAME][
+            users_collection_name
+        ].find_one_and_update(
+            { "_id": user_id, "placeActivities.id": activity_id},
+            {"$set": {"placeActivities.$":activity}},
+            return_document=ReturnDocument.AFTER,
+        )
+        return result["placeActivities"]
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_user_badges( user_id: str):
+    try:
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activities = user["placeActivities"]
+        return activities
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
