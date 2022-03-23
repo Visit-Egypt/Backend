@@ -1,5 +1,6 @@
+from ctypes import Union
 from typing import Optional
-from visitegypt.core.errors.post_error import PostNotFoundError
+from visitegypt.core.errors.post_error import PostNotFoundError, PostOffensive
 from visitegypt.core.posts.entities.post import (
     PostInDB,
     PostsPageResponse,
@@ -10,6 +11,7 @@ from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import posts_collection_name
 from visitegypt.infra.database.utils import calculate_start_index, check_has_next
+from visitegypt.infra.database.utils.offensive import check_offensive
 from visitegypt.resources.strings import POST_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
@@ -88,15 +90,20 @@ async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def create_post(new_post: PostBase) -> PostInDB:
+async def create_post(new_post: PostBase) -> Optional[PostInDB]:
     try:
         new_post.likes = []
-        row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
-            new_post.dict()
-        )
-        if row.inserted_id:
-            added_post = await get_post_by_id(row.inserted_id)
-            return added_post
+        is_offensive = check_offensive(new_post.caption)
+        if not is_offensive:
+            row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
+                new_post.dict()
+            )
+            if row.inserted_id:
+                added_post = await get_post_by_id(row.inserted_id)
+                return added_post
+        else:
+            raise PostOffensive
+    except PostOffensive as po: raise po
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
