@@ -19,7 +19,7 @@ class PlaceActivity(MongoModel):
     type: int
     title: str
     description: str
-    durration:str
+    duration:str
     maxProgress: int
 class review(MongoModel):
     rating: float
