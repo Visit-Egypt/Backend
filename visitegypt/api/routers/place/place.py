@@ -14,7 +14,7 @@ from visitegypt.core.places.entities.place import (
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.api.utils import get_current_user
 from visitegypt.resources.strings import MESSAGE_404
-from visitegypt.core.errors.place_error import PlaceNotFoundError, PlaceAlreadyExists
+from visitegypt.core.errors.place_error import PlaceNotFoundError, PlaceAlreadyExists, ReviewOffensive
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 repo = get_dependencies().place_repo
@@ -154,6 +154,7 @@ async def add_new_review(
     if (str(new_review.user_id) == str(current_user.id)):
         try:
             return await place_service.add_review(repo, place_id, new_review)
+        except ReviewOffensive:  raise HTTPException(status_code= 400, detail="Offensive review, please change it")
         except Exception as e:
             raise e
     else:
