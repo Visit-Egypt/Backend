@@ -1,5 +1,5 @@
 from typing import Optional, List
-from visitegypt.core.errors.place_error import PlaceNotFoundError
+from visitegypt.core.errors.place_error import PlaceNotFoundError, ReviewOffensive
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
     PlacesPageResponse,
@@ -12,6 +12,7 @@ from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import places_collection_name
 from visitegypt.infra.database.utils import calculate_start_index, check_has_next
+from visitegypt.infra.database.utils.offensive import check_offensive
 from visitegypt.resources.strings import PLACE_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
@@ -155,6 +156,11 @@ async def update_place(
 
 async def add_review(place_id: str, new_reviw: review):
     try:
+        is_offensive = False
+        if new_reviw.review:
+            is_offensive = check_offensive(new_reviw.review)
+        if is_offensive:
+            raise ReviewOffensive
         result = await db.client[DATABASE_NAME][
             places_collection_name
         ].find_one_and_update(
@@ -165,6 +171,7 @@ async def add_review(place_id: str, new_reviw: review):
         if result:
             return result["reviews"]
         raise PlaceNotFoundError
+    except ReviewOffensive as ro: raise ro
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:

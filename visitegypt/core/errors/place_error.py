@@ -4,3 +4,7 @@ class PlaceNotFoundError(Exception):
 
 class PlaceAlreadyExists(Exception):
     pass
+
+
+class ReviewOffensive(Exception):
+    pass
