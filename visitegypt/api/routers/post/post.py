@@ -1,3 +1,4 @@
+from random import randint
 from fastapi import APIRouter, status, HTTPException, Security
 from visitegypt.api.container import get_dependencies
 from visitegypt.core.posts.sevices import post_service
@@ -14,7 +15,7 @@ from visitegypt.core.utilities.services import upload_service
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.api.utils import get_current_user
 from visitegypt.resources.strings import MESSAGE_404
-from visitegypt.core.errors.post_error import PostNotFoundError
+from visitegypt.core.errors.post_error import PostNotFoundError, PostOffensive
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 
@@ -83,6 +84,8 @@ async def add_new_post(
 ):
     try:
         return await post_service.create_place(repo, new_post)
+    except PostOffensive:
+        raise HTTPException(status_code= 400, detail="Offensive post, please change it")
     except Exception as e:
         raise e
 
