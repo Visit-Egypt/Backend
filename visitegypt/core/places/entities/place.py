@@ -5,7 +5,7 @@ from visitegypt.core.base_model import MongoModel, OID
 
 class Hint(MongoModel):
     hint: str
-    iamgeUrl: str
+    imageUrl: str
 class Explore(MongoModel):
     id: str
     title: str
