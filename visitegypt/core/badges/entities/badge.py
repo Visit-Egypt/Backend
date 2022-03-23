@@ -11,6 +11,7 @@ class BadgeTask(MongoModel):
 class BadgeBase(MongoModel):
     img_url: str
     place_id: str
+    city: str
     max_progress: int
     title: str
     type: str
