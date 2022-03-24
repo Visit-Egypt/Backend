@@ -100,7 +100,12 @@ class UserInDB(UserInDBBase):
 
 
 class UserResponse(UserInDBBase):
-    pass
+    xp:Optional[int] = 0
+    badges:Optional[List[Badge]] = []
+    badge_tasks: Optional[List[BadgeTask]] = []
+    placeActivities: Optional[List[PlaceActivity]] = []
+    profileFrame:Optional[ProfileFrame] = None
+    postViews:Optional[List[str]] = []
 
 
 class UsersPageResponse(MongoModel):
