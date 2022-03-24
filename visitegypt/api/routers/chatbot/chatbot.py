@@ -32,7 +32,9 @@ async def callAPI(message):
     }
     response = requests.post(APIURL, json=data)
     resu = dict(response.json())
+    print(resu)
     res= await classes(resu)
+    print(res)
     return res    
 
 async def classes(result):
@@ -53,7 +55,7 @@ async def classes(result):
             res = await chatbot_service.get_king_by_name(repo, king)
             print(res)
             response = res['Main Title'] + " " + res['Name'] + " From The " + res['Dynasty'] + " Was " + res['Comment']
-            return response
+            return {"response":response}
         except Exception as e: raise e
     elif(result['response'] == "Resturant"):
         if(not result['recogniation']):
