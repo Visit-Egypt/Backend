@@ -10,7 +10,7 @@ from visitegypt.core.posts.entities.post import (
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import posts_collection_name
-from visitegypt.infra.database.utils import calculate_start_index, check_has_next
+from visitegypt.infra.database.utils import calculate_start_index, check_has_next,check_next
 from visitegypt.infra.database.utils.offensive import check_offensive
 from visitegypt.resources.strings import POST_DELETED
 from bson import ObjectId
@@ -34,9 +34,7 @@ async def get_place_posts(page_num: int, limit: int, place_id: str) -> PostsPage
         if not posts_list:
             raise PostNotFoundError
         posts_list_response = [PostInDB.from_mongo(post) for post in posts_list]
-        has_next = await check_has_next(
-            start_index, db.client[DATABASE_NAME][posts_collection_name]
-        )
+        has_next = check_next(limit,posts_list_response)
         return PostsPageResponse(
             current_page=page_num, has_next=has_next, places=posts_list_response
         )
@@ -76,11 +74,9 @@ async def get_user_posts(page_num: int, limit: int, user_id: str) -> PostsPageRe
 
 async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
     try:
-        print("Alooooooo")
         row = await db.client[DATABASE_NAME][posts_collection_name].find_one(
             {"_id": ObjectId(post_id)}
         )
-        print(row)
         if row:
             return PostInDB.from_mongo(row)
         raise PostNotFoundError

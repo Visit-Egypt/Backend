@@ -10,7 +10,7 @@ from visitegypt.core.badges.entities.badge import (
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import badges_collection_name
-from visitegypt.infra.database.utils import calculate_start_index, check_has_next
+from visitegypt.infra.database.utils import calculate_start_index, check_has_next,check_next
 from pymongo import ReturnDocument
 from bson import ObjectId
 from loguru import logger
@@ -32,9 +32,7 @@ async def get_filtered_badges(
         if not badges_list:
             raise BadgeNotFoundError
         badges_list_response = [BadgeInDB.from_mongo(badge) for badge in badges_list]
-        has_next = await check_has_next(
-            start_index, db.client[DATABASE_NAME][badges_collection_name]
-        )
+        has_next = check_next(limit,badges_list_response)
         return BadgesPageResponse(
             current_page=page_num, has_next=has_next, badges=badges_list_response
         )
