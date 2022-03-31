@@ -11,7 +11,7 @@ from visitegypt.core.places.entities.place import (
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import places_collection_name
-from visitegypt.infra.database.utils import calculate_start_index, check_has_next
+from visitegypt.infra.database.utils import calculate_start_index, check_has_next,check_next
 from visitegypt.infra.database.utils.offensive import check_offensive
 from visitegypt.resources.strings import PLACE_DELETED
 from bson import ObjectId
@@ -34,9 +34,7 @@ async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
         if not places_list:
             raise PlaceNotFoundError
         places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
-        has_next = await check_has_next(
-            start_index, db.client[DATABASE_NAME][places_collection_name]
-        )
+        has_next = check_next(limit,places_list_response)
         return PlacesPageResponse(
             current_page=page_num, has_next=has_next, places=places_list_response
         )
@@ -60,9 +58,7 @@ async def get_all_city_places(city_name: str,page_num: int, limit: int) -> Place
         if not places_list:
             raise PlaceNotFoundError
         places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
-        has_next = await check_has_next(
-            start_index, db.client[DATABASE_NAME][places_collection_name]
-        )
+        has_next = check_next(limit,places_list_response)
         return PlacesPageResponse(
             current_page=page_num, has_next=has_next, places=places_list_response
         )

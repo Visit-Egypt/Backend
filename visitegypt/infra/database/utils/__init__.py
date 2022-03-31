@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import List, Tuple
 
 
 users_collection_name = "Users"
@@ -30,3 +30,6 @@ def calculate_start_index(page_size, page_num) -> Tuple[int, int]:
 async def check_has_next(start_index: int, db_session) -> bool:
     docs_count = await db_session.count_documents({})
     return not (docs_count - 1 <= start_index)
+
+def check_next(limit:int,items:List):
+    return not(len(items)<limit)

@@ -17,7 +17,8 @@ from visitegypt.infra.database.utils import (
     users_collection_name,
     calculate_start_index,
     check_has_next,
-    badges_collection_name
+    badges_collection_name,
+    check_next
 )
 from visitegypt.core.errors.user_errors import UserNotFoundError
 from visitegypt.resources.strings import USER_DELETED
@@ -149,9 +150,7 @@ async def get_all_users(page_num: int, limit: int) -> List[UsersPageResponse]:
         if len(users_list) <= 0:
             raise UserNotFoundError
         users_list_response = [UserResponse.from_mongo(user) for user in users_list]
-        has_next = await check_has_next(
-            start_index, db.client[DATABASE_NAME][users_collection_name]
-        )
+        has_next = check_next(limit,users_list_response)
         return UsersPageResponse(
             current_page=page_num, has_next=has_next, users=users_list_response
         )

@@ -9,7 +9,7 @@ from visitegypt.core.items.entities.item import (
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import items_collection_name
-from visitegypt.infra.database.utils import calculate_start_index, check_has_next
+from visitegypt.infra.database.utils import calculate_start_index, check_has_next, check_next
 from pymongo import ReturnDocument
 from bson import ObjectId
 from loguru import logger
@@ -31,9 +31,7 @@ async def get_filtered_items(
         if not items_list:
             raise ItemNotFoundError
         items_list_response = [ItemInDB.from_mongo(item) for item in items_list]
-        has_next = await check_has_next(
-            start_index, db.client[DATABASE_NAME][items_collection_name]
-        )
+        has_next = check_next(limit,items_list)
         return ItemsPageResponse(
             current_page=page_num, has_next=has_next, items=items_list_response
         )
