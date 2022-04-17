@@ -244,7 +244,7 @@ async def get_user_badges(
     tags=["User"]
 )
 async def update_place_avtivity(
-    new_activity: PlaceActivity,
+    new_activity: PlaceActivityUpdate,
     activity_id:str,
     current_user: UserResponse = Depends(get_current_user)
     ):
