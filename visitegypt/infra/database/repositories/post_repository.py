@@ -89,8 +89,8 @@ async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
 async def create_post(new_post: PostBase) -> Optional[PostInDB]:
     try:
         new_post.likes = []
-        is_offensive = check_offensive(new_post.caption)
-        if not is_offensive:
+        #is_offensive = check_offensive(new_post.caption)
+        if True:
             row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
                 new_post.dict()
             )
