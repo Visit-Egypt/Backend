@@ -1,3 +1,4 @@
+from types import NoneType
 from typing import List, Optional
 from pydantic import EmailStr
 import pymongo
@@ -9,7 +10,7 @@ from visitegypt.core.accounts.entities.user import (
     Badge,
     BadgeTask,
     BadgeUpdate,
-    BadgeResponse,PlaceActivityUpdate
+    BadgeResponse,PlaceActivityUpdate,PlaceActivity
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -206,6 +207,7 @@ async def update_badge_task(user_id:str, new_task:BadgeTask):
                 new_badge = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update({ "_id": user_id },
                 { "$addToSet": {"badges":Badge(id=new_task.badge_id).dict() }},
                 return_document=ReturnDocument.AFTER,)
+                return new_badge
 
             new = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
             {"_id": ObjectId(user_id)},
@@ -270,6 +272,18 @@ async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceAct
             users_collection_name
         ].find_one({ "_id":ObjectId(user_id)})
         activity = next((item for item in user["placeActivities"] if item["id"] == activity_id), None)
+        if(not activity):
+            new_ac ={
+            "id":activity_id,
+            "finished":new_activity.finished,
+            "progress":new_activity.progress
+            }
+            new = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+                {"_id": ObjectId(user_id)},
+                {"$push": {"placeActivities": new_ac}},
+                return_document=ReturnDocument.AFTER,)
+            return new["placeActivities"]
+
         for k,v in new_activity:
             if(v != None):
                 activity[k] = v
