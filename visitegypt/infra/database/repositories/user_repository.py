@@ -1,4 +1,3 @@
-from types import NoneType
 from typing import List, Optional
 from pydantic import EmailStr
 import pymongo
@@ -207,7 +206,6 @@ async def update_badge_task(user_id:str, new_task:BadgeTask):
                 new_badge = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update({ "_id": user_id },
                 { "$addToSet": {"badges":Badge(id=new_task.badge_id).dict() }},
                 return_document=ReturnDocument.AFTER,)
-                return new_badge
 
             new = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
             {"_id": ObjectId(user_id)},
