@@ -9,7 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
     Badge,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.services.auth_service import (
@@ -20,7 +20,8 @@ from visitegypt.core.utilities.services import upload_service
 from visitegypt.core.errors.user_errors import (
     UserNotFoundError,
     EmailNotUniqueError,
-    WrongEmailOrPassword
+    WrongEmailOrPassword, 
+    TripRequestNotFound
 )
 from visitegypt.core.utilities.entities.upload import UploadRequest, UploadResponse
 from visitegypt.resources.strings import (
@@ -264,3 +265,34 @@ async def get_user_activities(
         return await user_service.get_user_activities(repo, user_id)
     except Exception as e:
         raise e
+
+
+@router.post('/{user_id}/follow', summary="Follow a user", tags=['User'])
+async def follow_user(user_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.follow_user(repo, current_user, user_id)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err:
+        raise err
+
+
+@router.post('/{user_id}/mate', summary="Request a trip mate", tags=['User'])
+async def follow_user(user_id: str, request_mate: RequestTripMate, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.request_trip_mate(repo, current_user, user_id, request_mate)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err:
+        raise err
+
+
+@router.post('/trip-mate-reqs/{req_id}/approve', summary="Request a trip mate", tags=['User'])
+async def follow_user(req_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.approve_request_trip_mate(repo, current_user, req_id)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except TripRequestNotFound: raise HTTPException(404, detail=MESSAGE_404("Trip Request not exists"))
+    except Exception as err:
+        raise err

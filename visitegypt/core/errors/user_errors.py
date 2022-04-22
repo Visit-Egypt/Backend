@@ -1,3 +1,5 @@
+
+
 class EmailNotUniqueError(Exception):
     pass
 
@@ -7,4 +9,10 @@ class UserNotFoundError(Exception):
 
 
 class WrongEmailOrPassword(Exception):
+    pass
+
+class UserIsFollower(Exception):
+    pass
+
+class TripRequestNotFound(Exception):
     pass

@@ -10,7 +10,8 @@ from visitegypt.core.accounts.entities.user import (
     BadgeTask,
     BadgeUpdate,
     PlaceActivity,
-    PlaceActivityUpdate
+    PlaceActivityUpdate,
+    RequestTripMate
 )
 from pymongo.results import DeleteResult
 
@@ -58,4 +59,12 @@ class UserRepo(Protocol):
     async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceActivityUpdate):
         pass
     async def get_user_activities( user_id: str):
+        pass
+
+    async def follow_user(current_user: UserResponse, user_id: str) -> bool:
+        pass
+
+    async def request_trip_mate(self, current_user: UserResponse, user_id: str, request_mate: RequestTripMate) -> Optional[UserResponse]:
+        pass
+    async def approve_request_trip_mate(self, current_user: UserResponse, req_id: str) -> Optional[UserResponse]:
         pass

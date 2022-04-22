@@ -10,7 +10,7 @@ kings_collection_name = "Kings"
 restaurants_collection_name = "Restaurants"
 pharmacies_collection_name = "Pharmacies"
 badges_collection_name = "Badges"
-
+tags_collection_name = "Tags"
 
 def calculate_start_index(page_size, page_num) -> Tuple[int, int]:
     """returns a set of documents belonging to page number `page_num`
