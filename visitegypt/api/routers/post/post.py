@@ -1,4 +1,3 @@
-from random import randint
 from fastapi import APIRouter, status, HTTPException, Security
 from visitegypt.api.container import get_dependencies
 from visitegypt.core.posts.sevices import post_service

@@ -1,5 +1,6 @@
+from __future__ import annotations
 from typing import Optional, List
-
+from datetime import date
 from pydantic import BaseModel, EmailStr, Field
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
@@ -39,6 +40,17 @@ class ProfileFrame(MongoModel):
     imgUrl: str
     type: int
 
+# User model for Requesting Trip Mate
+class RequestTripMate(MongoModel):
+    title: str
+    description: str
+
+class RequestTripMateInDB(RequestTripMate):
+    id: OID = Field()
+    initator_id: OID
+    is_approved: bool
+
+
 # Shared properties
 class UserBase(MongoModel):
     email: EmailStr
@@ -46,8 +58,12 @@ class UserBase(MongoModel):
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
     photo_link: Optional[str] = None
-
-
+    bio : Optional[str] = None
+    birthdate: Optional[date] = None
+    interests: Optional[List[str]] = []
+    followers: Optional[List[OID]] = [] # a list containing followers ids
+    following: Optional[List[OID]] = []
+    trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -71,7 +87,12 @@ class UserUpdate(BaseModel):
     xp:Optional[int] = 0
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[int] = 0
-
+    bio : Optional[str] = None
+    birthdate: Optional[date] = None
+    interests: Optional[List[str]] = None
+    followers: Optional[List[OID]] = [] # a list containing followers ids
+    following: Optional[List[OID]] = []
+    trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
 
 class UserInDBBase(UserBase):
     # id: str = Field(..., alias='_id')
@@ -112,3 +133,6 @@ class UsersPageResponse(MongoModel):
     current_page: int
     has_next: bool
     users: Optional[List[UserResponse]]
+
+
+

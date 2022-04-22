@@ -7,9 +7,10 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
     Badge,
     BadgeTask,BadgeUpdate,PlaceActivity,PlaceActivityUpdate
+    , RequestTripMate
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
-from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError
+from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
@@ -158,3 +159,31 @@ async def get_user_activities(repo: UserRepo, user_id: str):
         raise ue
     except Exception as e:
         raise e
+
+
+async def follow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> bool:
+    try:
+        user_followed = await repo.follow_user(current_user, user_id)
+        if user_followed:
+            return user_followed
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def request_trip_mate(repo: UserRepo, current_user: UserResponse, user_id: str, request_mate: RequestTripMate) -> bool:
+    try:
+        added = await repo.request_trip_mate(current_user, user_id, request_mate)
+        if added:
+            return added
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def approve_request_trip_mate(repo: UserRepo, current_user: UserResponse, req_id: str) -> Optional[UserResponse]:
+    try:
+        return await repo.approve_request_trip_mate(current_user, req_id)
+    except UserNotFoundError as un: raise un
+    except TripRequestNotFound as trf: raise trf
+    except Exception as e: raise e

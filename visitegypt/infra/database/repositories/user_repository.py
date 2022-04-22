@@ -1,3 +1,5 @@
+from email.mime import message
+from shutil import ExecError
 from typing import List, Optional
 from pydantic import EmailStr
 import pymongo
@@ -9,7 +11,7 @@ from visitegypt.core.accounts.entities.user import (
     Badge,
     BadgeTask,
     BadgeUpdate,
-    BadgeResponse,PlaceActivityUpdate,PlaceActivity
+    BadgeResponse,PlaceActivityUpdate,PlaceActivity,RequestTripMate, RequestTripMateInDB
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -20,7 +22,7 @@ from visitegypt.infra.database.utils import (
     badges_collection_name,
     check_next
 )
-from visitegypt.core.errors.user_errors import UserNotFoundError
+from visitegypt.core.errors.user_errors import UserNotFoundError, UserIsFollower, TripRequestNotFound
 from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
@@ -307,3 +309,64 @@ async def get_user_activities( user_id: str):
         raise ue
     except Exception as e:
         raise e
+
+
+async def follow_user(current_user: UserResponse, user_id: str) -> bool:
+    try:
+        user_to_follow = await get_user_by_id(user_id)
+        if user_to_follow is None: raise UserNotFoundError
+        # if user_to_follow.followers is not None:
+        ch = [n for n in  user_to_follow.followers if n.id == current_user.id]
+        if ch: raise UserIsFollower
+        # In this phase user1 is not followed by current user
+        # We need to save current user in user1 followers and save user1 in current user following
+        # We are going to use the id not the full user
+
+        user_to_follow.followers.append(current_user.id)
+        current_user.following.append(user_to_follow.id)
+
+        await update_user(UserUpdate(followers=user_to_follow.followers), user_id=user_id)
+        await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
+
+        return True
+        
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def request_trip_mate(current_user: UserResponse, user_id: str, request_mate: RequestTripMate)  -> Optional[UserResponse]:
+    try:
+        request_trip_mate = RequestTripMateInDB(**request_mate.dict(), is_approved=False, initator_id=current_user.id, id=ObjectId())
+        user_req = await get_user_by_id(user_id)
+        if user_req.trip_mate_requests is None:
+            user_req.trip_mate_requests = []
+        user_req.trip_mate_requests.append(request_trip_mate.dict())
+        updated_user = await update_user(UserUpdate(trip_mate_requests=user_req.trip_mate_requests), user_id)
+        if updated_user:
+            return updated_user
+    except UserNotFoundError as un: raise un
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+
+async def approve_request_trip_mate(current_user: UserResponse, req_id: str) -> Optional[UserResponse]:
+    try:
+        req_found = False
+        for req in current_user.trip_mate_requests:
+            if req.id == ObjectId(req_id):
+                req.is_approved = True
+                req_found = True
+                break
+        if not req_found: raise TripRequestNotFound
+        updated_user = await update_user(UserUpdate(trip_mate_requests=current_user.trip_mate_requests), current_user.id)
+        if updated_user:
+            return updated_user
+    except UserNotFoundError as un: raise un
+    except TripRequestNotFound as trf: raise trf
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
