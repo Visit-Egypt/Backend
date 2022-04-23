@@ -10,7 +10,7 @@ from visitegypt.core.accounts.entities.user import (
     , RequestTripMate
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
-from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound
+from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound, UserIsFollower, UserIsNotFollowed
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
@@ -166,6 +166,16 @@ async def follow_user(repo: UserRepo, current_user: UserResponse, user_id: str) 
         user_followed = await repo.follow_user(current_user, user_id)
         if user_followed:
             return user_followed
+    except UserIsFollower as usf: raise usf
+    except UserNotFoundError as ue: raise ue
+    except Exception as e: raise e
+
+async def unfollow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> bool:
+    try:
+        user_followed = await repo.unfollow_user(current_user, user_id)
+        if user_followed:
+            return user_followed
+    except UserIsNotFollowed as uu: raise uu
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:

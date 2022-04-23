@@ -22,7 +22,7 @@ from visitegypt.infra.database.utils import (
     badges_collection_name,
     check_next
 )
-from visitegypt.core.errors.user_errors import UserNotFoundError, UserIsFollower, TripRequestNotFound
+from visitegypt.core.errors.user_errors import UserNotFoundError, UserIsFollower, TripRequestNotFound, UserIsNotFollowed
 from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
@@ -329,13 +329,37 @@ async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
 
         return True
-        
+    except UserIsFollower as usf: raise usf
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:
+    try:
+        user_to_unfollow = await get_user_by_id(user_id)
+        if user_to_unfollow is None: raise UserNotFoundError
+
+        ch = [n for n in  user_to_unfollow.followers if n.id == current_user.id]
+        if not ch: raise UserIsNotFollowed
+        # In this phase user1 is followed by current user
+        # We need to remove current user in user1 followers and remove user1 in current user following
+        # We are going to use the id not the full user
+
+        user_to_unfollow.followers.remove(current_user.id)
+        current_user.following.remove(user_to_unfollow.id)
+
+        await update_user(UserUpdate(followers=user_to_unfollow.followers), user_id=user_id)
+        await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
+
+        return True
+    except UserIsNotFollowed as uu: raise uu
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 async def request_trip_mate(current_user: UserResponse, user_id: str, request_mate: RequestTripMate)  -> Optional[UserResponse]:
     try:
         request_trip_mate = RequestTripMateInDB(**request_mate.dict(), is_approved=False, initator_id=current_user.id, id=ObjectId())
