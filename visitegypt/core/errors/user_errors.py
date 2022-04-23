@@ -16,3 +16,6 @@ class UserIsFollower(Exception):
 
 class TripRequestNotFound(Exception):
     pass
+
+class UserIsNotFollowed(Exception):
+    pass

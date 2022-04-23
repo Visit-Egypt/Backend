@@ -63,7 +63,8 @@ class UserRepo(Protocol):
 
     async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         pass
-
+    async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:
+        pass
     async def request_trip_mate(self, current_user: UserResponse, user_id: str, request_mate: RequestTripMate) -> Optional[UserResponse]:
         pass
     async def approve_request_trip_mate(self, current_user: UserResponse, req_id: str) -> Optional[UserResponse]:
