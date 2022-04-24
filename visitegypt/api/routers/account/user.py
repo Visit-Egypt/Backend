@@ -11,10 +11,11 @@ from visitegypt.core.accounts.entities.user import (
     BadgeTask,
     BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate
 )
-from visitegypt.core.authentication.entities.userauth import UserAuthBody
+from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
+from visitegypt.core.authentication.services.auth_service import login_google_access_token
 from visitegypt.core.errors.upload_error import ResourceNotFoundError
 from visitegypt.core.utilities.services import upload_service
 from visitegypt.core.errors.user_errors import (
@@ -54,6 +55,21 @@ router = APIRouter(responses=generate_response_for_openapi("User"))
 async def register_user(new_user: UserCreate):
     try:
         return await user_service.register(repo, new_user)
+    except EmailNotUniqueError: raise HTTPException(status.HTTP_409_CONFLICT, detail=EMAIL_TAKEN)
+    except Exception as err: raise err
+
+@router.post("/register/google", response_model=Token, status_code=status.HTTP_201_CREATED, tags=["User"], responses={**generate_response_for_openapi("User"), 409: {
+    "model": HTTPErrorModel,
+    "description": "User with this email already exists",
+    "content": {
+        "application/json": {
+        "example": {"errors": ["User with this email already exists"], "status_code": "409"}
+        }
+     }   
+    }})
+async def register_user(new_user: UserGoogleAuthBody):
+    try:
+        return await user_service.google_register(repo, new_user)
     except EmailNotUniqueError: raise HTTPException(status.HTTP_409_CONFLICT, detail=EMAIL_TAKEN)
     except Exception as err: raise err
 
@@ -136,6 +152,17 @@ async def update_user_role(
 async def login_user(auth_body: UserAuthBody):
     try:
         return await login_service(repo, auth_body)
+    except WrongEmailOrPassword:
+        raise HTTPException(401, detail=INCORRECT_LOGIN_INPUT)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err:
+        raise err
+
+@router.post("/login/google", response_model=Token, status_code=status.HTTP_200_OK, tags=["User"])
+async def login_user(token: UserGoogleAuthBody):
+    try:
+        return await login_google_access_token(repo, token)
     except WrongEmailOrPassword:
         raise HTTPException(401, detail=INCORRECT_LOGIN_INPUT)
     except UserNotFoundError:

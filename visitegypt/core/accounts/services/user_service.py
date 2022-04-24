@@ -12,12 +12,18 @@ from visitegypt.core.accounts.entities.user import (
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound
 from visitegypt.core.accounts.services.hash_service import get_password_hash
+from visitegypt.core.authentication.entities.userauth import UserGoogleAuthBody
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
 from pydantic import EmailStr
 from typing import List
+from fastapi import HTTPException, status
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import uuid
 
+CLIENT_ID = "1008372786382-b12co7cdm09mssi73ip89bdmtt66294i.apps.googleusercontent.com"
 
 async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     email = new_user.email.lower()
@@ -33,6 +39,35 @@ async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     token = await login_service(repo, new_user)
     return token
 
+async def google_register(repo: UserRepo, token: UserGoogleAuthBody) -> UserResponse:
+    try:
+        user = id_token.verify_oauth2_token(token.token, requests.Request(), CLIENT_ID)
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+
+    email = user["email"]
+    try:
+        user : Optional[UserResponse] = await repo.get_user_by_email(email)
+        if user: raise EmailNotUniqueError
+    except UserNotFoundError: pass
+    except EmailNotUniqueError as email_not_unique: raise email_not_unique
+    except Exception as e: raise e
+
+    password = str(uuid.uuid1())
+    password_hash = get_password_hash(password)
+    new_user = {
+        "email":user["email"],
+        "first_name":user["given_name"],
+        "last_name":user["family_name"],
+        "photo_link":user["picture"],
+        "password":password
+    }
+    await repo.create_user(User(new_user, hashed_password=password_hash))
+    token = await login_service(repo, new_user)
+    return token
 
 async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     try:
