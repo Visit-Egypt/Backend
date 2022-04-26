@@ -16,6 +16,7 @@ from visitegypt.core.authentication.entities.userauth import UserGoogleAuthBody
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
+from visitegypt.core.authentication.services.auth_service import login_google_access_token
 from pydantic import EmailStr
 from typing import List
 from fastapi import HTTPException, status
@@ -63,11 +64,11 @@ async def google_register(repo: UserRepo, token: UserGoogleAuthBody) -> UserResp
         "first_name":user["given_name"],
         "last_name":user["family_name"],
         "photo_link":user["picture"],
-        "password":password
+        "hashed_password":password_hash
     }
-    await repo.create_user(User(new_user, hashed_password=password_hash))
-    token = await login_service(repo, new_user)
-    return token
+    await repo.create_user(User(**new_user))
+    newtoken = await login_google_access_token(repo,token)
+    return newtoken
 
 async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     try:
