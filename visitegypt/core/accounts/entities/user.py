@@ -6,6 +6,7 @@ from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 
 
+
 class PlaceActivity(MongoModel):
     id: str
     finished: bool
@@ -60,7 +61,7 @@ class UserBase(MongoModel):
     photo_link: Optional[str] = None
     bio : Optional[str] = None
     birthdate: Optional[date] = None
-    interests: Optional[List[str]] = []
+    interests: Optional[List[OID]] = []
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
@@ -89,7 +90,7 @@ class UserUpdate(BaseModel):
     postViews:Optional[int] = 0
     bio : Optional[str] = None
     birthdate: Optional[date] = None
-    interests: Optional[List[str]] = None
+    interests: Optional[List[OID]] = None
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
@@ -136,3 +137,7 @@ class UsersPageResponse(MongoModel):
 
 
 
+
+
+class UserPrefsReq(BaseModel):
+    pref_list: List[str]
