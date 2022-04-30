@@ -9,7 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
     Badge,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody
 from visitegypt.core.authentication.services.auth_service import (
@@ -22,8 +22,11 @@ from visitegypt.core.errors.user_errors import (
     UserNotFoundError,
     EmailNotUniqueError,
     WrongEmailOrPassword, 
-    TripRequestNotFound
+    TripRequestNotFound,
+    UserIsFollower,
+    UserIsNotFollowed
 )
+from visitegypt.core.errors.tag_error import TagsNotFound
 from visitegypt.core.utilities.entities.upload import UploadRequest, UploadResponse
 from visitegypt.resources.strings import (
     EMAIL_TAKEN,
@@ -83,23 +86,15 @@ async def get_user(
         scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]],
     ),
 ):
-    if (
-        user_email == current_user.email
-        or str(user_id) == str(current_user.id)
-        or current_user.user_role == Role.ADMIN["name"]
-        or current_user.user_role == Role.SUPER_ADMIN["name"]
-    ):
-        try:
-            if user_id:
-                return await user_service.get_user_by_id(repo, user_id)
-            elif user_email:
-                return await user_service.get_user_by_email(repo, user_email)
-            else:
-                raise HTTPException(422, detail="No Query Parameter Provided")
-        except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
-        except Exception as e: raise e
-    else:
-        raise HTTPException(401, detail="Unautherized")
+    try:
+        if user_id:
+            return await user_service.get_user_by_id(repo, user_id)
+        elif user_email:
+            return await user_service.get_user_by_email(repo, user_email)
+        else:
+            raise HTTPException(422, detail="No Query Parameter Provided")
+    except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as e: raise e
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Admin Panel"])
@@ -298,11 +293,19 @@ async def get_user_activities(
 async def follow_user(user_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
     try:
         return await user_service.follow_user(repo, current_user, user_id)
+    except UserIsFollower: raise HTTPException(400, detail='You already followed the user')
+    except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err: raise err
+
+@router.post('/{user_id}/unfollow', summary="Follow a user", tags=['User'])
+async def unfollow_user(user_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.unfollow_user(repo, current_user, user_id)
+    except UserIsNotFollowed: raise HTTPException(400, detail='You are not following the user')
     except UserNotFoundError:
         raise HTTPException(404, detail=MESSAGE_404("User"))
     except Exception as err:
         raise err
-
 
 @router.post('/{user_id}/mate', summary="Request a trip mate", tags=['User'])
 async def follow_user(user_id: str, request_mate: RequestTripMate, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
@@ -323,3 +326,22 @@ async def follow_user(req_id: str, current_user: UserResponse = Security( get_cu
     except TripRequestNotFound: raise HTTPException(404, detail=MESSAGE_404("Trip Request not exists"))
     except Exception as err:
         raise err
+
+
+@router.post('/interests', summary="Add prefs", tags=['User'])
+async def add_prefs_user(prefs: UserPrefsReq, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.add_preferences(repo, current_user, prefs.pref_list)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err: raise err
+
+
+@router.post('/interests/delete', summary="Remove prefs", tags=['User'])
+async def follow_user(prefs: UserPrefsReq, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.remove_preferences(repo, current_user, prefs.pref_list)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except TagsNotFound as ue: raise HTTPException(404, detail=MESSAGE_404("Tag"))
+    except Exception as err: raise err

@@ -1,8 +1,10 @@
 from email.mime import message
+from operator import length_hint
 from shutil import ExecError
 from typing import List, Optional
 from pydantic import EmailStr
 import pymongo
+from watchgod import awatch
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
@@ -13,6 +15,7 @@ from visitegypt.core.accounts.entities.user import (
     BadgeUpdate,
     BadgeResponse,PlaceActivityUpdate,PlaceActivity,RequestTripMate, RequestTripMateInDB
 )
+from visitegypt.core.tags.entities.tag import TagUpdate, Tag
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import (
@@ -22,11 +25,14 @@ from visitegypt.infra.database.utils import (
     badges_collection_name,
     check_next
 )
-from visitegypt.core.errors.user_errors import UserNotFoundError, UserIsFollower, TripRequestNotFound
+from visitegypt.core.errors.user_errors import UserNotFoundError, UserIsFollower, TripRequestNotFound, UserIsNotFollowed
+from visitegypt.core.errors.tag_error import TagsNotFound
 from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
 from visitegypt.infra.errors import InfrastructureException
+from visitegypt.infra.database.repositories.tag_repository import update_many_tag_users, remove_many_tag_users
+
 from loguru import logger
 from fastapi import HTTPException, status
 async def create_user(new_user: User) -> Optional[UserResponse]:
@@ -159,6 +165,8 @@ async def get_all_users(page_num: int, limit: int) -> List[UsersPageResponse]:
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
+
 
 async def update_user_tokenID(user_id: str,new_toke_id:str,old_token_id:str=None):
     try:
@@ -316,7 +324,7 @@ async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         user_to_follow = await get_user_by_id(user_id)
         if user_to_follow is None: raise UserNotFoundError
         # if user_to_follow.followers is not None:
-        ch = [n for n in  user_to_follow.followers if n.id == current_user.id]
+        ch = [n for n in  user_to_follow.followers if n == current_user.id]
         if ch: raise UserIsFollower
         # In this phase user1 is not followed by current user
         # We need to save current user in user1 followers and save user1 in current user following
@@ -329,13 +337,36 @@ async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
 
         return True
-        
+    except UserIsFollower as usf: raise usf
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:
+    try:
+        user_to_unfollow = await get_user_by_id(user_id)
+        if user_to_unfollow is None: raise UserNotFoundError
+        ch = [n for n in  user_to_unfollow.followers if n == current_user.id]
+        if not ch: raise UserIsNotFollowed
+        # In this phase user1 is followed by current user
+        # We need to remove current user in user1 followers and remove user1 in current user following
+        # We are going to use the id not the full user
+
+        user_to_unfollow.followers.remove(current_user.id)
+        current_user.following.remove(user_to_unfollow.id)
+
+        await update_user(UserUpdate(followers=user_to_unfollow.followers), user_id=user_id)
+        await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
+
+        return True
+    except UserIsNotFollowed as uu: raise uu
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 async def request_trip_mate(current_user: UserResponse, user_id: str, request_mate: RequestTripMate)  -> Optional[UserResponse]:
     try:
         request_trip_mate = RequestTripMateInDB(**request_mate.dict(), is_approved=False, initator_id=current_user.id, id=ObjectId())
@@ -370,3 +401,59 @@ async def approve_request_trip_mate(current_user: UserResponse, req_id: str) -> 
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+
+async def add_preferences(current_user: UserResponse, list_of_prefs: List[str]) -> Optional[UserResponse]:
+    # 1- Check if the tag is already in Tags collection
+    # 2- Check if the user has the tag already
+    # 3- Add the tag to user's interests list and add the user id to tag's user list
+    # Put tag id in user
+    try:
+        user_prefs_set = set(current_user.interests)
+        new_prefs = set([ObjectId(pref) for pref in list_of_prefs])
+        prefs_to_add = new_prefs.difference(user_prefs_set)
+        print(prefs_to_add)
+        updated_user = await update_user(UserUpdate(interests=list(prefs_to_add)+current_user.interests), current_user.id)
+        updated_tag = await update_many_tag_users(str(current_user.id), list(prefs_to_add))
+        if updated_tag: return updated_user
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def remove_preferences(current_user: UserResponse, list_of_remv_prefs: List[str]) -> Optional[UserResponse]:
+    try:
+        prefs_object_ids = [ObjectId(pref) for pref in list_of_remv_prefs]
+
+        # Remove them from users' interests list:
+        result = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": ObjectId(str(current_user.id))},
+            {"$pull": {"interests": { '$in': prefs_object_ids}}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if result:
+            # Remove user if from tags collections
+            updated_tag = await remove_many_tag_users(str(current_user.id), prefs_object_ids)
+            if updated_tag: return UserResponse.from_mongo(result)
+        
+    except UserNotFoundError as ue:
+        raise ue
+    except TagsNotFound as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def get_bulk_users_by_id(users_ids: List[ObjectId]) -> Optional[List[UserResponse]]:
+    try:
+        cursor = (
+            db.client[DATABASE_NAME][users_collection_name]
+            .find({'_id': {'$in': users_ids}})
+        )
+        users_list = await cursor.to_list(length=None)
+        if len(users_list) <= 0:
+            raise UserNotFoundError
+        return [UserResponse.from_mongo(user) for user in users_list]
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
