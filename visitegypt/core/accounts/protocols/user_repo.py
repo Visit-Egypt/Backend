@@ -1,4 +1,4 @@
-from typing import Protocol, Optional
+from typing import Protocol, Optional, List
 
 from pydantic import EmailStr
 from visitegypt.core.accounts.entities.user import (
@@ -13,7 +13,6 @@ from visitegypt.core.accounts.entities.user import (
     PlaceActivityUpdate,
     RequestTripMate
 )
-from pymongo.results import DeleteResult
 
 
 class UserRepo(Protocol):
@@ -68,4 +67,10 @@ class UserRepo(Protocol):
     async def request_trip_mate(self, current_user: UserResponse, user_id: str, request_mate: RequestTripMate) -> Optional[UserResponse]:
         pass
     async def approve_request_trip_mate(self, current_user: UserResponse, req_id: str) -> Optional[UserResponse]:
+        pass
+    
+    async def add_preferences(self, current_user: UserResponse, list_of_prefs: List[str]) -> Optional[UserResponse]:
+        pass
+    
+    async def remove_preferences(self, current_user: UserResponse, list_of_remv_prefs: List[str]) -> Optional[UserResponse]:
         pass

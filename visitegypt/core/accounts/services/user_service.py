@@ -11,6 +11,7 @@ from visitegypt.core.accounts.entities.user import (
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound, UserIsFollower, UserIsNotFollowed
+from visitegypt.core.errors.tag_error import TagsNotFound
 from visitegypt.core.accounts.services.hash_service import get_password_hash
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
@@ -196,4 +197,18 @@ async def approve_request_trip_mate(repo: UserRepo, current_user: UserResponse, 
         return await repo.approve_request_trip_mate(current_user, req_id)
     except UserNotFoundError as un: raise un
     except TripRequestNotFound as trf: raise trf
+    except Exception as e: raise e
+
+async def add_preferences(repo: UserRepo, current_user: UserResponse, list_of_prefs: List[str]) -> Optional[UserResponse]:
+    try:
+        return await repo.add_preferences(current_user, list_of_prefs)
+    except UserNotFoundError as un: raise un
+    except Exception as e: raise e
+
+
+async def remove_preferences(repo: UserRepo, current_user: UserResponse, list_of_prefs: List[str]) -> Optional[UserResponse]:
+    try:
+        return await repo.remove_preferences(current_user, list_of_prefs)
+    except UserNotFoundError as un: raise un
+    except TagsNotFound as ue: raise ue
     except Exception as e: raise e

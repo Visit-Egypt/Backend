@@ -1,6 +1,8 @@
 from typing import List, Optional, Protocol
 from typing import Dict, Protocol
 from visitegypt.core.tags.entities.tag import Tag, TagUpdate
+from visitegypt.core.accounts.entities.user import UserResponse
+from bson import ObjectId
 
 class TagRepo(Protocol):
     async def get_all_tags(self, filters: Dict) -> List[Tag]:
@@ -12,4 +14,5 @@ class TagRepo(Protocol):
     async def delete_tag(self, tag_id: str) -> Optional[bool]:
         pass
 
-     
+    async def get_all_users_of_tags(self, tag_ids: List[str]) -> Optional[List[UserResponse]]:
+        pass

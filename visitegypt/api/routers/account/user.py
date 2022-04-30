@@ -9,7 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
     Badge,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody
 from visitegypt.core.authentication.services.auth_service import (
@@ -25,6 +25,7 @@ from visitegypt.core.errors.user_errors import (
     UserIsFollower,
     UserIsNotFollowed
 )
+from visitegypt.core.errors.tag_error import TagsNotFound
 from visitegypt.core.utilities.entities.upload import UploadRequest, UploadResponse
 from visitegypt.resources.strings import (
     EMAIL_TAKEN,
@@ -298,3 +299,22 @@ async def follow_user(req_id: str, current_user: UserResponse = Security( get_cu
     except TripRequestNotFound: raise HTTPException(404, detail=MESSAGE_404("Trip Request not exists"))
     except Exception as err:
         raise err
+
+
+@router.post('/interests', summary="Add prefs", tags=['User'])
+async def add_prefs_user(prefs: UserPrefsReq, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.add_preferences(repo, current_user, prefs.pref_list)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err: raise err
+
+
+@router.post('/interests/delete', summary="Remove prefs", tags=['User'])
+async def follow_user(prefs: UserPrefsReq, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+    try:
+        return await user_service.remove_preferences(repo, current_user, prefs.pref_list)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except TagsNotFound as ue: raise HTTPException(404, detail=MESSAGE_404("Tag"))
+    except Exception as err: raise err
