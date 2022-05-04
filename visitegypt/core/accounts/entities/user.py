@@ -65,6 +65,7 @@ class UserBase(MongoModel):
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
+    fav_places: Optional[List[OID]] = []
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -94,7 +95,7 @@ class UserUpdate(BaseModel):
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
-
+    fav_places: Optional[List[OID]] = []
 class UserInDBBase(UserBase):
     # id: str = Field(..., alias='_id')
     id: OID = Field()
@@ -141,3 +142,4 @@ class UsersPageResponse(MongoModel):
 
 class UserPrefsReq(BaseModel):
     pref_list: List[str]
+

@@ -17,8 +17,13 @@ from visitegypt.resources.strings import MESSAGE_404
 from visitegypt.core.errors.place_error import PlaceNotFoundError, PlaceAlreadyExists, ReviewOffensive
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
+from visitegypt.core.errors.user_errors import (
+    UserNotFoundError,
+    PlaceIsAlreadyInFavs,
+    PlaceIsNotInFavs
+)
 repo = get_dependencies().place_repo
-
+user_repo = get_dependencies().user_repo
 router = APIRouter(responses=generate_response_for_openapi("Place"))
 
 
@@ -222,4 +227,49 @@ async def websocket_endpoint(websocket: WebSocket):
 async def get_cities():
     try:
         return await place_service.get_cities(repo)
+    except Exception as e: raise e
+
+
+@router.post(
+    "/favs/{place_id}",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add Place to user's favourites",
+    tags=["Place"]
+)
+async def add_to_favs(
+    place_id: str,
+    current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[
+            Role.USER["name"],
+            Role.SUPER_ADMIN["name"],
+            Role.ADMIN["name"]
+        ]
+    )):
+    try:
+        return await place_service.add_to_favs(user_repo, current_user, place_id)
+    except PlaceIsAlreadyInFavs: raise HTTPException(status_code=400, detail="Place is already in favourites")
+    except UserNotFoundError: raise HTTPException(status_code=404, detail=MESSAGE_404("User"))
+    except Exception as e: raise e
+
+@router.delete(
+    "/favs/{place_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove Place from user's favourites",
+    tags=["Place"]
+)
+async def remove_from_favs(
+    place_id: str,
+    current_user: UserResponse = Security(
+        get_current_user,
+        scopes=[
+            Role.USER["name"],
+            Role.SUPER_ADMIN["name"],
+            Role.ADMIN["name"]
+        ]
+    )):
+    try:
+        return await place_service.remove_from_favs(user_repo, current_user, place_id)
+    except PlaceIsNotInFavs: raise HTTPException(status_code=400, detail="Place is not in favourites")
+    except UserNotFoundError: raise HTTPException(status_code=404, detail=MESSAGE_404("User"))
     except Exception as e: raise e

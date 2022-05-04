@@ -74,3 +74,10 @@ class UserRepo(Protocol):
     
     async def remove_preferences(self, current_user: UserResponse, list_of_remv_prefs: List[str]) -> Optional[UserResponse]:
         pass
+
+    async def add_place_to_favs(self, current_user: UserResponse, place_id: str) -> Optional[bool]:
+        pass
+
+    async def remove_place_from_favs(self,current_user: UserResponse, place_id: str) -> Optional[bool]:
+        pass
+    

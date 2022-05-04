@@ -1,6 +1,3 @@
-from email.mime import message
-from operator import length_hint
-from shutil import ExecError
 from typing import List, Optional
 from pydantic import EmailStr
 import pymongo
@@ -13,9 +10,11 @@ from visitegypt.core.accounts.entities.user import (
     Badge,
     BadgeTask,
     BadgeUpdate,
-    BadgeResponse,PlaceActivityUpdate,PlaceActivity,RequestTripMate, RequestTripMateInDB
+    BadgeResponse,
+    PlaceActivityUpdate,
+    RequestTripMate,
+    RequestTripMateInDB
 )
-from visitegypt.core.tags.entities.tag import TagUpdate, Tag
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import (
@@ -25,13 +24,22 @@ from visitegypt.infra.database.utils import (
     badges_collection_name,
     check_next
 )
-from visitegypt.core.errors.user_errors import UserNotFoundError, UserIsFollower, TripRequestNotFound, UserIsNotFollowed
+from visitegypt.core.errors.user_errors import (
+    UserNotFoundError,
+    UserIsFollower,
+    TripRequestNotFound,
+    UserIsNotFollowed,
+    PlaceIsAlreadyInFavs,
+    PlaceIsNotInFavs
+)
 from visitegypt.core.errors.tag_error import TagsNotFound
-from visitegypt.resources.strings import USER_DELETED
 from bson import ObjectId
 from pymongo import ReturnDocument
 from visitegypt.infra.errors import InfrastructureException
-from visitegypt.infra.database.repositories.tag_repository import update_many_tag_users, remove_many_tag_users
+from visitegypt.infra.database.repositories.tag_repository import (
+    update_many_tag_users,
+    remove_many_tag_users
+)
 
 from loguru import logger
 from fastapi import HTTPException, status
@@ -411,7 +419,6 @@ async def add_preferences(current_user: UserResponse, list_of_prefs: List[str]) 
         user_prefs_set = set(current_user.interests)
         new_prefs = set([ObjectId(pref) for pref in list_of_prefs])
         prefs_to_add = new_prefs.difference(user_prefs_set)
-        print(prefs_to_add)
         updated_user = await update_user(UserUpdate(interests=list(prefs_to_add)+current_user.interests), current_user.id)
         updated_tag = await update_many_tag_users(str(current_user.id), list(prefs_to_add))
         if updated_tag: return updated_user
@@ -454,6 +461,48 @@ async def get_bulk_users_by_id(users_ids: List[ObjectId]) -> Optional[List[UserR
         if len(users_list) <= 0:
             raise UserNotFoundError
         return [UserResponse.from_mongo(user) for user in users_list]
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def add_place_to_favs(current_user: UserResponse, place_id: str) -> Optional[bool]:
+    try:
+        current_user_favs = current_user.fav_places
+        o_place_id = ObjectId(place_id)
+        # Check if place id is already in the list
+        ch = [n for n in  current_user_favs if n == o_place_id]
+        if ch: raise PlaceIsAlreadyInFavs
+
+        current_user_favs.append(o_place_id)
+        result = await update_user(UserUpdate(fav_places=current_user_favs), user_id=str(current_user.id)) 
+
+        if result: return True
+        else: return False
+
+    except PlaceIsAlreadyInFavs as pia: raise pia
+    except UserNotFoundError as ue: raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def remove_place_from_favs(current_user: UserResponse, place_id: str) -> Optional[bool]:
+    try:
+        current_user_favs = current_user.fav_places
+        o_place_id = ObjectId(place_id)
+        # Check if place id is not in the list
+        ch = [n for n in  current_user_favs if n == o_place_id]
+        if not ch: raise PlaceIsNotInFavs
+        current_user_favs.remove(o_place_id)
+        result = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": ObjectId(str(current_user.id))},
+            {"$pull": {"fav_places": o_place_id}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if result: return True
+        else: return False
+
+    except PlaceIsNotInFavs as pia: raise pia
+    except UserNotFoundError as ue: raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
