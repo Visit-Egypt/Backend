@@ -19,3 +19,9 @@ class TripRequestNotFound(Exception):
 
 class UserIsNotFollowed(Exception):
     pass
+
+class PlaceIsAlreadyInFavs(Exception):
+    pass
+
+class PlaceIsNotInFavs(Exception):
+    pass

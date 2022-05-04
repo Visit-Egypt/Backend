@@ -7,10 +7,16 @@ from visitegypt.core.places.entities.place import (
     PlaceBase,
     PlaceForSearch
 )
+from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.core.places.protocols.place_repo import PlaceRepo
+from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from typing import List, Optional
 from visitegypt.core.errors.place_error import PlaceNotFoundError, PlaceAlreadyExists
-
+from visitegypt.core.errors.user_errors import (
+    UserNotFoundError,
+    PlaceIsAlreadyInFavs,
+    PlaceIsNotInFavs
+)
 
 async def get_all_places_paged(
     repo: PlaceRepo, page_num: int = 1, limit: int = 15
@@ -122,4 +128,19 @@ async def delete_review(repo: PlaceRepo, place_id: str, review: review):
 async def search_places(repo:PlaceRepo, search_str:str) -> Optional[List[PlaceForSearch]]:
     try:
         return await repo.search_place(search_str)
+    except Exception as e: raise e
+
+
+async def add_to_favs(repo: UserRepo, current_user: UserResponse, place_id: str) -> Optional[bool]:
+    try:
+        return await repo.add_place_to_favs(current_user, place_id)
+    except PlaceIsAlreadyInFavs as pia: raise pia
+    except UserNotFoundError as ue: raise ue
+    except Exception as e: raise e
+
+async def remove_from_favs(repo: UserRepo,  current_user: UserResponse, place_id: str) -> Optional[bool]:
+    try:
+        return await repo.remove_place_from_favs(current_user, place_id)
+    except PlaceIsNotInFavs as pia: raise pia
+    except UserNotFoundError as ue: raise ue
     except Exception as e: raise e
