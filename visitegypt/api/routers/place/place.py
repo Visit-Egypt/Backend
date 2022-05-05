@@ -43,13 +43,13 @@ async def get_places(page_num: int = 1, limit: int = 15):
     except Exception as e: raise e
 
 @router.get(
-    "/ids",
+    "/activityid",
     response_model=List[PlaceInDB],
     status_code=status.HTTP_200_OK,
-    summary="Get some places by ids",
+    summary="Get some places by activity id",
     tags=["Place"]
 )
-async def get_places(id: Optional[list[str]] = Query(None)):
+async def get_some_places(id: Optional[list[str]] = Query(None)):
     try:
         places_ids = id
         return await place_service.get_some_places(
