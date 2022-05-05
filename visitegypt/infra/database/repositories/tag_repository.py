@@ -1,5 +1,5 @@
 from typing import Optional, List
-from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation, GetTagResponse
+from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import tags_collection_name
@@ -10,19 +10,19 @@ from bson import ObjectId
 from loguru import logger
 from pymongo import ReturnDocument
 
-async def get_all_tags(filter: dict) -> List[GetTagResponse]:
+async def get_all_tags(filter: dict) -> List[Tag]:
     try:
         cursor = db.client[DATABASE_NAME][tags_collection_name].find(filter)
         tags_list = await cursor.to_list(length=None)
         if not tags_list: raise TagsNotFound
-        tags_resp = [GetTagResponse.from_mongo(tag) for tag in tags_list]
+        tags_resp = [Tag.from_mongo(tag) for tag in tags_list]
         return tags_resp
     except TagsNotFound as tagnotfound: raise tagnotfound
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
+async def add_tag(new_tag: TagCreation) -> Optional[Tag]:
     try:
         # Check if the tag already exists
         tag_m = await db.client[DATABASE_NAME][tags_collection_name].find_one({'name': new_tag.name})
@@ -32,7 +32,7 @@ async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
         )
         if row.inserted_id:
             added_tag = await db.client[DATABASE_NAME][tags_collection_name].find_one( {"_id": ObjectId(row.inserted_id)})
-            return GetTagResponse.from_mongo(added_tag)
+            return Tag.from_mongo(added_tag)
         raise TagCreationError
     except TagCreationError as tc: raise tc
     except TagAlreadyExists as tae: raise tae
@@ -40,7 +40,7 @@ async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[GetTagResponse]:
+async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[Tag]:
     try:
         result = await db.client[DATABASE_NAME][
             tags_collection_name
@@ -50,7 +50,7 @@ async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[GetTagRespo
             return_document=ReturnDocument.AFTER,
         )
         if result:
-            return GetTagResponse.from_mongo(result)
+            return Tag.from_mongo(result)
         raise TagsNotFound
     except TagsNotFound as ue:
         raise ue

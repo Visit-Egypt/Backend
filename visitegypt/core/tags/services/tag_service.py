@@ -1,11 +1,11 @@
 from optparse import Option
-from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation, GetTagResponse
+from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation
 from visitegypt.core.tags.protocols.tag_repo import TagRepo
 from typing import Dict, List, Optional
 from visitegypt.core.errors.tag_error import TagsNotFound, TagAlreadyExists, TagCreationError
 from visitegypt.core.accounts.entities.user import UserResponseInTags
 
-async def get_all_tags(repo: TagRepo, filters: Dict) -> Optional[List[GetTagResponse]]:
+async def get_all_tags(repo: TagRepo, filters: Dict) -> Optional[List[Tag]]:
     try:
         tags_list = await repo.get_all_tags(filters)
         if tags_list:
@@ -15,7 +15,7 @@ async def get_all_tags(repo: TagRepo, filters: Dict) -> Optional[List[GetTagResp
     except Exception as e: raise e
 
 
-async def add_new_tag(repo: TagRepo, new_tag: TagCreation) -> Optional[GetTagResponse]:
+async def add_new_tag(repo: TagRepo, new_tag: TagCreation) -> Optional[Tag]:
     try:
         # Add the tag to the db
         return await repo.add_tag(new_tag)
@@ -23,7 +23,7 @@ async def add_new_tag(repo: TagRepo, new_tag: TagCreation) -> Optional[GetTagRes
     except TagCreationError as tcr: raise tcr
     except Exception as e: raise e
 
-async def update_tag(repo: TagRepo, update_tag: TagUpdate, tag_id: str) -> Optional[GetTagResponse]:
+async def update_tag(repo: TagRepo, update_tag: TagUpdate, tag_id: str) -> Optional[Tag]:
     try:
         return await repo.update_tag(update_tag, tag_id)
     except TagsNotFound as tnf: raise tnf

@@ -1,8 +1,8 @@
-from email import message
+from tracemalloc import start
 from typing import Any, List, Optional, Dict
-from pydantic import Field
+from pydantic import BaseModel, Field
 from visitegypt.core.base_model import MongoModel, OID
-
+from visitegypt.core.tags.entities.tag import Tag
 
 class Hint(MongoModel):
     hint: str
@@ -22,6 +22,7 @@ class PlaceActivity(MongoModel):
     description: str
     duration:str
     maxProgress: int
+
 class review(MongoModel):
     rating: float
     review: Optional[str]
@@ -40,7 +41,7 @@ class PlaceBase(MongoModel):
     opening_hours: Optional[str]
     city: Optional[str]
     ticket_prices: Optional[Dict[Any, Any]]
-    category: Optional[str]
+    category: List[Tag] = []
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
     placeActivities: Optional[List[PlaceActivity]]
@@ -60,6 +61,7 @@ class UpdatePlace(MongoModel):
     image_urls: Optional[List[str]]
     default_image: Optional[str]
     opening_hours: Optional[str]
+    category: List[Tag] = []
     city: Optional[str]
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
@@ -82,3 +84,10 @@ class PlaceForSearch(MongoModel):
     id: OID = Field()
     title: str
     default_image: Optional[str]
+
+class OpeningHoursPeriods(BaseModel):
+    pass
+
+class OpeningHours(BaseModel):
+    day : str = ''
+    periods: bool

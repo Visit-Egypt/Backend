@@ -7,6 +7,8 @@ class Tag(MongoModel):
     id: OID = Field()
     name: str
     description: Optional[str] = ''
+
+class TageInDB(Tag):
     users: Optional[List[OID]] = []
     posts: Optional[List[OID]] = []
 
@@ -22,8 +24,3 @@ class TagUpdate(BaseModel):
 
 class UsersTagsReq(BaseModel):
     tags_ids: List[str]
-
-class GetTagResponse(MongoModel):
-    id: OID = Field()
-    name: str
-    description: Optional[str] = ''
