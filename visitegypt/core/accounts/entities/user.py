@@ -130,6 +130,11 @@ class UserResponse(UserInDBBase):
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
 
+class UserResponseInTags(MongoModel):
+    id: OID = Field()
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    photo_link: Optional[str] = None
 
 class UsersPageResponse(MongoModel):
     current_page: int

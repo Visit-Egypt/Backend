@@ -1,28 +1,28 @@
 from typing import Optional, List
-from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation
+from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation, GetTagResponse
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import tags_collection_name
 from visitegypt.infra.errors import InfrastructureException
 from visitegypt.core.errors.tag_error import TagsNotFound, TagCreationError, TagAlreadyExists
-from visitegypt.core.accounts.entities.user import UserResponse
+from visitegypt.core.accounts.entities.user import UserResponseInTags
 from bson import ObjectId
 from loguru import logger
 from pymongo import ReturnDocument
 
-async def get_all_tags(filter: dict) -> List[Tag]:
+async def get_all_tags(filter: dict) -> List[GetTagResponse]:
     try:
         cursor = db.client[DATABASE_NAME][tags_collection_name].find(filter)
         tags_list = await cursor.to_list(length=None)
         if not tags_list: raise TagsNotFound
-        tags_resp = [Tag.from_mongo(tag) for tag in tags_list]
+        tags_resp = [GetTagResponse.from_mongo(tag) for tag in tags_list]
         return tags_resp
     except TagsNotFound as tagnotfound: raise tagnotfound
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def add_tag(new_tag: TagCreation) -> Optional[Tag]:
+async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
     try:
         # Check if the tag already exists
         tag_m = await db.client[DATABASE_NAME][tags_collection_name].find_one({'name': new_tag.name})
@@ -32,7 +32,7 @@ async def add_tag(new_tag: TagCreation) -> Optional[Tag]:
         )
         if row.inserted_id:
             added_tag = await db.client[DATABASE_NAME][tags_collection_name].find_one( {"_id": ObjectId(row.inserted_id)})
-            return Tag.from_mongo(added_tag)
+            return GetTagResponse.from_mongo(added_tag)
         raise TagCreationError
     except TagCreationError as tc: raise tc
     except TagAlreadyExists as tae: raise tae
@@ -40,7 +40,7 @@ async def add_tag(new_tag: TagCreation) -> Optional[Tag]:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[Tag]:
+async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[GetTagResponse]:
     try:
         result = await db.client[DATABASE_NAME][
             tags_collection_name
@@ -50,7 +50,7 @@ async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[Tag]:
             return_document=ReturnDocument.AFTER,
         )
         if result:
-            return Tag.from_mongo(result)
+            return GetTagResponse.from_mongo(result)
         raise TagsNotFound
     except TagsNotFound as ue:
         raise ue
@@ -101,7 +101,7 @@ async def remove_many_tag_users(user_id: str, tag_id: List[ObjectId]):
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def get_all_users_of_tags(tag_ids: List[str]) -> Optional[List[UserResponse]]:
+async def get_all_users_of_tags(tag_ids: List[str]) -> Optional[List[UserResponseInTags]]:
     o_tag = [ObjectId(tag) for tag in tag_ids]
     
     pipeline = [
@@ -128,7 +128,8 @@ async def get_all_users_of_tags(tag_ids: List[str]) -> Optional[List[UserRespons
         result = await db.client[DATABASE_NAME][tags_collection_name].aggregate(pipeline).to_list(length=None)
         if result:
             from visitegypt.infra.database.repositories.user_repository import get_bulk_users_by_id
-            return await get_bulk_users_by_id(result[0].get('data'))
+            users = await get_bulk_users_by_id(result[0].get('data'))
+            return users
         raise TagsNotFound
     except TagsNotFound as ue:
         raise ue
