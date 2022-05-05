@@ -48,9 +48,7 @@ async def get_some_places(places_ids:List) -> List[PlaceInDB]:
     try:
         cursor = (
             db.client[DATABASE_NAME][places_collection_name].find(
-            {"$or":[
-                {"_id":{"$in":list(map(ObjectId,places_ids))}}
-            ]}
+                {"placeActivities.id":{"$in":places_ids}}
         ))
         places_list = await cursor.to_list(1000)
         if not places_list:
