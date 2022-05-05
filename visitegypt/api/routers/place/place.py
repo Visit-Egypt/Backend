@@ -1,6 +1,6 @@
-from typing import List
+from typing import List,Optional
 import ujson
-from fastapi import APIRouter, status, HTTPException, Security, WebSocket
+from fastapi import APIRouter, status, HTTPException, Security, WebSocket, Query
 from visitegypt.api.container import get_dependencies
 from visitegypt.core.places.services import place_service
 from visitegypt.core.places.entities.place import (
@@ -38,6 +38,22 @@ async def get_places(page_num: int = 1, limit: int = 15):
     try:
         return await place_service.get_all_places_paged(
             repo, page_num=page_num, limit=limit
+        )
+    except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Places"))
+    except Exception as e: raise e
+
+@router.get(
+    "/ids",
+    response_model=List[PlaceInDB],
+    status_code=status.HTTP_200_OK,
+    summary="Get some places by ids",
+    tags=["Place"]
+)
+async def get_places(id: Optional[list[str]] = Query(None)):
+    try:
+        places_ids = id
+        return await place_service.get_some_places(
+            repo, places_ids
         )
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Places"))
     except Exception as e: raise e
