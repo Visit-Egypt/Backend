@@ -22,3 +22,8 @@ class TagUpdate(BaseModel):
 
 class UsersTagsReq(BaseModel):
     tags_ids: List[str]
+
+class GetTagResponse(MongoModel):
+    id: OID = Field()
+    name: str
+    description: Optional[str] = ''

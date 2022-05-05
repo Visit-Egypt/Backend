@@ -13,7 +13,8 @@ from visitegypt.core.accounts.entities.user import (
     BadgeResponse,
     PlaceActivityUpdate,
     RequestTripMate,
-    RequestTripMateInDB
+    RequestTripMateInDB,
+    UserResponseInTags
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
@@ -451,7 +452,7 @@ async def remove_preferences(current_user: UserResponse, list_of_remv_prefs: Lis
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def get_bulk_users_by_id(users_ids: List[ObjectId]) -> Optional[List[UserResponse]]:
+async def get_bulk_users_by_id(users_ids: List[ObjectId]) -> Optional[List[UserResponseInTags]]:
     try:
         cursor = (
             db.client[DATABASE_NAME][users_collection_name]
@@ -460,7 +461,7 @@ async def get_bulk_users_by_id(users_ids: List[ObjectId]) -> Optional[List[UserR
         users_list = await cursor.to_list(length=None)
         if len(users_list) <= 0:
             raise UserNotFoundError
-        return [UserResponse.from_mongo(user) for user in users_list]
+        return [UserResponseInTags.from_mongo(user) for user in users_list]
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
