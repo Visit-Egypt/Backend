@@ -44,6 +44,25 @@ async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def get_some_places(places_ids:List) -> List[PlaceInDB]:
+    try:
+        cursor = (
+            db.client[DATABASE_NAME][places_collection_name].find(
+            {"$or":[
+                {"_id":{"$in":list(map(ObjectId,places_ids))}}
+            ]}
+        ))
+        places_list = await cursor.to_list(1000)
+        if not places_list:
+            raise PlaceNotFoundError
+        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
+        return places_list_response
+    except PlaceNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
 async def get_all_city_places(city_name: str,page_num: int, limit: int) -> PlacesPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
