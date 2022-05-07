@@ -1,3 +1,6 @@
+from distutils.log import error
+from msilib.schema import Error
+from time import strptime
 from fastapi import Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from jose import jwt
@@ -8,7 +11,6 @@ from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.core.accounts.entities.user import UserResponse
 from visitegypt.config.environment import SECRET_KEY, ALGORITHM, JWT_EXPIRATION_DELTA, DATABASE_NAME
 from visitegypt.core.authentication.entities.token import TokenPayload, Token
-from visitegypt.core.accounts.services.user_service import get_user_by_id
 from loguru import logger
 from visitegypt.api.container import get_dependencies
 from collections import ChainMap
@@ -18,6 +20,9 @@ from visitegypt.core.authentication.services.auth_service import create_access_t
 from visitegypt.infra.database.events import db
 from visitegypt.infra.database.utils import users_collection_name
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
+from visitegypt.core.accounts.entities.user import UserCreateToken
+from fastapi_mail import FastMail, MessageSchema,ConnectionConfig
+from visitegypt.config.environment import MAIL_FROM,MAIL_PASSWORD,MAIL_USERNAME
 
 
 repo = get_dependencies().user_repo
@@ -32,6 +37,17 @@ reusable_oauth2 = OAuth2PasswordBearer(
         Role.SUPER_ADMIN["name"]: Role.SUPER_ADMIN["description"],
     },
 )
+
+conf = ConnectionConfig(
+        MAIL_USERNAME=MAIL_USERNAME,
+        MAIL_PASSWORD=MAIL_PASSWORD,
+        MAIL_FROM = MAIL_FROM,
+        MAIL_PORT=587,
+        MAIL_SERVER="smtp.gmail.com",
+        MAIL_TLS=True,
+        MAIL_SSL=False,
+        MAIL_FROM_NAME="Visit Egypt Registration"
+        )
 
 
 async def get_current_user(
@@ -78,6 +94,18 @@ async def get_current_user(
         )
     return user
 
+def get_register_user(token:str) -> UserCreateToken:
+    try:
+        payload = jwt.decode(token, str(SECRET_KEY), algorithms=[ALGORITHM])
+        return payload
+    except (jwt.JWTError, ValidationError):
+        logger.error("Error Decoding Token", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+    except Exception as e:
+        raise e
 
 async def get_refreshed_token(repo:UserRepo,access_token: str,refresh_token:str):
     credentials_exception = HTTPException(
@@ -125,3 +153,19 @@ async def common_parameters(
     filter_filters_from_none = {k: v for k, v in dict_of_filters.items() if v}
     return {"filters": filter_filters_from_none, "page_num": page_num, "limit": limit}
 
+async def send_mail(url:str,email):
+    try:
+        print(MAIL_FROM+"   "+MAIL_PASSWORD+"   "+MAIL_USERNAME)
+
+        template = "Hi thanks for registering in Visit Egypt please click on the link below to confirm your account \n"+url
+ 
+        message = MessageSchema(
+            subject="Visit Egypt Registration",
+            recipients=[email],
+            body=template
+            )
+    
+        fm = FastMail(conf)
+        await fm.send_message(message)
+    except Exception as e:
+        raise e
