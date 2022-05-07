@@ -14,8 +14,8 @@ from fastapi import HTTPException, status
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from visitegypt.core.accounts.entities.user import UserCreateToken
+from visitegypt.config.environment import CLIENT_ID
 
-CLIENT_ID = "1008372786382-b12co7cdm09mssi73ip89bdmtt66294i.apps.googleusercontent.com"
 
 """
 def create_access_token(
