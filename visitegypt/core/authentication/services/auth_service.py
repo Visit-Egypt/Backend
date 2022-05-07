@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from re import U
 from typing import Optional
 from jose import jwt
 from pydantic import ValidationError
@@ -12,6 +13,7 @@ import uuid
 from fastapi import HTTPException, status
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from visitegypt.core.accounts.entities.user import UserCreateToken
 
 CLIENT_ID = "1008372786382-b12co7cdm09mssi73ip89bdmtt66294i.apps.googleusercontent.com"
 
@@ -68,6 +70,12 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
         refresh_token=create_refresh_token(tokent_id=token_id),
         user_id=str(user_to_auth.id),
     )
+
+def register_access_token(repo: UserRepo, user):
+    access_token = create_access_token(
+            user, expires_delta=JWT_EXPIRATION_DELTA
+        )
+    return access_token
 
 async def login_google_access_token(repo: UserRepo, token: UserGoogleAuthBody) -> Token:
     try:

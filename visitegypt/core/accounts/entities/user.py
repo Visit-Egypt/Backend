@@ -60,7 +60,7 @@ class UserBase(MongoModel):
     phone_number: Optional[str] = None
     photo_link: Optional[str] = None
     bio : Optional[str] = None
-    birthdate: Optional[date] = None
+    birthdate: Optional[str] = None
     interests: Optional[List[OID]] = []
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
@@ -69,7 +69,11 @@ class UserBase(MongoModel):
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
+    birthdate: Optional[date] = None
     password: str
+
+class UserCreateToken(UserBase):
+    hashed_password: str
 
 
 # Properties to receive via API on update
@@ -90,7 +94,7 @@ class UserUpdate(BaseModel):
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[int] = 0
     bio : Optional[str] = None
-    birthdate: Optional[date] = None
+    birthdate: Optional[str] = None
     interests: Optional[List[OID]] = None
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
