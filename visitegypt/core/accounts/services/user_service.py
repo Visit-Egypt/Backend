@@ -29,7 +29,9 @@ from google.auth.transport import requests
 import uuid
 from visitegypt.api.utils import get_register_user,send_mail
 from datetime import datetime
-from visitegypt.config.environment import CLIENT_ID,API_HOST
+from visitegypt.config.environment import CLIENT_ID
+
+API_HOST = "https://visit-egypt.herokuapp.com"
 
 async def new_register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     new_user = new_user.dict()
