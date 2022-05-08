@@ -1,6 +1,6 @@
 from visitegypt.api.container import get_dependencies
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Security, Depends, status
+from fastapi import APIRouter, HTTPException, Security, Depends, status, Request
 from visitegypt.core.accounts.services import user_service
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
@@ -11,7 +11,7 @@ from visitegypt.core.accounts.entities.user import (
     BadgeTask,
     BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq
 )
-from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody
+from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody,UserPasswordReset
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
@@ -39,13 +39,15 @@ from visitegypt.api.utils import get_current_user,get_refreshed_token
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.api.errors.http_error import HTTPErrorModel
-from datetime import datetime
-from visitegypt.api.utils import send_mail
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 repo = get_dependencies().user_repo
 upload_repo = get_dependencies().upload_repo
 
 router = APIRouter(responses=generate_response_for_openapi("User"))
-
+BASE_PATH = Path(__file__).resolve().parent
+TEMPLATES = Jinja2Templates(directory=str(BASE_PATH / "templates"))
 
 # Handlers
 @router.post("/register", status_code=status.HTTP_201_CREATED, tags=["User"], responses={**generate_response_for_openapi("User"), 409: {
@@ -63,10 +65,29 @@ async def register_user(new_user: UserCreate):
     except EmailNotUniqueError: raise HTTPException(status.HTTP_409_CONFLICT, detail=EMAIL_TAKEN)
     except Exception as err: raise err
 
+@router.get("/forgotpassword/{email}", status_code=status.HTTP_201_CREATED, tags=["User"])
+async def reset_password(email:str):
+    try:
+        return await user_service.forgot_password(repo, email)
+    except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err: raise err
+
+@router.get("/resetpassword/{user_id}/{token}", status_code=status.HTTP_201_CREATED, tags=["User"], response_class=HTMLResponse, include_in_schema=False)
+async def reset_password(request: Request,user_id:str,token:str):
+    try:
+        await user_service.check_user_id(repo,user_id,token)
+        return TEMPLATES.TemplateResponse("reset_password.html", {"request": request,"user_id": user_id, "token": token})
+    except Exception as err: raise err
+
+@router.post("/resetpassword/{user_id}/{token}", status_code=status.HTTP_201_CREATED, tags=["User"], include_in_schema=False)
+async def reset_password(user_id:str,token:str,new_password:UserPasswordReset):
+    try:
+        return await user_service.reset_password(repo,user_id,token,new_password.password)
+    except Exception as err: raise err
+
 @router.get("/verfiy/{token}", status_code=status.HTTP_201_CREATED, tags=["User"], include_in_schema=False)
 async def create_user(token:str):
     try:
-        print(token)
         return await user_service.create_user(repo, token)
     except EmailNotUniqueError: raise HTTPException(status.HTTP_409_CONFLICT, detail=EMAIL_TAKEN)
     except Exception as err: raise err

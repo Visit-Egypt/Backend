@@ -104,6 +104,19 @@ def get_register_user(token:str) -> UserCreateToken:
     except Exception as e:
         raise e
 
+def get_reset_password_user(user_hash:str, token:str) -> UserCreateToken:
+    try:
+        payload = jwt.decode(token, (str(SECRET_KEY)+user_hash), algorithms=[ALGORITHM])
+        return payload
+    except (jwt.JWTError, ValidationError):
+        logger.error("Error Decoding Token", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+    except Exception as e:
+        raise e
+
 async def get_refreshed_token(repo:UserRepo,access_token: str,refresh_token:str):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -152,12 +165,27 @@ async def common_parameters(
 
 async def send_mail(url:str,email):
     try:
-        print(MAIL_FROM+"   "+MAIL_PASSWORD+"   "+MAIL_USERNAME)
 
         template = "Hi thanks for registering in Visit Egypt please click on the link below to confirm your account \n"+url
  
         message = MessageSchema(
             subject="Visit Egypt Registration",
+            recipients=[email],
+            body=template
+            )
+    
+        fm = FastMail(conf)
+        await fm.send_message(message)
+    except Exception as e:
+        raise e
+
+async def send__reset_password_mail(url:str,email):
+    try:
+
+        template = "Hi please use the following link to resetyou password \nIf you didn't request password reset please ignore this email \n"+url
+ 
+        message = MessageSchema(
+            subject="Visit Egypt Reset Password",
             recipients=[email],
             body=template
             )
