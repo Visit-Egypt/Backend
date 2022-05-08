@@ -67,6 +67,8 @@ class UserBase(MongoModel):
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
     fav_places: Optional[List[OID]] = []
 
+
+
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str
@@ -96,6 +98,9 @@ class UserUpdate(BaseModel):
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
     fav_places: Optional[List[OID]] = []
+    device_token: Optional[str] = None
+    device_arn_endpoint: Optional[str] = None
+
 class UserInDBBase(UserBase):
     # id: str = Field(..., alias='_id')
     id: OID = Field()
@@ -103,6 +108,9 @@ class UserInDBBase(UserBase):
     # created_at: datetime
     # updated_at: datetime
 
+class UserPushNotification(UserInDBBase):
+    device_token: str = ''
+    device_arn_endpoint: str = ''
 
 # Additional properties to return via API
 class User(UserBase):
@@ -140,8 +148,6 @@ class UsersPageResponse(MongoModel):
     current_page: int
     has_next: bool
     users: Optional[List[UserResponse]]
-
-
 
 
 
