@@ -90,7 +90,6 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
-    password: Optional[str] = None
     photo_link: Optional[str] = None
     xp:Optional[int] = 0
     profileFrame:Optional[ProfileFrame] = None
@@ -105,6 +104,8 @@ class UserUpdate(BaseModel):
     device_token: Optional[str] = None
     device_arn_endpoint: Optional[str] = None
 
+class UserUpdatePassword(BaseModel):
+    hashed_password: str
 class UserInDBBase(UserBase):
     # id: str = Field(..., alias='_id')
     id: OID = Field()

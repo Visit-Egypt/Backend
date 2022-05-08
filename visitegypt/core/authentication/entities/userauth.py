@@ -8,3 +8,6 @@ class UserAuthBody(BaseModel):
 
 class UserGoogleAuthBody(BaseModel):
     token:str
+
+class UserPasswordReset(BaseModel):
+    password:str

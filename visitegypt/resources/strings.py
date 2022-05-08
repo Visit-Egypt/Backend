@@ -17,3 +17,4 @@ POST_DELETED = "Post is deleted"
 
 def MESSAGE_404(m: str):
     return f"{m} not exist"
+    
