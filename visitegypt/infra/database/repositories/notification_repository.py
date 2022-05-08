@@ -84,5 +84,37 @@ async def send_notification(notification: Notification, sender_id: ObjectId) -> 
 async def send_notifications_with_tags(notification: Notification, sender_id: ObjectId) -> bool:
     pass
 
+
 async def send_notification_to_specific_users(notification: Notification, sender_id: ObjectId) -> bool:
-    pass
+    try:
+        title = notification.title
+        msg = notification.description
+        gcm_msg_json = json.dumps({
+            'notification': {
+                "title": title, 
+                "body": msg,
+                "icon": notification.icon_url
+            }
+        })
+
+        msg_to_be_sent = {
+            'default': msg,
+            'GCM': gcm_msg_json
+        }
+        # Target Arn: Getting device endpoint for the reciever.
+        if len(notification.sent_users_ids) == 1:
+            # Get device endpoint for a user with id
+            from visitegypt.infra.database.repositories.user_repository import get_device_endpoint
+            user_endpoint = get_device_endpoint(notification.sent_users_ids[0])
+            sns_client = await get_sns_client()
+            res = sns_client.publish(TargetArn=user_endpoint, Message=json.dumps(msg_to_be_sent), MessageStructure='json')
+            if res.get('MessageId'):
+                added_notification_to_db = NotificationSaveInDB(**notification.dict(), sender_id = sender_id)
+                row = await db.client[DATABASE_NAME][notifications_collection_name].insert_one(
+                added_notification_to_db.dict()
+                )
+                if row.inserted_id: return True
+        return False
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)

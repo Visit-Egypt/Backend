@@ -1,7 +1,6 @@
 from typing import List, Optional
 from pydantic import EmailStr
 import pymongo
-from watchgod import awatch
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
@@ -14,8 +13,10 @@ from visitegypt.core.accounts.entities.user import (
     PlaceActivityUpdate,
     RequestTripMate,
     RequestTripMateInDB,
-    UserResponseInTags
+    UserResponseInTags,
+    UserPushNotification
 )
+from visitegypt.core.utilities.entities.notification import Notification
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import (
@@ -345,6 +346,10 @@ async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         await update_user(UserUpdate(followers=user_to_follow.followers), user_id=user_id)
         await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
 
+        # Send Notification to the followed user (user_to_follow)
+        from visitegypt.infra.database.repositories import notification_repository
+        notification = Notification(title=f'A new follower', description=f'{current_user.first_name} {current_user.last_name} has followed you.', sent_users_ids=[user_to_follow.id])
+        await notification_repository.send_notification_to_specific_users(notification, current_user.id)
         return True
     except UserIsFollower as usf: raise usf
     except UserNotFoundError as ue:
@@ -376,6 +381,7 @@ async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
 async def request_trip_mate(current_user: UserResponse, user_id: str, request_mate: RequestTripMate)  -> Optional[UserResponse]:
     try:
         request_trip_mate = RequestTripMateInDB(**request_mate.dict(), is_approved=False, initator_id=current_user.id, id=ObjectId())
@@ -504,6 +510,21 @@ async def remove_place_from_favs(current_user: UserResponse, place_id: str) -> O
 
     except PlaceIsNotInFavs as pia: raise pia
     except UserNotFoundError as ue: raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+
+async def get_device_endpoint(user_id: ObjectId) -> Optional[UserPushNotification]:
+    try:
+        row = await db.client[DATABASE_NAME][users_collection_name].find_one(
+            {"_id": user_id}
+        )
+        if row:
+            return UserPushNotification.from_mongo(row)
+        raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
