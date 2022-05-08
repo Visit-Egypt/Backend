@@ -1,6 +1,4 @@
 from typing import Optional
-
-from sqlalchemy import null
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
     UserResponse,
