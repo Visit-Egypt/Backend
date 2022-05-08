@@ -43,7 +43,7 @@ conf = ConnectionConfig(
         MAIL_SERVER="smtp.gmail.com",
         MAIL_TLS=True,
         MAIL_SSL=False,
-        MAIL_FROM_NAME="Visit Egypt Registration"
+        MAIL_FROM_NAME="Visit Egypt"
         )
 
 
