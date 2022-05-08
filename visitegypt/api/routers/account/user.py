@@ -39,6 +39,8 @@ from visitegypt.api.utils import get_current_user,get_refreshed_token
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.api.errors.http_error import HTTPErrorModel
+from datetime import datetime
+from visitegypt.api.utils import send_mail
 repo = get_dependencies().user_repo
 upload_repo = get_dependencies().upload_repo
 
@@ -46,7 +48,7 @@ router = APIRouter(responses=generate_response_for_openapi("User"))
 
 
 # Handlers
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED, tags=["User"], responses={**generate_response_for_openapi("User"), 409: {
+@router.post("/register", status_code=status.HTTP_201_CREATED, tags=["User"], responses={**generate_response_for_openapi("User"), 409: {
     "model": HTTPErrorModel,
     "description": "User with this email already exists",
     "content": {
@@ -57,7 +59,15 @@ router = APIRouter(responses=generate_response_for_openapi("User"))
     }})
 async def register_user(new_user: UserCreate):
     try:
-        return await user_service.register(repo, new_user)
+        return await user_service.new_register(repo, new_user)
+    except EmailNotUniqueError: raise HTTPException(status.HTTP_409_CONFLICT, detail=EMAIL_TAKEN)
+    except Exception as err: raise err
+
+@router.get("/verfiy/{token}", status_code=status.HTTP_201_CREATED, tags=["User"], include_in_schema=False)
+async def create_user(token:str):
+    try:
+        print(token)
+        return await user_service.create_user(repo, token)
     except EmailNotUniqueError: raise HTTPException(status.HTTP_409_CONFLICT, detail=EMAIL_TAKEN)
     except Exception as err: raise err
 
