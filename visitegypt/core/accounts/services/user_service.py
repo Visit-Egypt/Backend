@@ -1,4 +1,6 @@
 from typing import Optional
+
+from sqlalchemy import null
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
     UserResponse,
@@ -37,7 +39,8 @@ API_HOST = "https://visit-egypt.herokuapp.com"
 
 async def new_register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     new_user = new_user.dict()
-    new_user["birthdate"] = datetime.strftime(new_user["birthdate"],"%y-%m-%d")
+    if(new_user["birthdate"]):
+        new_user["birthdate"] = datetime.strftime(new_user["birthdate"],"%y-%m-%d")
     email = new_user["email"].lower()
     try:
         user : Optional[UserResponse] = await repo.get_user_by_email(email)
