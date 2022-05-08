@@ -33,6 +33,9 @@ AWS_SECRET_ACCESS_KEY: str = config("AWS_SECRET_ACCESS_KEY", cast=str, default='
 AWS_S3_BUCKET_NAME: str = config("AWS_S3_BUCKET_NAME", cast=str, default='')
 AWS_REGION_NAME: str = config("AWS_REGION_NAME", cast=str, default='')
 
+
+AWS_NOTIFICATION_PLATFORM_ARN: str = config("AWS_NOTIFICATION_PLATFORM_ARN", cast=str, default='')
+AWS_NOTIFICATION_TOPIC_ARN: str = config("AWS_NOTIFICATION_TOPIC_ARN", cast=str, default='')
 SECRET_KEY: Secret = config(
     "SECRET_KEY", cast=Secret, default="This is a secret key for development"
 )
