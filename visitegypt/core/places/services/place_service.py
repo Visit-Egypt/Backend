@@ -31,6 +31,19 @@ async def get_all_places_paged(
     except Exception as e:
         raise e
 
+async def get_some_places(
+    repo: PlaceRepo, places_ids
+) -> PlacesPageResponse:
+    try:
+        place = await repo.get_some_places(places_ids)
+        if place:
+            return place
+        raise PlaceNotFoundError
+    except PlaceNotFoundError as ie:
+        raise ie
+    except Exception as e:
+        raise e
+
 async def get_places_by_city(
     repo: PlaceRepo, city_name:str,page_num: int = 1, limit: int = 15) -> PlacesPageResponse:
     try:

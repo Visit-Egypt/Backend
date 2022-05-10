@@ -4,10 +4,13 @@ from visitegypt.core.accounts.entities.user import (
     UserResponse,
     User,
     UserUpdate,
+    UserUpdatePassword,
     UsersPageResponse,
     Badge,
     BadgeTask,BadgeUpdate,PlaceActivity,PlaceActivityUpdate
-    , RequestTripMate
+    , RequestTripMate,
+    UserInDB,
+    UserCreateToken
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound, UserIsFollower, UserIsNotFollowed
@@ -17,6 +20,7 @@ from visitegypt.core.authentication.entities.userauth import UserGoogleAuthBody
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
+from visitegypt.core.authentication.services.auth_service import register_access_token,forgot_password_token
 from visitegypt.core.authentication.services.auth_service import login_google_access_token
 from pydantic import EmailStr
 from typing import List
@@ -24,11 +28,18 @@ from fastapi import HTTPException, status
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import uuid
+from visitegypt.api.utils import get_register_user,send_mail,get_reset_password_user,send__reset_password_mail
+from visitegypt.resources.strings import MESSAGE_404
+from datetime import datetime
+from visitegypt.config.environment import CLIENT_ID
 
-CLIENT_ID = "1008372786382-b12co7cdm09mssi73ip89bdmtt66294i.apps.googleusercontent.com"
+API_HOST = "https://visit-egypt.herokuapp.com"
 
-async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
-    email = new_user.email.lower()
+async def new_register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
+    new_user = new_user.dict()
+    if(new_user["birthdate"]):
+        new_user["birthdate"] = datetime.strftime(new_user["birthdate"],"%y-%m-%d")
+    email = new_user["email"].lower()
     try:
         user : Optional[UserResponse] = await repo.get_user_by_email(email)
         if user: raise EmailNotUniqueError
@@ -36,10 +47,56 @@ async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     except EmailNotUniqueError as email_not_unique: raise email_not_unique
     except Exception as e: raise e
 
-    password_hash = get_password_hash(new_user.password)
-    await repo.create_user(User(**new_user.dict(), hashed_password=password_hash))
-    token = await login_service(repo, new_user)
-    return token
+    password_hash = get_password_hash(new_user["password"])
+    user = UserCreateToken(**new_user, hashed_password=password_hash).dict()
+    token = register_access_token(repo, user)
+    url = API_HOST+"/api/user/verfiy/"+str(token)
+    await send_mail(email=email,url=url)
+    return "Verfication email is sent, please verify your email"
+
+async def forgot_password(repo:UserRepo,email:str):
+    email = email.lower()
+    try:
+        user : Optional[UserResponse] = await repo.get_user_by_email(email)
+        token = await forgot_password_token(repo,user)
+        url = API_HOST+"/api/user/resetpassword/"+str(user.id)+"/"+str(token)
+        await send__reset_password_mail(url,email)
+        return "Reset Password email is sent please check your email"
+    except UserNotFoundError: HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as e: raise e
+
+async def check_user_id(repo:UserRepo, user_id:str ,token:str):
+    try:
+        user_hash = await repo.get_user_hashed_password(user_id)
+        payload = get_reset_password_user(user_hash,token=token)
+        if user_id != payload["id"]:
+            raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+    except Exception as e: raise e
+
+async def reset_password(repo: UserRepo,user_id:str ,token:str ,new_password: str):
+    try:
+        user_hash = await repo.get_user_hashed_password(user_id)
+        payload = get_reset_password_user(user_hash,token=token)
+        password_hash = get_password_hash(new_password)
+        await repo.update_user_password(UserUpdatePassword(**{"hashed_password":password_hash}),payload["id"])
+        return "Password Successfully Reseted"
+    except Exception as e: raise e
+
+async def create_user(repo: UserRepo, token: str):
+    try:
+        user = get_register_user(token=token)
+        try:
+            user : Optional[UserResponse] = await repo.get_user_by_email(user["email"].lower())
+            if user: raise EmailNotUniqueError
+        except UserNotFoundError: pass
+        except EmailNotUniqueError as email_not_unique: raise email_not_unique
+        except Exception as e: raise e
+        await repo.create_user(User(**user))
+        return "Account Successfully Created"
+    except Exception as e: raise e
 
 async def google_register(repo: UserRepo, token: UserGoogleAuthBody) -> UserResponse:
     try:

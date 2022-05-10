@@ -44,3 +44,6 @@ class PlaceRepo(Protocol):
 
     async def get_cities():
         pass
+
+    async def get_some_places(places_ids:List) -> List[PlaceInDB]:
+        pass

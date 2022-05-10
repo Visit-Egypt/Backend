@@ -4,6 +4,7 @@ from pydantic import EmailStr
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
+    UserUpdatePassword,
     User,
     UserUpdaterole,
     Badge,
@@ -22,6 +23,9 @@ class UserRepo(Protocol):
     async def update_user(
         self, updated_user: UserUpdate, user_id: str
     ) -> Optional[UserResponse]:
+        pass
+
+    async def update_user_password(updated_user: UserUpdatePassword, user_id: str) -> Optional[UserResponse]:
         pass
 
     async def delete_user(self, user_id: str) ->  Optional[bool]:
