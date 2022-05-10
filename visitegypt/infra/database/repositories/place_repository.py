@@ -213,7 +213,7 @@ async def delete_review(place_id: str, review: review):
 
 async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
     search_qu = f"*{search_text}*"
-    pipeline = [{"$search": {"wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
+    pipeline = [{"$search": {'index': 'title', "wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
     try:
        # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
        #     {"title": place_title}
