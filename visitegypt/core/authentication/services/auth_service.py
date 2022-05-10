@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
+from re import U
 from typing import Optional
 from jose import jwt
 from pydantic import ValidationError
 from visitegypt.config.environment import SECRET_KEY, ALGORITHM, JWT_EXPIRATION_DELTA,JWT_REFRESH_EXPIRATION_DELTA
-from visitegypt.core.accounts.protocols.user_repo import UserRepo
+from visitegypt.core.accounts.protocols.user_repo import UserRepo,UserResponse
 from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody
 from visitegypt.core.authentication.entities.token import Token, TokenPayload
 from visitegypt.core.errors.user_errors import WrongEmailOrPassword,UserNotFoundError
@@ -12,8 +13,9 @@ import uuid
 from fastapi import HTTPException, status
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from visitegypt.core.accounts.entities.user import UserCreateToken
+from visitegypt.config.environment import CLIENT_ID
 
-CLIENT_ID = "1008372786382-b12co7cdm09mssi73ip89bdmtt66294i.apps.googleusercontent.com"
 
 """
 def create_access_token(
@@ -32,14 +34,14 @@ def create_access_token(
 """
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None,SCRET_KEY_SALT: Optional[str]=""):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=30)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, str(SECRET_KEY), algorithm=str(ALGORITHM))
+    encoded_jwt = jwt.encode(to_encode, (str(SECRET_KEY)+SCRET_KEY_SALT), algorithm=str(ALGORITHM))
     return encoded_jwt
 
 
@@ -68,6 +70,19 @@ async def login_access_token(repo: UserRepo, user: UserAuthBody) -> Token:
         refresh_token=create_refresh_token(tokent_id=token_id),
         user_id=str(user_to_auth.id),
     )
+
+def register_access_token(repo: UserRepo, user):
+    access_token = create_access_token(
+            user, expires_delta=JWT_EXPIRATION_DELTA
+        )
+    return access_token
+
+async def forgot_password_token(repo: UserRepo, user:UserResponse):
+    user_hash = await repo.get_user_hashed_password(user.id)
+    access_token = create_access_token(
+            {"id":str(user.id)}, expires_delta=JWT_EXPIRATION_DELTA,SCRET_KEY_SALT=user_hash
+        )
+    return access_token
 
 async def login_google_access_token(repo: UserRepo, token: UserGoogleAuthBody) -> Token:
     try:

@@ -4,6 +4,7 @@ import pymongo
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
+    UserUpdatePassword,
     User,
     UsersPageResponse,
     Badge,
@@ -65,6 +66,25 @@ async def update_user(updated_user: UserUpdate, user_id: str) -> Optional[UserRe
             {"$set": {k: v for k, v in updated_user.dict().items() if v}},
             return_document=ReturnDocument.AFTER,
         )
+        if result:
+            return UserResponse.from_mongo(result)
+        raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def update_user_password(updated_user: UserUpdatePassword, user_id: str) -> Optional[UserResponse]:
+    try:
+        if updated_user:
+            result = await db.client[DATABASE_NAME][
+                users_collection_name
+            ].find_one_and_update(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"hashed_password": str(updated_user.hashed_password)}},
+                return_document=ReturnDocument.AFTER,
+            )
         if result:
             return UserResponse.from_mongo(result)
         raise UserNotFoundError

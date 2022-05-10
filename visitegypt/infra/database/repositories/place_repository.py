@@ -44,6 +44,23 @@ async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def get_some_places(places_ids:List) -> List[PlaceInDB]:
+    try:
+        cursor = (
+            db.client[DATABASE_NAME][places_collection_name].find(
+                {"placeActivities.id":{"$in":places_ids}}
+        ))
+        places_list = await cursor.to_list(1000)
+        if not places_list:
+            raise PlaceNotFoundError
+        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
+        return places_list_response
+    except PlaceNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
 async def get_all_city_places(city_name: str,page_num: int, limit: int) -> PlacesPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
@@ -196,7 +213,7 @@ async def delete_review(place_id: str, review: review):
 
 async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
     search_qu = f"*{search_text}*"
-    pipeline = [{"$search": {"wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
+    pipeline = [{"$search": {'index': 'title', "wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
     try:
        # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
        #     {"title": place_title}
