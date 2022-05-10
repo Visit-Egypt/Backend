@@ -90,7 +90,7 @@ async def send_notification_to_specific_users(notification: Notification, sender
         title = notification.title
         msg = notification.description
         gcm_msg_json = json.dumps({
-            'data': {
+            'notification': {
                 "title": title, 
                 "body": msg,
                 "icon": notification.icon_url
