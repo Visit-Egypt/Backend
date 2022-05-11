@@ -159,3 +159,5 @@ class UsersPageResponse(MongoModel):
 class UserPrefsReq(BaseModel):
     pref_list: List[str]
 
+class UserFollowResp(BaseModel):
+    followers_num : str

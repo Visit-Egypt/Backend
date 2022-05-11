@@ -9,7 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     UsersPageResponse,
     Badge,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq, UserFollowResp
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody,UserPasswordReset
 from visitegypt.core.authentication.services.auth_service import (
@@ -320,7 +320,7 @@ async def get_user_activities(
         raise e
 
 
-@router.post('/{user_id}/follow', summary="Follow a user", tags=['User'])
+@router.post('/{user_id}/follow', response_model = UserFollowResp, summary="Follow a user", tags=['User'])
 async def follow_user(user_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
     try:
         return await user_service.follow_user(repo, current_user, user_id)
@@ -328,7 +328,7 @@ async def follow_user(user_id: str, current_user: UserResponse = Security( get_c
     except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
     except Exception as err: raise err
 
-@router.post('/{user_id}/unfollow', summary="Follow a user", tags=['User'])
+@router.post('/{user_id}/unfollow', response_model = UserFollowResp, summary="Follow a user", tags=['User'])
 async def unfollow_user(user_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
     try:
         return await user_service.unfollow_user(repo, current_user, user_id)
