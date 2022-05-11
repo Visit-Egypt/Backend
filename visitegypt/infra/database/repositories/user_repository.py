@@ -15,7 +15,8 @@ from visitegypt.core.accounts.entities.user import (
     RequestTripMate,
     RequestTripMateInDB,
     UserResponseInTags,
-    UserPushNotification
+    UserPushNotification,
+    UserFollowResp
 )
 from visitegypt.core.utilities.entities.notification import Notification
 from visitegypt.infra.database.events import db
@@ -349,7 +350,7 @@ async def get_user_activities( user_id: str):
         raise e
 
 
-async def follow_user(current_user: UserResponse, user_id: str) -> bool:
+async def follow_user(current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:
         user_to_follow = await get_user_by_id(user_id)
         if user_to_follow is None: raise UserNotFoundError
@@ -363,14 +364,16 @@ async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         user_to_follow.followers.append(current_user.id)
         current_user.following.append(user_to_follow.id)
 
-        await update_user(UserUpdate(followers=user_to_follow.followers), user_id=user_id)
+        updated_user_to_follow = await update_user(UserUpdate(followers=user_to_follow.followers), user_id=user_id)
         await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
 
+        """
         # Send Notification to the followed user (user_to_follow)
         from visitegypt.infra.database.repositories import notification_repository
         notification = Notification(title=f'A new follower', description=f'{current_user.first_name} {current_user.last_name} has followed you.', sent_users_ids=[user_to_follow.id])
         await notification_repository.send_notification_to_specific_users(notification, current_user.id)
-        return True
+        """        
+        return UserFollowResp(followers_num = str(len(updated_user_to_follow.followers)))
     except UserIsFollower as usf: raise usf
     except UserNotFoundError as ue:
         raise ue
@@ -378,7 +381,7 @@ async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:
+async def unfollow_user(current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:
         user_to_unfollow = await get_user_by_id(user_id)
         if user_to_unfollow is None: raise UserNotFoundError
@@ -391,10 +394,10 @@ async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:
         user_to_unfollow.followers.remove(current_user.id)
         current_user.following.remove(user_to_unfollow.id)
 
-        await update_user(UserUpdate(followers=user_to_unfollow.followers), user_id=user_id)
+        updated_user_to_unfollow =await update_user(UserUpdate(followers=user_to_unfollow.followers), user_id=user_id)
         await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
 
-        return True
+        return UserFollowResp(followers_num = str(len(updated_user_to_unfollow.followers)))
     except UserIsNotFollowed as uu: raise uu
     except UserNotFoundError as ue:
         raise ue
