@@ -25,21 +25,23 @@ async def get_filtered_items(
             db.client[DATABASE_NAME][items_collection_name]
             .find(filters)
             .skip(start_index)
-            .limit(limit)
+            .limit(limit+1)
         )
-        items_list = await cursor.to_list(limit)
+        items_list = await cursor.to_list(limit+1)
         if not items_list:
             raise ItemNotFoundError
+        document_count = await db.client[DATABASE_NAME][items_collection_name].count_documents(filters)
         items_list_response = [ItemInDB.from_mongo(item) for item in items_list]
-        has_next = check_next(limit,items_list)
+        has_next = len(items_list) > limit
         return ItemsPageResponse(
-            current_page=page_num, has_next=has_next, items=items_list_response
+            current_page=page_num, has_next=has_next, items=items_list_response, content_range=document_count
         )
     except ItemNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
 async def create_item(item_to_create: ItemBase) -> ItemInDB:
     try:
         row = await db.client[DATABASE_NAME][items_collection_name].insert_one(
@@ -47,7 +49,7 @@ async def create_item(item_to_create: ItemBase) -> ItemInDB:
         )
         if row.inserted_id:
             new_inserted_item = await get_filtered_items(
-                page_num=1, limit=1, filters={"_id": row.inserted_id}
+                page_num=1, limit=1, filters={"_id": ObjectId(row.inserted_id)}
             )
             return new_inserted_item.items[0]
     except Exception as e:

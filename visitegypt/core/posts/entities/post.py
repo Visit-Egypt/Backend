@@ -19,6 +19,7 @@ class UpdatePost(MongoModel):
 
 class PostsPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     posts: Optional[List[PostInDB]]
 

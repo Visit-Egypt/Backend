@@ -1,5 +1,5 @@
 from visitegypt.api.container import get_dependencies
-from typing import Optional, List
+from typing import Optional, List, Dict
 from fastapi import APIRouter, HTTPException, Security, Depends, status, Request
 from visitegypt.core.accounts.services import user_service
 from visitegypt.core.accounts.entities.user import (
@@ -35,7 +35,7 @@ from visitegypt.resources.strings import (
 )
 from visitegypt.core.authentication.entities.token import Token, RefreshRequest
 from pydantic import EmailStr
-from visitegypt.api.utils import get_current_user,get_refreshed_token
+from visitegypt.api.utils import get_current_user,get_refreshed_token, common_parameters
 from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.api.errors.http_error import HTTPErrorModel
@@ -199,17 +199,22 @@ async def login_user(token: UserGoogleAuthBody):
 
 @router.get("/all", response_model=UsersPageResponse, status_code=status.HTTP_200_OK, tags=["Admin Panel"])
 async def get_all_users(
-    page_num: int = 1,
-    limit: int = 15,
+    params: Dict = Depends(common_parameters),
     current_user: UserResponse = Security(
         get_current_user,
         scopes=[Role.ADMIN["name"], Role.SUPER_ADMIN["name"]],
     ),
 ):
     try:
-        return await user_service.get_all_users(repo, page_num=page_num, limit=limit)
-    except Exception as e:
-        raise e
+        if params["page_num"] < 1 or params["limit"] < 1:
+            raise HTTPException(422, "Query Params shouldn't be less than 1")
+        return await user_service.get_all_users(
+            repo,
+            page_num=params["page_num"],
+            limit=params["limit"],
+            filters=params["filters"],
+        )
+    except Exception as e: raise e
 
 @router.post("/refresh", response_model=Token, status_code=status.HTTP_200_OK, tags=["User"])
 async def refresh_token(refresh_request: RefreshRequest):

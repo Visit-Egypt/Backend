@@ -1,4 +1,4 @@
-from typing import Protocol, Optional, List
+from typing import Protocol, Optional, List, Dict
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
     PlacesPageResponse,
@@ -10,7 +10,9 @@ from visitegypt.core.places.entities.place import (
 
 
 class PlaceRepo(Protocol):
-    async def get_all_places(self, page_num: int, limit: int) -> PlacesPageResponse:
+    async def get_filtered_places(self, page_num: int, limit: int, filters: Dict) -> PlacesPageResponse:
+        pass
+    async def get_all_places(self, page_num: int, limit: int, filters: Dict) -> PlacesPageResponse:
         pass
 
     async def get_all_city_places(city_name: str,page_num: int, limit: int) -> PlacesPageResponse:

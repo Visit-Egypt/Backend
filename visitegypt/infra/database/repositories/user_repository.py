@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import EmailStr
 import pymongo
 from visitegypt.core.accounts.entities.user import (
@@ -175,24 +175,26 @@ async def get_user_hashed_password(user_id: str) -> str:
         raise InfrastructureException(e.__repr__)
 
 
-async def get_all_users(page_num: int, limit: int) -> List[UsersPageResponse]:
+async def get_all_users(page_num: int = 1, limit: int = 15, filters: Dict = None) -> List[UsersPageResponse]:
     try:
         indcies = calculate_start_index(limit, page_num)
         start_index: int = indcies[0]
         cursor = (
             db.client[DATABASE_NAME][users_collection_name]
-            .find()
+            .find(filters)
             .skip(start_index)
-            .limit(limit)
+            .limit(limit+1)
         )
-        users_list = await cursor.to_list(limit)
-        if len(users_list) <= 0:
+        users_list = await cursor.to_list(limit+1)
+        document_count = await db.client[DATABASE_NAME][users_collection_name].count_documents(filters)
+        if not users_list:
             raise UserNotFoundError
         users_list_response = [UserResponse.from_mongo(user) for user in users_list]
-        has_next = check_next(limit,users_list_response)
+        has_next = len(users_list) > limit
         return UsersPageResponse(
-            current_page=page_num, has_next=has_next, users=users_list_response
+            current_page=page_num, has_next=has_next, users=users_list_response, content_range=document_count
         )
+    except UserNotFoundError as uae: raise uae
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)

@@ -18,6 +18,7 @@ class ItemInDB(ItemBase):
 
 class ItemsPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     items: Optional[List[ItemInDB]]
 

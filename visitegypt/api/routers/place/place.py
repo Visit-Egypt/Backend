@@ -1,7 +1,8 @@
-from typing import List,Optional
+from typing import List,Optional, Dict
 import ujson
 from fastapi import APIRouter, status, HTTPException, Security, WebSocket, Query
 from visitegypt.api.container import get_dependencies
+from fastapi.params import Depends
 from visitegypt.core.places.services import place_service
 from visitegypt.core.places.entities.place import (
     PlacesPageResponse,
@@ -12,7 +13,7 @@ from visitegypt.core.places.entities.place import (
     PlaceForSearch
 )
 from visitegypt.core.accounts.entities.user import UserResponse
-from visitegypt.api.utils import get_current_user
+from visitegypt.api.utils import get_current_user, common_parameters
 from visitegypt.resources.strings import MESSAGE_404
 from visitegypt.core.errors.place_error import PlaceNotFoundError, PlaceAlreadyExists, ReviewOffensive
 from visitegypt.core.accounts.entities.roles import Role
@@ -34,10 +35,15 @@ router = APIRouter(responses=generate_response_for_openapi("Place"))
     summary="Get all places",
     tags=["Place"]
 )
-async def get_places(page_num: int = 1, limit: int = 15):
+async def get_places(params: Dict = Depends(common_parameters)):
     try:
-        return await place_service.get_all_places_paged(
-            repo, page_num=page_num, limit=limit
+        if params["page_num"] < 1 or params["limit"] < 1:
+            raise HTTPException(422, "Query Params shouldn't be less than 1")
+        return await place_service.get_filtered_places(
+            repo,
+            page_num=params["page_num"],
+            limit=params["limit"],
+            filters=params["filters"],
         )
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Places"))
     except Exception as e: raise e
@@ -91,15 +97,12 @@ async def get_place_by_id(place_id: str):
     summary="Get Places of City",
     tags=["Place"]
 )
+
 async def get_place_by_id(city_name: str):
     try:
         return await place_service.get_places_by_city(repo, city_name)
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Place"))
     except Exception as e: raise e
-
-
-
-
 
 @router.post(
     "/",
