@@ -24,10 +24,10 @@ router = APIRouter(responses=generate_response_for_openapi("Badge"))
 
 @router.get(
     "/",
-    #response_model=BadgesPageResponse,
+    response_model=BadgesPageResponse,
     status_code=status.HTTP_200_OK,
     summary="Get all Badges",
-    tags=["Bage"]
+    tags=["Badge"]
 )
 async def get_items(params: Dict = Depends(common_parameters)):
     try:
@@ -39,7 +39,7 @@ async def get_items(params: Dict = Depends(common_parameters)):
             limit=params["limit"],
             filters=params["filters"],
         )
-    except BadgeNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Item"))
+    except BadgeNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Badge"))
     except Exception as e: raise e
 
 @router.post(

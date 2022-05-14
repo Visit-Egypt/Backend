@@ -71,6 +71,7 @@ class PlaceInDB(PlaceWithReviews):
 
 class PlacesPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     places: Optional[List[PlaceInDB]]
 

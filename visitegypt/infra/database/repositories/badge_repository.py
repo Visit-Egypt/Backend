@@ -26,15 +26,16 @@ async def get_filtered_badges(
             db.client[DATABASE_NAME][badges_collection_name]
             .find(filters)
             .skip(start_index)
-            .limit(limit)
+            .limit(limit+1)
         )
-        badges_list = await cursor.to_list(limit)
+        badges_list = await cursor.to_list(limit+1)
         if not badges_list:
             raise BadgeNotFoundError
+        document_count = await db.client[DATABASE_NAME][badges_collection_name].count_documents(filters)
         badges_list_response = [BadgeInDB.from_mongo(badge) for badge in badges_list]
-        has_next = check_next(limit,badges_list_response)
+        has_next = len(badges_list) > limit
         return BadgesPageResponse(
-            current_page=page_num, has_next=has_next, badges=badges_list_response
+            current_page=page_num, has_next=has_next, badges=badges_list_response, content_range=document_count
         )
     except BadgeNotFoundError as ue:
         raise ue

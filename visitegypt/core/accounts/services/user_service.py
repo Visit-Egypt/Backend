@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
     UserResponse,
@@ -140,11 +140,9 @@ async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
         raise e
 
 
-async def get_all_users(
-    repo: UserRepo, page_num: int = 1, limit: int = 15
-) -> List[UsersPageResponse]:
+async def get_all_users(repo: UserRepo, page_num: int = 1, limit: int = 15, filters: Dict = None) -> List[UsersPageResponse]:
     try:
-        users = await repo.get_all_users(page_num, limit)
+        users = await repo.get_all_users(page_num=page_num, limit=limit, filters=filters)
         if users:
             return users
     except Exception as e:

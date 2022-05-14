@@ -25,7 +25,7 @@ router = APIRouter(responses=generate_response_for_openapi("Item"))
     "/",
     response_model=ItemsPageResponse,
     status_code=status.HTTP_200_OK,
-    summary="Get all items",
+    summary="Get Filtered Items",
     tags=["Item"]
 )
 async def get_items(params: Dict = Depends(common_parameters)):

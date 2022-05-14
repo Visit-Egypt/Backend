@@ -5,15 +5,15 @@ from visitegypt.core.posts.entities.post import (
     UpdatePost,
 )
 from visitegypt.core.posts.protocols.post_repo import PostRepo
-from typing import Optional
+from typing import Dict, Optional
 from visitegypt.core.errors.post_error import PostNotFoundError
 
 
-async def get_place_posts_paged(
-    place_id: str, repo: PostRepo, page_num: int = 1, limit: int = 15
+async def get_filtered_post(
+    repo: PostRepo, page_num: int = 1, limit: int = 15, filters: Dict = None
 ) -> PostsPageResponse:
     try:
-        post = await repo.get_place_posts(page_num, limit,place_id)
+        post = await repo.get_filtered_post(page_num=page_num, limit=limit, filters=filters)
         if post:
             return post
         raise PostNotFoundError
@@ -21,30 +21,6 @@ async def get_place_posts_paged(
         raise ie
     except Exception as e:
         raise e
-
-async def get_user_posts_paged(
-    user_id: str, repo: PostRepo, page_num: int = 1, limit: int = 15
-) -> PostsPageResponse:
-    try:
-        post = await repo.get_user_posts(page_num, limit,user_id)
-        if post:
-            return post
-        raise PostNotFoundError
-    except PostNotFoundError as ie:
-        raise ie
-    except Exception as e:
-        raise e
-
-async def get_post_by_id(repo: PostRepo, post_id: str) -> PostInDB:
-    try:
-        post = await repo.get_post_by_id(post_id)
-        if post:
-            return post
-    except PostNotFoundError as ue:
-        raise ue
-    except Exception as e:
-        raise e
-
 
 async def create_place(repo: PostRepo, new_post: PostBase) -> PostInDB:
     try:

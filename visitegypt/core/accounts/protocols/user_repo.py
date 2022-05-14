@@ -1,4 +1,4 @@
-from typing import Protocol, Optional, List
+from typing import Protocol, Optional, List, Dict
 
 from pydantic import EmailStr
 from visitegypt.core.accounts.entities.user import (
@@ -45,7 +45,7 @@ class UserRepo(Protocol):
     ) -> Optional[UserResponse]:
         pass
 
-    async def get_all_users(page_num: int, limit: int):
+    async def get_all_users(self, page_num: int = 1, limit: int = 15, filters: Dict = None):
         pass
     async def update_user_tokenID(user_id: str,new_toke_id:str,old_token_id:str=None):
         pass

@@ -151,6 +151,7 @@ class UserResponseInTags(MongoModel):
 
 class UsersPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     users: Optional[List[UserResponse]]
 

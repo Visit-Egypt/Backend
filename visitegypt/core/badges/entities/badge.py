@@ -24,6 +24,7 @@ class BadgeInDB(BadgeBase):
 
 class BadgesPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     badges: Optional[List[BadgeInDB]]
 
