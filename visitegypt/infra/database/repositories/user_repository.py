@@ -363,11 +363,23 @@ async def follow_user(current_user: UserResponse, user_id: str) -> UserFollowRes
         # We need to save current user in user1 followers and save user1 in current user following
         # We are going to use the id not the full user
 
-        user_to_follow.followers.append(current_user.id)
-        current_user.following.append(user_to_follow.id)
+        # Push User ID to each user document corresponding list
 
-        updated_user_to_follow = await update_user(UserUpdate(followers=user_to_follow.followers), user_id=user_id)
-        await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
+        updated_user_to_follow = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": user_to_follow.id},
+            {"$push": {"followers": current_user.id}},
+            return_document=ReturnDocument.AFTER,
+        )
+        updated_current_user = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": current_user.id},
+            {"$push": {"following": user_to_follow.id}},
+            return_document=ReturnDocument.AFTER,
+        )
+        #user_to_follow.followers.append(current_user.id)
+        #current_user.following.append(user_to_follow.id)
+
+        #updated_user_to_follow = await update_user(UserUpdate(followers=user_to_follow.followers), user_id=user_id)
+        #await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
 
         """
         # Send Notification to the followed user (user_to_follow)
@@ -375,7 +387,7 @@ async def follow_user(current_user: UserResponse, user_id: str) -> UserFollowRes
         notification = Notification(title=f'A new follower', description=f'{current_user.first_name} {current_user.last_name} has followed you.', sent_users_ids=[user_to_follow.id])
         await notification_repository.send_notification_to_specific_users(notification, current_user.id)
         """        
-        return UserFollowResp(followers_num = str(len(updated_user_to_follow.followers)))
+        return UserFollowResp(followers_num = str(len(updated_user_to_follow.get('followers'))))
     except UserIsFollower as usf: raise usf
     except UserNotFoundError as ue:
         raise ue
@@ -386,6 +398,7 @@ async def follow_user(current_user: UserResponse, user_id: str) -> UserFollowRes
 async def unfollow_user(current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:
         user_to_unfollow = await get_user_by_id(user_id)
+        
         if user_to_unfollow is None: raise UserNotFoundError
         ch = [n for n in  user_to_unfollow.followers if n == current_user.id]
         if not ch: raise UserIsNotFollowed
@@ -393,13 +406,25 @@ async def unfollow_user(current_user: UserResponse, user_id: str) -> UserFollowR
         # We need to remove current user in user1 followers and remove user1 in current user following
         # We are going to use the id not the full user
 
-        user_to_unfollow.followers.remove(current_user.id)
-        current_user.following.remove(user_to_unfollow.id)
+        # Pull User ID to each user document corresponding list
 
-        updated_user_to_unfollow =await update_user(UserUpdate(followers=user_to_unfollow.followers), user_id=user_id)
-        await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
+        updated_user_to_unfollow = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": user_to_unfollow.id},
+            {"$pull": {"followers": current_user.id}},
+            return_document=ReturnDocument.AFTER,
+        )
+        updated_current_user = await db.client[DATABASE_NAME][users_collection_name].find_one_and_update(
+            {"_id": current_user.id},
+            {"$pull": {"following": user_to_unfollow.id}},
+            return_document=ReturnDocument.AFTER,
+        )
+        #user_to_unfollow.followers.remove(current_user.id)
+        #current_user.following.remove(user_to_unfollow.id)
 
-        return UserFollowResp(followers_num = str(len(updated_user_to_unfollow.followers)))
+        #updated_user_to_unfollow =await update_user(UserUpdate(followers=user_to_unfollow.followers), user_id=user_id)
+        #await update_user(UserUpdate(following=current_user.following), user_id=str(current_user.id))
+
+        return UserFollowResp(followers_num = str(len(updated_user_to_unfollow.get('followers'))))
     except UserIsNotFollowed as uu: raise uu
     except UserNotFoundError as ue:
         raise ue
