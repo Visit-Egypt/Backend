@@ -43,6 +43,7 @@ async def get_places(params: Dict = Depends(common_parameters)):
             repo,
             page_num=params["page_num"],
             limit=params["limit"],
+            lang=params["lang"],
             filters=params["filters"],
         )
     except PlaceNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Places"))

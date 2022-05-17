@@ -1,3 +1,4 @@
+from ctypes.wintypes import tagRECT
 from typing import Optional, List, Dict
 from visitegypt.core.errors.place_error import PlaceNotFoundError, ReviewOffensive
 from visitegypt.core.places.entities.place import (
@@ -20,7 +21,7 @@ from loguru import logger
 from visitegypt.infra.errors import InfrastructureException
 
 async def get_filtered_places(
-    page_num: int, limit: int, filters: Dict
+    page_num: int, limit: int, lang: str, filters: Dict
 ) -> PlacesPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
@@ -32,10 +33,26 @@ async def get_filtered_places(
             .limit(limit+1)
         )
         places_list = await cursor.to_list(limit+1)
+        
+        
+        """
+        lang_en = places_list[0].get('translations').get('en')
+        places_list[0].pop('translations')
+        places_list[0] = {**places_list[0], **lang_en}
+        print(places_list)
+        """
         if not places_list:
             raise PlaceNotFoundError
         document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents(filters)
-        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
+        places_list_response = []
+        
+        from visitegypt.infra.database.repositories.tag_repository import get_tags_names_by_id
+        for place in places_list:
+            # Replace the list of tag ids with the translated tag names.
+            tags_names = await get_tags_names_by_id(place['category'], lang)
+            place['category'] = tags_names
+            places_list_response.append(PlaceInDB.from_mongo(place, lang))
+        # print(places_list_response[0].translations)
         has_next = len(places_list) > limit
         return PlacesPageResponse(
             current_page=page_num, has_next=has_next, places=places_list_response, content_range=document_count
@@ -174,6 +191,9 @@ async def update_place(
     updated_place: UpdatePlace, place_id: str
 ) -> Optional[PlaceInDB]:
     try:
+        # print(updated_place.dict().items())
+        place_witout_translations = updated_place.dict().pop('translations', None)
+        print("Places without trans", place_witout_translations)
         result = await db.client[DATABASE_NAME][
             places_collection_name
         ].find_one_and_update(

@@ -10,12 +10,12 @@ from bson import ObjectId
 from loguru import logger
 from pymongo import ReturnDocument
 
-async def get_all_tags(filter: dict) -> List[GetTagResponse]:
+async def get_all_tags(filter: dict, lang: str) -> List[GetTagResponse]:
     try:
         cursor = db.client[DATABASE_NAME][tags_collection_name].find(filter)
         tags_list = await cursor.to_list(length=None)
         if not tags_list: raise TagsNotFound
-        tags_resp = [GetTagResponse.from_mongo(tag) for tag in tags_list]
+        tags_resp = [GetTagResponse.from_mongo(tag, lang) for tag in tags_list]
         return tags_resp
     except TagsNotFound as tagnotfound: raise tagnotfound
     except Exception as e:
@@ -139,4 +139,18 @@ async def get_all_users_of_tags(tag_ids: List[str]) -> Optional[List[UserRespons
 
 
 
-# Test
+async def get_tags_names_by_id(tag_ids: List[str], lang: str = 'en') -> List[str]:
+    o_tag = [ObjectId(tag) for tag in tag_ids]
+    translation_key = f"translations.{lang}.name"
+    try:
+        result = await db.client[DATABASE_NAME][tags_collection_name].find({'_id': {"$in": o_tag}}, { translation_key: 1 }).to_list(length=None)
+        names = []
+        if result:
+            names = [res.get('translations').get(lang).get('name') for res in result]
+            return names
+        raise TagsNotFound
+    except TagsNotFound as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)

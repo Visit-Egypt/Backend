@@ -5,9 +5,9 @@ from typing import Dict, List, Optional
 from visitegypt.core.errors.tag_error import TagsNotFound, TagAlreadyExists, TagCreationError
 from visitegypt.core.accounts.entities.user import UserResponseInTags
 
-async def get_all_tags(repo: TagRepo, filters: Dict) -> Optional[List[GetTagResponse]]:
+async def get_all_tags(repo: TagRepo, filters: Dict, lang: str = 'en') -> Optional[List[GetTagResponse]]:
     try:
-        tags_list = await repo.get_all_tags(filters)
+        tags_list = await repo.get_all_tags(filters, lang)
         if tags_list:
             return tags_list
             
