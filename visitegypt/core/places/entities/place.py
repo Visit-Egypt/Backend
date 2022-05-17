@@ -1,8 +1,30 @@
 from email import message
+from locale import currency
+from optparse import Option
+from pydoc import describe
 from typing import Any, List, Optional, Dict
-from pydantic import Field
-from visitegypt.core.base_model import MongoModel, OID
+from pydantic import BaseModel, Field
+from visitegypt.core.base_model import MongoModel, OID, Translatable
 
+
+
+
+
+class TicketValue(BaseModel):
+    currency: str
+    price: str
+
+class Ticket(BaseModel):
+    description: str
+    value: TicketValue
+
+class TranslatebleAttributes(BaseModel):
+    title: str
+    long_description: Optional[str]
+    short_description: Optional[str]
+    location_description: Optional[str]
+    city: Optional[str]
+    ticket_prices: Optional[List[Ticket]]
 
 class Hint(MongoModel):
     hint: str
@@ -22,6 +44,7 @@ class PlaceActivity(MongoModel):
     description: str
     duration:str
     maxProgress: int
+
 class review(MongoModel):
     rating: float
     review: Optional[str]
@@ -37,30 +60,31 @@ class PlaceBase(MongoModel):
     latitude: Optional[float]
     image_urls: Optional[List[str]]
     default_image: Optional[str]
-    opening_hours: Optional[str]
+    opening_hours: Optional[Dict[Any, Any]]
     city: Optional[str]
-    ticket_prices: Optional[Dict[Any, Any]]
-    category: Optional[str]
+    ticket_prices: Optional[List[Ticket]]
+    category: Optional[List[str]]
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
     placeActivities: Optional[List[PlaceActivity]]
-
+    
 
 class PlaceWithReviews(PlaceBase):
     reviews: Optional[List[review]] = []
 
 
-
 class UpdatePlace(MongoModel):
-    title: Optional[str]
-    description: Optional[str]
-    location_description: Optional[str]
+    # title: Optional[str]
+    # description: Optional[str]
+    # location_description: Optional[str]
     longitude: Optional[float]
     latitude: Optional[float]
     image_urls: Optional[List[str]]
     default_image: Optional[str]
-    opening_hours: Optional[str]
-    city: Optional[str]
+    opening_hours: Optional[Dict[Any, Any]]
+    translations: Optional[Dict[str, TranslatebleAttributes]]
+    # ticket_prices: Optional[List[Ticket]]
+    # city: Optional[str]
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
     placeActivities: Optional[List[PlaceActivity]]
@@ -83,3 +107,12 @@ class PlaceForSearch(MongoModel):
     id: OID = Field()
     title: str
     default_image: Optional[str]
+
+
+
+
+"""
+class NewPlaceModel(MongoModel):
+    id: OID = Field()
+    translations: Dict[str, TranslatebleAttributes]
+"""

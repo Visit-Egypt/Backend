@@ -3,7 +3,7 @@ from typing import List, Tuple, Dict
 
 users_collection_name = "Users"
 items_collection_name = "Items"
-places_collection_name = "Places"
+places_collection_name = "TestPlaces"
 posts_collection_name = "Posts"
 hotels_collection_name= "Hotels"
 kings_collection_name = "Kings"

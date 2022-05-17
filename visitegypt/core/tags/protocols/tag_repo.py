@@ -4,7 +4,7 @@ from visitegypt.core.tags.entities.tag import Tag, TagUpdate, GetTagResponse
 from visitegypt.core.accounts.entities.user import UserResponseInTags
 
 class TagRepo(Protocol):
-    async def get_all_tags(self, filters: Dict) -> List[GetTagResponse]:
+    async def get_all_tags(self, filters: Dict, lang: str) -> List[GetTagResponse]:
         pass
     async def add_tag(self, new_tag: Tag) -> Optional[GetTagResponse]:
         pass

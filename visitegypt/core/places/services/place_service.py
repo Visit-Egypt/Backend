@@ -18,10 +18,10 @@ from visitegypt.core.errors.user_errors import (
     PlaceIsNotInFavs
 )
 async def get_filtered_places(
-    repo: PlaceRepo, page_num: int = 1, limit: int = 15, filters: Dict = None
+    repo: PlaceRepo, page_num: int = 1, limit: int = 15, lang: str = 'en', filters: Dict = None
 ) -> PlacesPageResponse:
     try:
-        place_page = await repo.get_filtered_places(page_num=page_num, limit=limit, filters=filters)
+        place_page = await repo.get_filtered_places(page_num=page_num, limit=limit, lang=lang, filters=filters)
         if place_page: return place_page
         raise PlaceNotFoundError
     except PlaceNotFoundError as ie:

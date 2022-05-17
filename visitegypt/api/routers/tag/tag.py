@@ -22,7 +22,7 @@ router = APIRouter(responses=generate_response_for_openapi("Tag"))
 )
 async def get_tags(params: Dict = Depends(common_parameters)):
     try:
-        return await tag_service.get_all_tags(repo, params["filters"])
+        return await tag_service.get_all_tags(repo, params["filters"], params['lang'])
     except TagsNotFound: raise HTTPException(404, detail=MESSAGE_404("Tags"))
     except Exception as e: raise e
 

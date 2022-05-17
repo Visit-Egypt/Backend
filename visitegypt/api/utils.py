@@ -155,13 +155,13 @@ def filters_dict(filters: Optional[List[str]] = Query(None)):
 
 
 async def common_parameters(
-    q: Optional[List] = Depends(filters_dict), page_num: int = 1, limit: int = 10
+    q: Optional[List] = Depends(filters_dict), page_num: int = 1, limit: int = 10, lang: str = 'en'
 ):
     dict_of_filters = dict(ChainMap(*q))
     if "_id" not in dict_of_filters and "id" in dict_of_filters:
         dict_of_filters["_id"] = ObjectId(dict_of_filters.pop("id"))
     filter_filters_from_none = {k: v for k, v in dict_of_filters.items() if v}
-    return {"filters": filter_filters_from_none, "page_num": page_num, "limit": limit}
+    return {"filters": filter_filters_from_none, "page_num": page_num, "limit": limit, "lang": lang}
 
 async def send_mail(url:str,email):
     try:

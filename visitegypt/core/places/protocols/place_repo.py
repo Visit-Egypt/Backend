@@ -10,7 +10,7 @@ from visitegypt.core.places.entities.place import (
 
 
 class PlaceRepo(Protocol):
-    async def get_filtered_places(self, page_num: int, limit: int, filters: Dict) -> PlacesPageResponse:
+    async def get_filtered_places(self, page_num: int, limit: int, lang: str, filters: Dict) -> PlacesPageResponse:
         pass
     async def get_all_places(self, page_num: int, limit: int, filters: Dict) -> PlacesPageResponse:
         pass
