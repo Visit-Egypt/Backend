@@ -102,10 +102,11 @@ async def get_all_city_places(city_name: str,page_num: int, limit: int) -> Place
         places_list = await cursor.to_list(limit)
         if not places_list:
             raise PlaceNotFoundError
+        document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents({"city": city_name})
         places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
         has_next = check_next(limit,places_list_response)
         return PlacesPageResponse(
-            current_page=page_num, has_next=has_next, places=places_list_response
+            current_page=page_num, has_next=has_next, places=places_list_response, content_range=document_count
         )
     except PlaceNotFoundError as ue:
         raise ue
