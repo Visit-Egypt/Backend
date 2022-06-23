@@ -1,4 +1,3 @@
-from msilib.schema import Error
 from typing import List, Optional, Dict
 from pydantic import EmailStr
 import pymongo
@@ -392,7 +391,7 @@ async def get_user_activities_detail( user_id: str):
                 place = await get_some_places([activityid])
             except PlaceNotFoundError:
                 continue
-            except Error as e:
+            except Exception as e:
                 raise e
             placeActivities=place[0].placeActivities
             for r in placeActivities:
