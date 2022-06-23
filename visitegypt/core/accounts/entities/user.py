@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Optional, List
 from datetime import date
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import null
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 from visitegypt.core.badges.entities.badge import BadgeInDB
