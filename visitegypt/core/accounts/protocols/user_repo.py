@@ -59,9 +59,13 @@ class UserRepo(Protocol):
         pass
     async def get_user_badges( user_id: str):
         pass
+    async def get_user_badges_detail( user_id: str):
+        pass
     async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceActivityUpdate):
         pass
     async def get_user_activities( user_id: str):
+        pass
+    async def get_user_activities_detail( user_id: str):
         pass
 
     async def follow_user(current_user: UserResponse, user_id: str) -> bool:

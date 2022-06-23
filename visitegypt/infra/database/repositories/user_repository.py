@@ -1,6 +1,9 @@
+from msilib.schema import Error
 from typing import List, Optional, Dict
+from numpy import place
 from pydantic import EmailStr
 import pymongo
+from visitegypt.core.errors.place_error import PlaceNotFoundError
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
@@ -16,13 +19,16 @@ from visitegypt.core.accounts.entities.user import (
     RequestTripMateInDB,
     UserResponseInTags,
     UserPushNotification,
-    UserFollowResp
+    UserFollowResp,
+    BadgeResponseDetail
 )
+from visitegypt.core.badges.entities.badge import BadgeInDB
 from visitegypt.core.utilities.entities.notification import Notification
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import (
     users_collection_name,
+    badges_collection_name,
     calculate_start_index,
     check_has_next,
     badges_collection_name,
@@ -44,6 +50,7 @@ from visitegypt.infra.database.repositories.tag_repository import (
     update_many_tag_users,
     remove_many_tag_users
 )
+from visitegypt.infra.database.repositories.place_repository import get_some_places
 
 from loguru import logger
 from fastapi import HTTPException, status
@@ -307,6 +314,31 @@ async def get_user_badges( user_id: str):
     except Exception as e:
         raise e
 
+async def get_user_badges_detail( user_id: str):
+    try:
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        badges = user["badges"]
+        tasks = user["badge_tasks"]
+        res = []
+        for i in badges:
+            badge_tasks = [item for item in tasks if item["badge_id"] == i["id"]]
+            badgedetail = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "_id":ObjectId(i["id"])}))
+            print(badgedetail)
+            badge = {
+                "badge": badgedetail,
+                "progress":i["progress"],
+                "pinned":i["pinned"],
+                "owned":i["owned"],
+                "badge_tasks":badge_tasks
+            }
+            res.append(badge)
+
+        return res
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
 async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceActivityUpdate):
     try:
         user = await db.client[DATABASE_NAME][
@@ -351,6 +383,28 @@ async def get_user_activities( user_id: str):
     except Exception as e:
         raise e
 
+async def get_user_activities_detail( user_id: str):
+    try:
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activities = user["placeActivities"]
+        for i in activities:
+            activityid = i["id"]
+            try:
+                place = await get_some_places([activityid])
+            except PlaceNotFoundError:
+                continue
+            except Error as e:
+                raise e
+            placeActivities=place[0].placeActivities
+            for r in placeActivities:
+                if r.id == activityid:
+                    activity = r.dict()
+            i["activity"] = activity
+        return activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
 
 async def follow_user(current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:

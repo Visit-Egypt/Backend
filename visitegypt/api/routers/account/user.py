@@ -8,6 +8,7 @@ from visitegypt.core.accounts.entities.user import (
     UserUpdate,
     UsersPageResponse,
     Badge,
+    BadgeResponseDetail,
     BadgeTask,
     BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq, UserFollowResp
 )
@@ -42,6 +43,7 @@ from visitegypt.api.errors.http_error import HTTPErrorModel
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pathlib import Path
+from fastapi.security import OAuth2PasswordRequestForm
 repo = get_dependencies().user_repo
 upload_repo = get_dependencies().upload_repo
 
@@ -185,6 +187,18 @@ async def login_user(auth_body: UserAuthBody):
     except Exception as err:
         raise err
 
+@router.post("/login/swagger", response_model=Token, status_code=status.HTTP_200_OK, tags=["User"])
+async def login_user(request: OAuth2PasswordRequestForm = Depends()):
+    try:
+        auth_body = UserAuthBody(email=request.username,password=request.password)
+        return await login_service(repo, auth_body)
+    except WrongEmailOrPassword:
+        raise HTTPException(401, detail=INCORRECT_LOGIN_INPUT)
+    except UserNotFoundError:
+        raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as err:
+        raise err
+
 @router.post("/login/google", response_model=Token, status_code=status.HTTP_200_OK, tags=["User"])
 async def login_user(token: UserGoogleAuthBody):
     try:
@@ -297,6 +311,19 @@ async def get_user_badges(
     except Exception as e:
         raise e
 
+@router.get(
+    "/badgesdetail/{user_id}",
+    response_model = List[BadgeResponseDetail],
+    summary="get badges of a user with details",
+    tags=["User"]
+)
+async def get_user_badges_detail(
+    user_id:str):
+    try:
+        return await user_service.get_user_badges_detail(repo, user_id)
+    except Exception as e:
+        raise e
+
 @router.put(
     "/actvity/{activity_id}",
     summary="Update Place Activity for a user",
@@ -324,6 +351,17 @@ async def get_user_activities(
     except Exception as e:
         raise e
 
+@router.get(
+    "/actvitydetail/{user_id}",
+    summary="get place activities of a user with details",
+    tags=["User"]
+)
+async def get_user_activities_detail(
+    user_id:str):
+    try:
+        return await user_service.get_user_activities_deatil(repo, user_id)
+    except Exception as e:
+        raise e
 
 @router.post('/{user_id}/follow', response_model = UserFollowResp, summary="Follow a user", tags=['User'])
 async def follow_user(user_id: str, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):

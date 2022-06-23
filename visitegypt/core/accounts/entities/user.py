@@ -2,10 +2,10 @@ from __future__ import annotations
 from typing import Optional, List
 from datetime import date
 from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import null
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
-
-
+from visitegypt.core.badges.entities.badge import BadgeInDB
 
 class PlaceActivity(MongoModel):
     id: str
@@ -31,6 +31,13 @@ class BadgeUpdate(MongoModel):
     pinned: Optional[bool]
 class BadgeResponse(MongoModel):
     id: str
+    progress: int = 0
+    owned: bool = False
+    pinned: bool = False
+    badge_tasks: List[BadgeTask] = []
+
+class BadgeResponseDetail(MongoModel):
+    badge:BadgeInDB = None
     progress: int = 0
     owned: bool = False
     pinned: bool = False

@@ -233,6 +233,16 @@ async def get_user_badges(repo: UserRepo, user_id: str):
     except Exception as e:
         raise e
 
+async def get_user_badges_detail(repo: UserRepo, user_id: str):
+    try:
+        user_badges = await repo.get_user_badges_detail(user_id)
+        if user_badges:
+            return user_badges
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
 async def update_place_activity(repo: UserRepo, user_id: str, activity_id: str, new_activity:PlaceActivityUpdate):
     try:
         user_activities = await repo.update_user_activity(user_id,activity_id,new_activity)
@@ -253,6 +263,15 @@ async def get_user_activities(repo: UserRepo, user_id: str):
     except Exception as e:
         raise e
 
+async def get_user_activities_deatil(repo: UserRepo, user_id: str):
+    try:
+        user_activities = await repo.get_user_activities_detail(user_id)
+        if user_activities:
+            return user_activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
 
 async def follow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:
