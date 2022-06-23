@@ -1,6 +1,5 @@
 from msilib.schema import Error
 from typing import List, Optional, Dict
-from numpy import place
 from pydantic import EmailStr
 import pymongo
 from visitegypt.core.errors.place_error import PlaceNotFoundError
