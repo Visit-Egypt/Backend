@@ -1,6 +1,6 @@
 from visitegypt.api.container import get_dependencies
 from typing import Optional, List, Dict
-from fastapi import APIRouter, HTTPException, Security, Depends, status, Request
+from fastapi import APIRouter, HTTPException, Security, Depends, status, Request, Query
 from visitegypt.core.accounts.services import user_service
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
@@ -298,6 +298,92 @@ async def update_badge(
     except Exception as e:
         raise e
 
+@router.put(
+    "/visitplace/{place_id}",
+    summary="User Visit Place",
+    tags=["User"]
+)
+async def visit_place(
+    place_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.visit_place(repo, current_user.id, place_id)
+    except Exception as e:
+        raise e
+
+@router.put(
+    "/reviewplace/{place_id}",
+    summary="User Review Place",
+    tags=["User"]
+)
+async def review_place(
+    place_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.review_place(repo, current_user.id, place_id)
+    except Exception as e:
+        raise e
+
+@router.put(
+    "/addpost/{place_id}",
+    summary="User Added Post",
+    tags=["User"]
+)
+async def add_post(
+    place_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.add_post(repo, current_user.id, place_id)
+    except Exception as e:
+        raise e
+
+@router.put(
+    "/scanobject/{place_id}/{explore_id}",
+    summary="User Scanned Object",
+    tags=["User"]
+)
+async def add_post(
+    place_id:str,
+    explore_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.scan_object(repo, current_user.id, place_id,explore_id)
+    except Exception as e:
+        raise e
+
+@router.put(
+    "/chatbotartifact/{place_id}",
+    summary="User ask chatbot about artifact",
+    tags=["User"]
+)
+async def chatbot_artifact(
+    place_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.chatbot_artifact(repo, current_user.id, place_id)
+    except Exception as e:
+        raise e
+
+@router.put(
+    "/chatbotplace/{place_id}",
+    summary="User ask chatbot about place",
+    tags=["User"]
+)
+async def chatbot_place(
+    place_id:str,
+    current_user: UserResponse = Depends(get_current_user)
+    ):
+    try:
+        return await user_service.chatbot_place(repo, current_user.id, place_id)
+    except Exception as e:
+        raise e
+
+
 @router.get(
     "/badges/{user_id}",
     response_model = List[BadgeResponse],
@@ -352,14 +438,38 @@ async def get_user_activities(
         raise e
 
 @router.get(
+    "/allactvitydetail/{user_id}",
+    summary="get place activities and explores of a user with details",
+    tags=["User"]
+)
+async def get_user_all_activities_detail(
+    user_id:str,place_id: Optional[str] = Query(None)):
+    try:
+        return await user_service.get_user_activities_deatil(repo, user_id,place_id)
+    except Exception as e:
+        raise e
+
+@router.get(
     "/actvitydetail/{user_id}",
-    summary="get place activities of a user with details",
+    summary="get activities of a user with details",
     tags=["User"]
 )
 async def get_user_activities_detail(
-    user_id:str):
+    user_id:str,place_id: Optional[str] = Query(None)):
     try:
-        return await user_service.get_user_activities_deatil(repo, user_id)
+        return await user_service.get_user_only_activities_detail(repo, user_id,place_id)
+    except Exception as e:
+        raise e
+
+@router.get(
+    "/exploredetail/{user_id}",
+    summary="get explores of a user with details",
+    tags=["User"]
+)
+async def get_user_explores_detail(
+    user_id:str,place_id: Optional[str] = Query(None)):
+    try:
+        return await user_service.get_user_only_explore_detail(repo, user_id,place_id)
     except Exception as e:
         raise e
 

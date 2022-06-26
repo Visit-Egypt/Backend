@@ -57,6 +57,18 @@ class UserRepo(Protocol):
         pass
     async def update_badge(user_id: str ,badge_id: str,new_badge: BadgeUpdate):
         pass
+    async def visit_place(user_id: str ,place_id:str):
+        pass
+    async def review_place(user_id: str ,place_id:str):
+        pass
+    async def add_post(user_id: str ,place_id:str):
+        pass
+    async def chatbot_place(user_id: str ,place_id:str):
+        pass
+    async def chatbot_artifact(user_id: str ,place_id:str):
+        pass
+    async def scan_object(user_id: str ,place_id:str, explore_id:str):
+        pass
     async def get_user_badges( user_id: str):
         pass
     async def get_user_badges_detail( user_id: str):
@@ -65,9 +77,12 @@ class UserRepo(Protocol):
         pass
     async def get_user_activities( user_id: str):
         pass
-    async def get_user_activities_detail( user_id: str):
+    async def get_user_activities_detail( user_id: str,place_id:str=None):
         pass
-
+    async def get_user_only_explore_detail( user_id: str,place_id:str=None):
+        pass
+    async def get_user_only_activities_detail( user_id: str,place_id:str=None):
+        pass
     async def follow_user(current_user: UserResponse, user_id: str) -> bool:
         pass
     async def unfollow_user(current_user: UserResponse, user_id: str) -> bool:

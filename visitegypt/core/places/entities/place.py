@@ -9,6 +9,7 @@ class Hint(MongoModel):
     imageUrl: str
 class Explore(MongoModel):
     id: str
+    xp: int
     title: str
     imageUrl: str
     hints: List[Hint]

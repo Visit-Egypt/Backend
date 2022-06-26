@@ -223,6 +223,66 @@ async def update_badge(repo: UserRepo, user_id: str ,badge_id: str,new_badge: Ba
     except Exception as e:
         raise e
 
+async def visit_place(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.visit_place(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def review_place(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.review_place(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def add_post(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.add_post(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def chatbot_place(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.chatbot_place(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def chatbot_artifact(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.chatbot_artifact(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def scan_object(repo: UserRepo, user_id: str ,place_id:str, explore_id:str):
+    try:
+        status = await repo.scan_object(user_id,place_id,explore_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
 async def get_user_badges(repo: UserRepo, user_id: str):
     try:
         user_badges = await repo.get_user_badges(user_id)
@@ -263,9 +323,29 @@ async def get_user_activities(repo: UserRepo, user_id: str):
     except Exception as e:
         raise e
 
-async def get_user_activities_deatil(repo: UserRepo, user_id: str):
+async def get_user_activities_deatil(repo: UserRepo, user_id: str,place_id:str=None):
     try:
-        user_activities = await repo.get_user_activities_detail(user_id)
+        user_activities = await repo.get_user_activities_detail(user_id,place_id)
+        if user_activities:
+            return user_activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_user_only_explore_detail(repo: UserRepo, user_id: str,place_id:str=None):
+    try:
+        user_activities = await repo.get_user_only_explore_detail(user_id,place_id)
+        if user_activities:
+            return user_activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_user_only_activities_detail(repo: UserRepo, user_id: str,place_id:str=None):
+    try:
+        user_activities = await repo.get_user_only_activities_detail(user_id,place_id)
         if user_activities:
             return user_activities
     except UserNotFoundError as ue:
