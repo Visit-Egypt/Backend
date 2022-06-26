@@ -1,7 +1,6 @@
 from typing import List, Optional, Dict
 from pydantic import EmailStr
 import pymongo
-from sqlalchemy import true
 from visitegypt.core.errors.place_error import PlaceNotFoundError
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
