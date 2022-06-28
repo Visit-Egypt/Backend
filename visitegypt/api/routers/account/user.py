@@ -228,6 +228,7 @@ async def get_all_users(
             limit=params["limit"],
             filters=params["filters"],
         )
+    except UserNotFoundError as e: raise HTTPException(404, detail="User Not Found")
     except Exception as e: raise e
 
 @router.post("/refresh", response_model=Token, status_code=status.HTTP_200_OK, tags=["User"])
