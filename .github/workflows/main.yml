@@ -78,6 +78,11 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
+      - name: check env
+        if: ${{ secrets.MAX_CONNECTIONS_COUNT }} == ''
+        run: |
+          echo Epic fail
+          exit 1
       - name: Deploy docker container to the erver
         uses: fifsky/ssh-action@master
         with:
@@ -87,13 +92,6 @@ jobs:
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY}}
-  testenv:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        run: |
-          echo "Max: $GITHUB_CONTEXT";
-          echo "PROJECT_NAME: $PROJECT_NAME"  
   deploy:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute
