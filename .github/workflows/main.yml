@@ -53,7 +53,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: user/app:latest  
+          tags: backend/app:latest  
   deploy:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute
