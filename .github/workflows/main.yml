@@ -88,7 +88,7 @@ jobs:
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY}}
-  test:
+  testenv:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
