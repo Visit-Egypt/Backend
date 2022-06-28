@@ -93,7 +93,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        RUN: |
+        run: |
           echo "Max: $MAX_CONNECTIONS_COUNT";
           echo "PROJECT_NAME: $PROJECT_NAME"  
   deploy:
