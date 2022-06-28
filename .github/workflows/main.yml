@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: Deploy docker container to the erver
         uses: fifsky/ssh-action@master
-        secrets:
+        env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_NOTIFICATION_PLATFORM_ARN: ${{ secrets.AWS_NOTIFICATION_PLATFORM_ARN }}
