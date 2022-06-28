@@ -88,7 +88,14 @@ jobs:
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY}}
-  
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        RUN: |
+          echo "Max: $MAX_CONNECTIONS_COUNT";
+          echo "PROJECT_NAME: $PROJECT_NAME"  
   deploy:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute
