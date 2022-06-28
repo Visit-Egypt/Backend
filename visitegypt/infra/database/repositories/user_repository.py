@@ -479,7 +479,7 @@ async def chatbot_artifact(user_id: str ,place_id:str):
 async def chatbot_place(user_id: str ,place_id:str):
     try:
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
-        visitActivity = next((item for item in place["placeActivities"] if item['type'] == 2), None)
+        visitActivity = next((item for item in place["placeActivities"] if item['type'] == 3), None)
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "place_id":place_id}))
         await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle="ask Anubis about the place",progress=1))
