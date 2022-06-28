@@ -92,7 +92,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
         run: |
           echo "Max: $MAX_CONNECTIONS_COUNT";
           echo "PROJECT_NAME: $PROJECT_NAME"  
