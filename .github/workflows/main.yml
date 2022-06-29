@@ -83,6 +83,8 @@ jobs:
           SECRET_KEY:  ${{ secrets.SECRET_KEY }}
         with:
           command: |
+            sudo rm -f $HOME/.env
+            
             echo "MAX_CONNECTIONS_COUNT=${{ env.MAX_CONNECTIONS_COUNT }}" >> $HOME/.env
             echo "MIN_CONNECTIONS_COUNT=${{ env.MIN_CONNECTIONS_COUNT }}" >> $HOME/.env
             echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> $HOME/.env
@@ -102,6 +104,8 @@ jobs:
 
             sudo docker kill backend-container
             sudo docker rm backend-container
+            sudo docker rmi $(sudo docker images -a -q)
+            
             sudo docker run -d -p 80:80 --env-file $HOME/.env --name backend-container visitegypt/backend:latest
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
