@@ -58,7 +58,7 @@ jobs:
           tags: visitegypt/backend:latest
 
   DeployToServer:
-    needs: [test, BuildDocker]
+    # needs: [test, BuildDocker]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     env:
@@ -79,8 +79,10 @@ jobs:
       PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
       SECRET_KEY:  ${{ secrets.SECRET_KEY }}
     steps:
-      - name: Ts
-        run: cat /run/secrets/MAX_CONNECTIONS_COUNT
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Deploy docker container to the erver
         uses: fifsky/ssh-action@master
         with:
