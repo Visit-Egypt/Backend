@@ -72,6 +72,7 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}                  
         with:
           command: |
+            echo "$MAIL_FROM"
             sudo docker rm backend-container
             # sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
             sudo docker run -d -p 80:80 -e DB_CONNECTION=$DB_CONNECTION -e MAIL_FROM=$MAIL_FROM -e MAX_CONNECTIONS_COUNT=$MAX_CONNECTIONS_COUNT -e MIN_CONNECTIONS_COUNT=$MIN_CONNECTIONS_COUNT --name backend-container visitegypt/backend:latest
