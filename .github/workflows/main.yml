@@ -5,7 +5,6 @@ on: [push]
 
 jobs:
   test:
-    if: ${{false}}
     name: Run Python Tests
     runs-on: ubuntu-latest
 
@@ -36,8 +35,7 @@ jobs:
         echo "Testing Placeholder"
   BuildDocker:
     needs: [test]
-    # if: github.ref == 'refs/heads/master' 
-    if: ${{false}}
+    if: github.ref == 'refs/heads/master' 
     runs-on: ubuntu-latest
     steps:
       -
@@ -60,7 +58,7 @@ jobs:
           tags: visitegypt/backend:latest
 
   DeployToServer:
-    # needs: [test, BuildDocker]
+    needs: [test, BuildDocker]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
@@ -104,7 +102,6 @@ jobs:
            
             sudo docker rm backend-container
             sudo docker run -d -p 80:80 --env-file $HOME/.env --name backend-container visitegypt/backend:latest
-            #sudo docker run -d -p 80:80 -e MAX_CONNECTIONS_COUNT=${{ env.MAX_CONNECTIONS_COUNT }} -e MIN_CONNECTIONS_COUNT=${{ env.MIN_CONNECTIONS_COUNT }} -e AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }} -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} -e AWS_NOTIFICATION_PLATFORM_ARN=${{ env.AWS_NOTIFICATION_PLATFORM_ARN }} -e AWS_NOTIFICATION_TOPIC_ARN=${{ env.AWS_NOTIFICATION_TOPIC_ARN }} -e AWS_REGION_NAME=${{ env.AWS_REGION_NAME }} -e AWS_S3_BUCKET_NAME=${{ env.AWS_S3_BUCKET_NAME }} -e AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }} -e CLIENT_ID=${{ env.CLIENT_ID }} -e DB_CONNECTION=${{ env.DB_CONNECTION }} -e MAIL_FROM=${{ env.MAIL_FROM }} -e MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} -e MAIL_USERNAME=${{ env.MAIL_USERNAME }} -e PROJECT_NAME="${{ env.PROJECT_NAME }}" -e SECRET_KEY="${{ env.SECRET_KEY }}" --name backend-container visitegypt/backend:latest
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY}}
@@ -112,8 +109,7 @@ jobs:
     # If the test & lint jobs don't pass,
     # the deploy job willn't even execute
     needs: [test]
-    # if: github.ref == 'refs/heads/master'
-    if: ${{false}}
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
