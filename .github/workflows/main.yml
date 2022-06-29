@@ -83,11 +83,27 @@ jobs:
           MIN_CONNECTIONS_COUNT: ${{ secrets.MIN_CONNECTIONS_COUNT }}
           PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
           SECRET_KEY:  ${{ secrets.SECRET_KEY }}
-          TEST: test 
         with:
           command: |
-            sudo docker run -d -p 80:80 -e TEST=${{env.TEST}} test visitegypt/backend:latest
-            #sudo docker rm backend-container
+            echo "MAX_CONNECTIONS_COUNT=${{ env.MAX_CONNECTIONS_COUNT }}" >> $HOME/.env
+            echo "MIN_CONNECTIONS_COUNT=${{ env.MIN_CONNECTIONS_COUNT }}" >> $HOME/.env
+            echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> $HOME/.env
+            echo "AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }}" >> $HOME/.env
+            echo "AWS_NOTIFICATION_PLATFORM_ARN=${{ env.AWS_NOTIFICATION_PLATFORM_ARN }}" >> $HOME/.env
+            echo "AWS_NOTIFICATION_TOPIC_ARN=${{ env.AWS_NOTIFICATION_TOPIC_ARN }}" >> $HOME/.env
+            echo "AWS_REGION_NAME=${{ env.AWS_REGION_NAME }}" >> $HOME/.env
+            echo "AWS_S3_BUCKET_NAME=${{ env.AWS_S3_BUCKET_NAME }}" >> $HOME/.env
+            echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> $HOME/.env
+            echo "CLIENT_ID=${{ env.CLIENT_ID }}" >> $HOME/.env
+            echo "DB_CONNECTION=${{ env.DB_CONNECTION }}" >> $HOME/.env
+            echo "MAIL_FROM=${{ env.MAIL_FROM }}" >> $HOME/.env
+            echo "MAIL_PASSWORD=${{ env.MAIL_PASSWORD }}" >> $HOME/.env
+            echo "MAIL_USERNAME=${{ env.MAIL_USERNAME }}" >> $HOME/.env
+            echo "PROJECT_NAME="${{ env.PROJECT_NAME }}"" >> $HOME/.env
+            echo "SECRET_KEY="${{ env.SECRET_KEY }}"" >> $HOME/.env
+           
+            sudo docker rm backend-container
+            sudo docker run -d -p 80:80 --env-file $HOME/.env --name backend-container visitegypt/backend:latest
             #sudo docker run -d -p 80:80 -e MAX_CONNECTIONS_COUNT=${{ env.MAX_CONNECTIONS_COUNT }} -e MIN_CONNECTIONS_COUNT=${{ env.MIN_CONNECTIONS_COUNT }} -e AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }} -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} -e AWS_NOTIFICATION_PLATFORM_ARN=${{ env.AWS_NOTIFICATION_PLATFORM_ARN }} -e AWS_NOTIFICATION_TOPIC_ARN=${{ env.AWS_NOTIFICATION_TOPIC_ARN }} -e AWS_REGION_NAME=${{ env.AWS_REGION_NAME }} -e AWS_S3_BUCKET_NAME=${{ env.AWS_S3_BUCKET_NAME }} -e AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }} -e CLIENT_ID=${{ env.CLIENT_ID }} -e DB_CONNECTION=${{ env.DB_CONNECTION }} -e MAIL_FROM=${{ env.MAIL_FROM }} -e MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} -e MAIL_USERNAME=${{ env.MAIL_USERNAME }} -e PROJECT_NAME="${{ env.PROJECT_NAME }}" -e SECRET_KEY="${{ env.SECRET_KEY }}" --name backend-container visitegypt/backend:latest
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
