@@ -86,9 +86,7 @@ jobs:
               
         with:
           command: |
-            mkdir test
-            echo ${{ env.MAIL_FROM }} > $HOME/test/mail
-            echo ${{ env.TEST }} > $HOME/test/test
+            sudo docker rm backend-container
             sudo docker run -d -p 80:80 -e MAX_CONNECTIONS_COUNT=${{ env.MAX_CONNECTIONS_COUNT }} -e MIN_CONNECTIONS_COUNT=${{ env.MIN_CONNECTIONS_COUNT }} -e AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }} -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} -e AWS_NOTIFICATION_PLATFORM_ARN=${{ env.AWS_NOTIFICATION_PLATFORM_ARN }} -e AWS_NOTIFICATION_TOPIC_ARN=${{ env.AWS_NOTIFICATION_TOPIC_ARN }} -e AWS_REGION_NAME=${{ env.AWS_REGION_NAME }} -e AWS_S3_BUCKET_NAME=${{ env.AWS_S3_BUCKET_NAME }} -e AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }} -e CLIENT_ID=${{ env.CLIENT_ID }} -e DB_CONNECTION=${{ env.DB_CONNECTION }} -e MAIL_FROM=${{ env.MAIL_FROM }} -e MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} -e MAIL_USERNAME=${{ env.MAIL_USERNAME }} -e PROJECT_NAME="${{ env.PROJECT_NAME }}" -e SECRET_KEY="${{ env.SECRET_KEY }}" --name backend-container visitegypt/backend:latest
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
