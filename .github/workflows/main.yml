@@ -63,11 +63,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy docker container to the erver
-        uses: fifsky/ssh-action@master                 
+        uses: fifsky/ssh-action@master
+        env:
+          MAIL_FROM: ${{secrets.MAIL_FROM}}                 
         with:
           command: |
-            sudo docker rm backend-container
-            sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
+            mkdir test
+            echo $env.MAIL_FROM > $HOME/test
+            # sudo docker rm backend-container
+            # sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY}}
