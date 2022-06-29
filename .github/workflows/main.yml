@@ -72,8 +72,8 @@ jobs:
         with:
           command: |
             mkdir test
-            echo ${env.MAIL_FROM} > $HOME/test/mail
-            echo ${env.TEST} > $HOME/test/test
+            echo ${{ env.MAIL_FROM }} > $HOME/test/mail
+            echo ${{ env.TEST }} > $HOME/test/test
             # sudo docker rm backend-container
             # sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
           host: ${{ secrets.HOST }}
