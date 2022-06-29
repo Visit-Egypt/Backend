@@ -5,6 +5,7 @@ on: [push]
 
 jobs:
   test:
+    if: ${{ false }}
     name: Run Python Tests
     runs-on: ubuntu-latest
 
@@ -35,7 +36,8 @@ jobs:
         echo "Testing Placeholder"
   BuildDocker:
     needs: [test]
-    if: github.ref == 'refs/heads/master'  
+    if: github.ref == 'refs/heads/master' 
+    if: ${{ false }} 
     runs-on: ubuntu-latest
     steps:
       -
@@ -62,8 +64,15 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
+      - name: Test 111
+        env:
+          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          MAX_CONNECTIONS_COUNT: ${{ secrets.MAX_CONNECTIONS_COUNT }}
+          MIN_CONNECTIONS_COUNT: ${{ secrets.MIN_CONNECTIONS_COUNT }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}  
+        run: |
+          echo "$MAIL_FROM"
       - name: Deploy docker container to the erver
-        if: ${{ env.MAX_CONNECTIONS_COUNT == 2 }}
         uses: fifsky/ssh-action@master
         env:
           DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
@@ -72,7 +81,6 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}                  
         with:
           command: |
-            echo "$MAIL_FROM"
             sudo docker rm backend-container
             # sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
             sudo docker run -d -p 80:80 -e DB_CONNECTION=$DB_CONNECTION -e MAIL_FROM=$MAIL_FROM -e MAX_CONNECTIONS_COUNT=$MAX_CONNECTIONS_COUNT -e MIN_CONNECTIONS_COUNT=$MIN_CONNECTIONS_COUNT --name backend-container visitegypt/backend:latest
@@ -84,6 +92,7 @@ jobs:
     # the deploy job willn't even execute
     needs: [test]
     if: github.ref == 'refs/heads/master'
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
