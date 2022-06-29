@@ -63,12 +63,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy docker container to the erver
-        uses: fifsky/ssh-action@master        
+        uses: fifsky/ssh-action@master
+        env:
+          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          MAX_CONNECTIONS_COUNT: ${{ secrets.MAX_CONNECTIONS_COUNT }}
+          MIN_CONNECTIONS_COUNT: ${{ secrets.MIN_CONNECTIONS_COUNT }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}                  
         with:
           command: |
             sudo docker rm backend-container
             # sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
-            sudo docker run -d -p 80:80 -e DB_CONNECTION=${{ secrets.DB_CONNECTION }} -e MAIL_FROM=${{ secrets.MAIL_FROM }} -e MAX_CONNECTIONS_COUNT=${{ secrets.MAX_CONNECTIONS_COUNT }} -e MIN_CONNECTIONS_COUNT=${{ secrets.MIN_CONNECTIONS_COUNT }} --name backend-container visitegypt/backend:latest
+            sudo docker run -d -p 80:80 -e DB_CONNECTION=$DB_CONNECTION -e MAIL_FROM=$MAIL_FROM -e MAX_CONNECTIONS_COUNT=$MAX_CONNECTIONS_COUNT -e MIN_CONNECTIONS_COUNT=$MIN_CONNECTIONS_COUNT --name backend-container visitegypt/backend:latest
           host: ${{ secrets.HOST }}
           user: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY}}
