@@ -67,11 +67,13 @@ jobs:
       - name: Deploy docker container to the erver
         uses: fifsky/ssh-action@master
         env:
-          MAIL_FROM: ${{secrets.MAIL_FROM}}                 
+          MAIL_FROM: ${{secrets.MAIL_FROM}}  
+          TEST: test               
         with:
           command: |
             mkdir test
-            echo $MAIL_FROM > $HOME/test/mail
+            echo ${env.MAIL_FROM} > $HOME/test/mail
+            echo ${env.TEST} > $HOME/test/test
             # sudo docker rm backend-container
             # sudo docker run -d -p 80:80 --name backend-container visitegypt/backend:latest 
           host: ${{ secrets.HOST }}
