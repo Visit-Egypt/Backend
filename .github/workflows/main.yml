@@ -63,6 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy docker container to the erver
+        if: ${{ env.MAX_CONNECTIONS_COUNT == 2 }}
         uses: fifsky/ssh-action@master
         env:
           DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
