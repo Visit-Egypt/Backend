@@ -82,6 +82,10 @@ jobs:
           MIN_CONNECTIONS_COUNT: ${{ secrets.MIN_CONNECTIONS_COUNT }}
           PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
           SECRET_KEY:  ${{ secrets.SECRET_KEY }}
+          APM_SERVICE_NAME: ${{ secrets.APM_SERVICE_NAME }}
+          APM_SERVER_URL: ${{ secrets.APM_SERVER_URL }}
+          APM_SERVER_TOKEN: ${{ secrets.APM_SERVER_TOKEN }}
+          ELK_ENABLED: ${{ secrets.ELK_ENABLED }}
         with:
           command: |
             sudo rm -f $HOME/.env
@@ -103,7 +107,11 @@ jobs:
             echo "MAIL_USERNAME=${{ env.MAIL_USERNAME }}" >> $HOME/.env
             echo "PROJECT_NAME="${{ env.PROJECT_NAME }}"" >> $HOME/.env
             echo "SECRET_KEY="${{ env.SECRET_KEY }}"" >> $HOME/.env
-
+            echo "APM_SERVICE_NAME="${{ env.APM_SERVICE_NAME }}"" >> $HOME/.env
+            echo "APM_SERVER_URL="${{ env.APM_SERVER_URL }}"" >> $HOME/.env
+            echo "APM_SERVER_TOKEN="${{ env.APM_SERVER_TOKEN }}"" >> $HOME/.env
+            echo "ELK_ENABLED="${{ env.ELK_ENABLED }}"" >> $HOME/.env
+            
             sudo docker kill backend-container
             sudo docker rm backend-container
             sudo docker rmi $(sudo docker images -a -q)
