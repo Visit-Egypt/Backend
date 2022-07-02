@@ -11,7 +11,7 @@ import requests
 from typing import DefaultDict, List, Optional
 
 AWS_S3_BUCKET_NAME = "visitegypt-media-bucket"
-APIURL = "AR API URL LINK"
+APIURL = "http://129.146.98.37:8000/api/ar/"
 
 async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
     # Generate S3 Client
@@ -40,6 +40,7 @@ async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
 
 async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: DefaultDict(list), user_id: str) -> Optional[UploadConfirmationResponse]:
   try:
+    print(images_keys)
     if images_keys.get('users') != None and len(images_keys.get('users')) > 0:
       user_image : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("users")[0]}'
       # user_id : str = images_keys.get('users')[0].split('/')[2]
@@ -49,8 +50,11 @@ async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: Default
     
     if images_keys.get('ar') != None and len(images_keys.get('ar')) > 0:
       if(len(images_keys.get('ar'))==1):
+        print(images_keys.get("ar"))
+        print(images_keys.get("ar")[0])
         photo : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[0]}'
-        callAPI(photo)
+        print(photo)
+        await callAPI(photo,user_id)
         return UploadConfirmationResponse(message = "Uploaded Successfully", status_code = 200 )
 
       ar_png : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[0]}'
@@ -76,10 +80,9 @@ async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: Default
       await post_repository.delete_post(post_id, user_id)
   except Exception as e: raise e
 
-async def callAPI(photo):
+async def callAPI(photo,user_id):
     data = {
         "photo":photo
     }
-    response = requests.post(APIURL, json=data)
-    res = dict(response.json())
-    return res
+    response = requests.post(APIURL+user_id, json=data)
+    return response

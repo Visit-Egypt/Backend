@@ -4,6 +4,7 @@ from pydantic import EmailStr
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
+    UserAR,
     UserUpdatePassword,
     User,
     UserUpdaterole,
@@ -38,6 +39,9 @@ class UserRepo(Protocol):
         pass
 
     async def get_user_hashed_password(user_id: str) -> str:
+        pass
+
+    async def get_user_ar(user_id: str) -> UserAR:
         pass
 
     async def update_user_role(

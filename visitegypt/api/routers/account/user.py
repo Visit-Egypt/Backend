@@ -5,6 +5,7 @@ from visitegypt.core.accounts.services import user_service
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
     UserResponse,
+    UserAR,
     UserUpdate,
     UsersPageResponse,
     Badge,
@@ -129,6 +130,18 @@ async def get_user(
     except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
     except Exception as e: raise e
 
+@router.get("/{user_id}", response_model=UserAR, status_code=status.HTTP_200_OK, tags=["User"])
+async def get_user_ar(
+    user_id: str,
+    current_user: UserResponse = Depends(get_current_user)
+):
+    try:
+        if(str(current_user.id) == user_id):
+            return await user_service.get_user_ar(repo, user_id)
+        else:
+            raise HTTPException(401, detail="Not Authorized")
+    except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as e: raise e
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Admin Panel"])
 async def delete_user(

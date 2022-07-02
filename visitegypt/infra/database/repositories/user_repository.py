@@ -5,6 +5,7 @@ from visitegypt.core.errors.place_error import PlaceNotFoundError
 from visitegypt.core.accounts.entities.user import (
     UserResponse,
     UserUpdate,
+    UserAR,
     UserUpdatePassword,
     User,
     UsersPageResponse,
@@ -142,6 +143,20 @@ async def get_user_by_id(user_id: str) -> Optional[UserResponse]:
         )
         if row:
             return UserResponse.from_mongo(row)
+        raise UserNotFoundError
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def get_user_ar(user_id: str) -> Optional[UserAR]:
+    try:
+        row = await db.client[DATABASE_NAME][users_collection_name].find_one(
+            {"_id": ObjectId(user_id)}
+        )
+        if row:
+            return UserAR(**row)
         raise UserNotFoundError
     except UserNotFoundError as ue:
         raise ue

@@ -2,6 +2,7 @@ from typing import Optional, Dict
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
     UserResponse,
+    UserAR,
     User,
     UserUpdate,
     UserUpdatePassword,
@@ -139,6 +140,15 @@ async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     except Exception as e:
         raise e
 
+async def get_user_ar(repo: UserRepo, user_id: str) -> UserAR:
+    try:
+        user = await repo.get_user_ar(user_id)
+        if user:
+            return user
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
 
 async def get_all_users(repo: UserRepo, page_num: int = 1, limit: int = 15, filters: Dict = None) -> List[UsersPageResponse]:
     try:
