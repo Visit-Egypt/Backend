@@ -7,15 +7,19 @@ from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME, AWS_ACCESS_KEY_ID, PRESIGNED_URL_TIME_INTERVAL, FILE_UPLOAD_SIZE, AWS_REGION_NAME
 import boto3
 import uuid
+import requests
 from typing import DefaultDict, List, Optional
+
+AWS_S3_BUCKET_NAME = "visitegypt-media-bucket"
+APIURL = "AR API URL LINK"
 
 async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
     # Generate S3 Client
     s3_client = boto3.client(
     's3',
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name = AWS_REGION_NAME)
+    aws_access_key_id="AKIAZLLK7ARPO2V66STR",
+    aws_secret_access_key="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",
+    region_name = "us-west-2")
     content_extension: str = upload_req.content_type.split('/')[1]
     image_id = uuid.uuid4()
     # Generate a Pre-Signed Url Using Boto3
@@ -43,6 +47,18 @@ async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: Default
       if result.photo_link is not None:
         return UploadConfirmationResponse(message = "Uploaded Successfully", status_code = 200 )
     
+    if images_keys.get('ar') != None and len(images_keys.get('ar')) > 0:
+      if(len(images_keys.get('ar'))==1):
+        photo : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[0]}'
+        callAPI(photo)
+        return UploadConfirmationResponse(message = "Uploaded Successfully", status_code = 200 )
+
+      ar_png : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[0]}'
+      ar_obj : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[1]}'
+      result = await user_repository.update_user(UserUpdate(ar_png=ar_png,ar_obj=ar_obj), user_id)
+      if result.ar_obj is not None and result.ar_png is not None:
+        return UploadConfirmationResponse(message = "Uploaded Successfully", status_code = 200 )
+    
     if images_keys.get('posts') != None and len(images_keys.get('posts')) > 0:
       post_images : List = [f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{image}' for image in images_keys.get('posts')]
       post_id : str = images_keys.get('posts')[0].split('/')[2]
@@ -59,3 +75,11 @@ async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: Default
       post_id : str = bad_keys.get('posts')[0].split('/')[2]
       await post_repository.delete_post(post_id, user_id)
   except Exception as e: raise e
+
+async def callAPI(photo):
+    data = {
+        "photo":photo
+    }
+    response = requests.post(APIURL, json=data)
+    res = dict(response.json())
+    return res

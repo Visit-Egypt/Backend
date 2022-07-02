@@ -270,6 +270,13 @@ async def upload_user_personal_photo(user_id: str, content_type: str,
     else:
         raise HTTPException(401, detail="Unautherized")
 
+@router.get("/{user_id}/upload-ar", response_model = UploadResponse, status_code=status.HTTP_200_OK, tags=["User"])
+async def upload_user_personal_photo(user_id: str, content_type: str):
+    try:
+        upload_req : UploadRequest = UploadRequest(user_id=user_id, resource_id=user_id, resource_name='ar', content_type=content_type)
+        return await upload_service.generate_presigned_url(upload_repo, upload_req)
+    except ResourceNotFoundError: raise HTTPException(404, detail="You are trying to upload in unknown resource")
+
 @router.put(
     "/badge/task",
     summary="Update badge task progress for a user",

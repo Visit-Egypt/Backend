@@ -109,6 +109,8 @@ class UserUpdate(BaseModel):
     fav_places: Optional[List[OID]] = []
     device_token: Optional[str] = None
     device_arn_endpoint: Optional[str] = None
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
 
 class UserUpdatePassword(BaseModel):
     hashed_password: str
@@ -148,6 +150,8 @@ class UserResponse(UserInDBBase):
     placeActivities: Optional[List[PlaceActivity]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
 
 class UserResponseInTags(MongoModel):
     id: OID = Field()

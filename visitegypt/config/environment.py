@@ -52,7 +52,7 @@ ALLOWED_HOSTS: List[str] = config(
     default="",
 )
 
-RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts"]
+RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts","ar"]
 FILE_UPLOAD_SIZE : str = config("FILE_UPLOAD_SIZE", cast = str, default="4MB")
 PRESIGNED_URL_TIME_INTERVAL: str = config("PRESIGNED_URL_TIME_INTERVAL", cast = str, default="3600")
 
