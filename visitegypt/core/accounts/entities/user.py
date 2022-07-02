@@ -153,6 +153,10 @@ class UserResponse(UserInDBBase):
     ar_obj:Optional[str] = None
     ar_png:Optional[str] = None
 
+class UserAR(BaseModel):
+    ar_obj:str
+    ar_png:str
+
 class UserResponseInTags(MongoModel):
     id: OID = Field()
     first_name: Optional[str] = None
