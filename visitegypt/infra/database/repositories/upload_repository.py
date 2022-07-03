@@ -59,7 +59,8 @@ async def uploaded_object_urls(images_keys: DefaultDict(list), bad_keys: Default
 
       ar_png : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[0]}'
       ar_obj : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[1]}'
-      result = await user_repository.update_user(UserUpdate(ar_png=ar_png,ar_obj=ar_obj), user_id)
+      ar_mtl : str = f'https://{AWS_S3_BUCKET_NAME}.s3.us-west-2.amazonaws.com/{images_keys.get("ar")[2]}'
+      result = await user_repository.update_user(UserUpdate(ar_png=ar_png,ar_obj=ar_obj,ar_mtl=ar_mtl), user_id)
       if result.ar_obj is not None and result.ar_png is not None:
         return UploadConfirmationResponse(message = "Uploaded Successfully", status_code = 200 )
     

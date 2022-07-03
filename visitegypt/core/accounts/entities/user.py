@@ -111,6 +111,7 @@ class UserUpdate(BaseModel):
     device_arn_endpoint: Optional[str] = None
     ar_obj:Optional[str] = None
     ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
 
 class UserUpdatePassword(BaseModel):
     hashed_password: str
@@ -152,10 +153,12 @@ class UserResponse(UserInDBBase):
     postViews:Optional[List[str]] = []
     ar_obj:Optional[str] = None
     ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
 
 class UserAR(BaseModel):
     ar_obj:str
     ar_png:str
+    ar_mtl:str
 
 class UserResponseInTags(MongoModel):
     id: OID = Field()
