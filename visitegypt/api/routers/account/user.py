@@ -130,7 +130,7 @@ async def get_user(
     except UserNotFoundError: raise HTTPException(404, detail=MESSAGE_404("User"))
     except Exception as e: raise e
 
-@router.get("/{user_id}", response_model=UserAR, status_code=status.HTTP_200_OK, tags=["User"])
+@router.get("/ar/{user_id}", response_model=UserAR, status_code=status.HTTP_200_OK, tags=["User"])
 async def get_user_ar(
     user_id: str,
     current_user: UserResponse = Depends(get_current_user)
