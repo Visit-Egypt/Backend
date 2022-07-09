@@ -1,4 +1,3 @@
-from email import message
 from typing import List, Optional
 from visitegypt.core.base_model import MongoModel, OID
 from visitegypt.core.tags.entities.tag import GetTagResponse

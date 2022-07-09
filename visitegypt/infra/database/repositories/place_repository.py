@@ -32,6 +32,7 @@ async def get_filtered_places(
             .limit(limit+1)
         )
         places_list = await cursor.to_list(limit+1)
+        print(places_list[0]['category'])
         if not places_list:
             raise PlaceNotFoundError
         document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents(filters)
