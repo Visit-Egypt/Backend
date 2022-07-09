@@ -1,4 +1,3 @@
-from optparse import Option
 from pydantic import BaseModel, Field
 from visitegypt.core.base_model import MongoModel, OID
 from typing import List, Optional

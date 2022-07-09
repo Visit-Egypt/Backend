@@ -41,7 +41,7 @@ class PlaceBase(MongoModel):
     opening_hours: Optional[str]
     city: Optional[str]
     ticket_prices: Optional[Dict[Any, Any]]
-    category: Optional[str]
+    category: List[str] = []
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
     placeActivities: Optional[List[PlaceActivity]]
@@ -61,6 +61,7 @@ class UpdatePlace(MongoModel):
     image_urls: Optional[List[str]]
     default_image: Optional[str]
     opening_hours: Optional[str]
+    category: List[str] = []
     city: Optional[str]
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
