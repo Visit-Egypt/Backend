@@ -1,5 +1,4 @@
-from email import message
-from fastapi import APIRouter, status, HTTPException, Security
+from fastapi import APIRouter, status, HTTPException, Security, BackgroundTasks
 from visitegypt.api.container import get_dependencies
 from visitegypt.api.errors.generate_http_response_openapi import generate_response_for_openapi
 from visitegypt.api.utils import get_current_user
@@ -29,10 +28,12 @@ async def register_token(token: RegisterDeviceTokenRequest, current_user: UserRe
     status_code=status.HTTP_201_CREATED, 
     summary='Send notification', 
     tags=["Push Notifications"])
-async def send_notification(notification: Notification, current_user: UserResponse = Security( get_current_user,scopes=[Role.USER["name"], Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
+async def send_notification(notification: Notification, background_tasks: BackgroundTasks, current_user: UserResponse = Security( get_current_user,scopes=[Role.ADMIN["name"], Role.SUPER_ADMIN["name"]])):
     try:
-        result = await notification_service.send_notification(repo, notification, current_user.id)
-        if result: return NotificationSentResponse(message='Notification has been sent')
-        else: return NotificationSentResponse(message='Error in sending the notification')
+        background_tasks.add_task(notification_service.send_notification, repo, notification, current_user.id)
+        # result = await notification_service.send_notification(repo, notification, current_user.id)
+        # if result: return NotificationSentResponse(message='Notification has been sent')
+        # else: return NotificationSentResponse(message='Error in sending the notification')
+        return {'message': 'Notification is being sent in the background'}
     except Exception as e: raise e
 
