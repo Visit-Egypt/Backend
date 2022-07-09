@@ -1,5 +1,4 @@
-from ctypes import Union
-from typing import Optional
+from typing import Optional, Dict
 from visitegypt.core.errors.post_error import PostNotFoundError, PostOffensive
 from visitegypt.core.posts.entities.post import (
     PostInDB,
@@ -20,30 +19,32 @@ from visitegypt.core.accounts.entities.roles import Role
 from visitegypt.infra.errors import InfrastructureException
 from fastapi import HTTPException
 
-async def get_place_posts(page_num: int, limit: int, place_id: str) -> PostsPageResponse:
+
+async def get_filtered_post(page_num: int, limit: int, filters: Dict = None) -> PostsPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
         start_index: int = indcies[0]
         cursor = (
             db.client[DATABASE_NAME][posts_collection_name]
-            .find({"place_id": place_id})
+            .find(filters)
             .skip(start_index)
-            .limit(limit)
+            .limit(limit+1)
         )
-        posts_list = await cursor.to_list(limit)
+        posts_list = await cursor.to_list(limit+1)
         if not posts_list:
             raise PostNotFoundError
+        document_count = await db.client[DATABASE_NAME][posts_collection_name].count_documents(filters)
         posts_list_response = [PostInDB.from_mongo(post) for post in posts_list]
-        has_next = check_next(limit,posts_list_response)
+        has_next = len(posts_list) > limit
         return PostsPageResponse(
-            current_page=page_num, has_next=has_next, places=posts_list_response
+            current_page=page_num, has_next=has_next, posts=posts_list_response, content_range=document_count
         )
     except PostNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
-
+"""
 async def get_user_posts(page_num: int, limit: int, user_id: str) -> PostsPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
@@ -71,7 +72,8 @@ async def get_user_posts(page_num: int, limit: int, user_id: str) -> PostsPageRe
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
-
+"""
+"""
 async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
     try:
         row = await db.client[DATABASE_NAME][posts_collection_name].find_one(
@@ -85,6 +87,7 @@ async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+"""
 
 async def create_post(new_post: PostBase) -> Optional[PostInDB]:
     try:
@@ -95,8 +98,10 @@ async def create_post(new_post: PostBase) -> Optional[PostInDB]:
                 new_post.dict()
             )
             if row.inserted_id:
-                added_post = await get_post_by_id(row.inserted_id)
-                return added_post
+                new_inserted_post = await get_filtered_post(
+                    page_num=1, limit=1, filters={"_id": ObjectId(row.inserted_id)}
+            )
+            return new_inserted_post.posts[0]
         else:
             raise PostOffensive
     except PostOffensive as po: raise po

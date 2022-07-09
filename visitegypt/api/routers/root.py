@@ -14,6 +14,7 @@ from visitegypt.api.routers.chatbot.chatbot import router as chatbotRouter
 from visitegypt.api.routers.utils_endpoints.upload import router as uploadRouter
 from visitegypt.api.routers.badges.badge import router as badgeRouter
 from visitegypt.api.routers.tag.tag import router as tagRouter
+from visitegypt.api.routers.utils_endpoints.push_notifications import router as notificationRouter
 router = APIRouter()
 
 router.include_router(userRouter, prefix="/user")
@@ -24,6 +25,7 @@ router.include_router(chatbotRouter, prefix="/chatbot")
 router.include_router(uploadRouter, prefix='/upload')
 router.include_router(badgeRouter, prefix='/badge')
 router.include_router(tagRouter, prefix='/tag')
+router.include_router(notificationRouter, prefix='/notification')
 
 class StatusEnum(str, Enum):
     OK = "OK"

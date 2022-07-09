@@ -1,4 +1,4 @@
-from typing import Protocol, Optional
+from typing import Protocol, Optional, Dict
 from visitegypt.core.posts.entities.post import (
     PostInDB,
     PostsPageResponse,
@@ -8,13 +8,7 @@ from visitegypt.core.posts.entities.post import (
 
 
 class PostRepo(Protocol):
-    async def get_place_posts(self, page_num: int, limit: int, place_id:str) -> PostsPageResponse:
-        pass
-
-    async def get_user_posts(self, page_num: int, limit: int, user_id:str) -> PostsPageResponse:
-        pass
-
-    async def get_post_by_id(self, post_id: str) -> Optional[PostInDB]:
+    async def get_filtered_post(page_num: int, limit: int, filters: Dict = None) -> PostsPageResponse:
         pass
 
     async def create_post(self, new_post: PostBase) -> PostInDB:

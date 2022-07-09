@@ -1,13 +1,18 @@
-from typing import Optional
+from typing import Optional, Dict
 from visitegypt.core.accounts.entities.user import (
     UserCreate,
     UserResponse,
+    UserAR,
     User,
     UserUpdate,
+    UserUpdatePassword,
     UsersPageResponse,
     Badge,
     BadgeTask,BadgeUpdate,PlaceActivity,PlaceActivityUpdate
-    , RequestTripMate
+    , RequestTripMate,
+    UserInDB,
+    UserCreateToken,
+    UserFollowResp
 )
 from visitegypt.core.accounts.protocols.user_repo import UserRepo
 from visitegypt.core.errors.user_errors import EmailNotUniqueError, UserNotFoundError, TripRequestNotFound, UserIsFollower, UserIsNotFollowed
@@ -17,6 +22,7 @@ from visitegypt.core.authentication.entities.userauth import UserGoogleAuthBody
 from visitegypt.core.authentication.services.auth_service import (
     login_access_token as login_service,
 )
+from visitegypt.core.authentication.services.auth_service import register_access_token,forgot_password_token
 from visitegypt.core.authentication.services.auth_service import login_google_access_token
 from pydantic import EmailStr
 from typing import List
@@ -24,11 +30,18 @@ from fastapi import HTTPException, status
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import uuid
+from visitegypt.api.utils import get_register_user,send_mail,get_reset_password_user,send__reset_password_mail
+from visitegypt.resources.strings import MESSAGE_404
+from datetime import datetime
+from visitegypt.config.environment import CLIENT_ID
 
-CLIENT_ID = "1008372786382-b12co7cdm09mssi73ip89bdmtt66294i.apps.googleusercontent.com"
+API_HOST = "https://visit-egypt.herokuapp.com"
 
-async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
-    email = new_user.email.lower()
+async def new_register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
+    new_user = new_user.dict()
+    if(new_user["birthdate"]):
+        new_user["birthdate"] = datetime.strftime(new_user["birthdate"],"%y-%m-%d")
+    email = new_user["email"].lower()
     try:
         user : Optional[UserResponse] = await repo.get_user_by_email(email)
         if user: raise EmailNotUniqueError
@@ -36,10 +49,56 @@ async def register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     except EmailNotUniqueError as email_not_unique: raise email_not_unique
     except Exception as e: raise e
 
-    password_hash = get_password_hash(new_user.password)
-    await repo.create_user(User(**new_user.dict(), hashed_password=password_hash))
-    token = await login_service(repo, new_user)
-    return token
+    password_hash = get_password_hash(new_user["password"])
+    user = UserCreateToken(**new_user, hashed_password=password_hash).dict()
+    token = register_access_token(repo, user)
+    url = API_HOST+"/api/user/verfiy/"+str(token)
+    await send_mail(email=email,url=url)
+    return "Verfication email is sent, please verify your email"
+
+async def forgot_password(repo:UserRepo,email:str):
+    email = email.lower()
+    try:
+        user : Optional[UserResponse] = await repo.get_user_by_email(email)
+        token = await forgot_password_token(repo,user)
+        url = API_HOST+"/api/user/resetpassword/"+str(user.id)+"/"+str(token)
+        await send__reset_password_mail(url,email)
+        return "Reset Password email is sent please check your email"
+    except UserNotFoundError: HTTPException(404, detail=MESSAGE_404("User"))
+    except Exception as e: raise e
+
+async def check_user_id(repo:UserRepo, user_id:str ,token:str):
+    try:
+        user_hash = await repo.get_user_hashed_password(user_id)
+        payload = get_reset_password_user(user_hash,token=token)
+        if user_id != payload["id"]:
+            raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )
+    except Exception as e: raise e
+
+async def reset_password(repo: UserRepo,user_id:str ,token:str ,new_password: str):
+    try:
+        user_hash = await repo.get_user_hashed_password(user_id)
+        payload = get_reset_password_user(user_hash,token=token)
+        password_hash = get_password_hash(new_password)
+        await repo.update_user_password(UserUpdatePassword(**{"hashed_password":password_hash}),payload["id"])
+        return "Password Successfully Reseted"
+    except Exception as e: raise e
+
+async def create_user(repo: UserRepo, token: str):
+    try:
+        user = get_register_user(token=token)
+        try:
+            user : Optional[UserResponse] = await repo.get_user_by_email(user["email"].lower())
+            if user: raise EmailNotUniqueError
+        except UserNotFoundError: pass
+        except EmailNotUniqueError as email_not_unique: raise email_not_unique
+        except Exception as e: raise e
+        await repo.create_user(User(**user))
+        return "Account Successfully Created"
+    except Exception as e: raise e
 
 async def google_register(repo: UserRepo, token: UserGoogleAuthBody) -> UserResponse:
     try:
@@ -81,12 +140,19 @@ async def get_user_by_id(repo: UserRepo, user_id: str) -> UserResponse:
     except Exception as e:
         raise e
 
-
-async def get_all_users(
-    repo: UserRepo, page_num: int = 1, limit: int = 15
-) -> List[UsersPageResponse]:
+async def get_user_ar(repo: UserRepo, user_id: str) -> UserAR:
     try:
-        users = await repo.get_all_users(page_num, limit)
+        user = await repo.get_user_ar(user_id)
+        if user:
+            return user
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_all_users(repo: UserRepo, page_num: int = 1, limit: int = 15, filters: Dict = None) -> List[UsersPageResponse]:
+    try:
+        users = await repo.get_all_users(page_num=page_num, limit=limit, filters=filters)
         if users:
             return users
     except Exception as e:
@@ -167,9 +233,79 @@ async def update_badge(repo: UserRepo, user_id: str ,badge_id: str,new_badge: Ba
     except Exception as e:
         raise e
 
+async def visit_place(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.visit_place(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def review_place(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.review_place(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def add_post(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.add_post(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def chatbot_place(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.chatbot_place(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def chatbot_artifact(repo: UserRepo, user_id: str ,place_id:str):
+    try:
+        status = await repo.chatbot_artifact(user_id,place_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def scan_object(repo: UserRepo, user_id: str ,place_id:str, explore_id:str):
+    try:
+        status = await repo.scan_object(user_id,place_id,explore_id)
+        if status:
+            return status
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
 async def get_user_badges(repo: UserRepo, user_id: str):
     try:
         user_badges = await repo.get_user_badges(user_id)
+        if user_badges:
+            return user_badges
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_user_badges_detail(repo: UserRepo, user_id: str):
+    try:
+        user_badges = await repo.get_user_badges_detail(user_id)
         if user_badges:
             return user_badges
     except UserNotFoundError as ue:
@@ -197,8 +333,37 @@ async def get_user_activities(repo: UserRepo, user_id: str):
     except Exception as e:
         raise e
 
+async def get_user_activities_deatil(repo: UserRepo, user_id: str,place_id:str=None):
+    try:
+        user_activities = await repo.get_user_activities_detail(user_id,place_id)
+        if user_activities:
+            return user_activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
 
-async def follow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> bool:
+async def get_user_only_explore_detail(repo: UserRepo, user_id: str,place_id:str=None):
+    try:
+        user_activities = await repo.get_user_only_explore_detail(user_id,place_id)
+        if user_activities:
+            return user_activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def get_user_only_activities_detail(repo: UserRepo, user_id: str,place_id:str=None):
+    try:
+        user_activities = await repo.get_user_only_activities_detail(user_id,place_id)
+        if user_activities:
+            return user_activities
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
+async def follow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:
         user_followed = await repo.follow_user(current_user, user_id)
         if user_followed:
@@ -207,7 +372,7 @@ async def follow_user(repo: UserRepo, current_user: UserResponse, user_id: str) 
     except UserNotFoundError as ue: raise ue
     except Exception as e: raise e
 
-async def unfollow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> bool:
+async def unfollow_user(repo: UserRepo, current_user: UserResponse, user_id: str) -> UserFollowResp:
     try:
         user_followed = await repo.unfollow_user(current_user, user_id)
         if user_followed:

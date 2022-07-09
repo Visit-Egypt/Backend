@@ -1,4 +1,6 @@
+from typing import Dict
 from fastapi import APIRouter, status, HTTPException, Security
+from fastapi.params import Depends
 from visitegypt.api.container import get_dependencies
 from visitegypt.core.posts.sevices import post_service
 from visitegypt.core.posts.entities.post import (
@@ -12,7 +14,7 @@ from visitegypt.core.errors.upload_error import ResourceNotFoundError
 from visitegypt.core.utilities.services import upload_service
 
 from visitegypt.core.accounts.entities.user import UserResponse
-from visitegypt.api.utils import get_current_user
+from visitegypt.api.utils import get_current_user, common_parameters
 from visitegypt.resources.strings import MESSAGE_404
 from visitegypt.core.errors.post_error import PostNotFoundError, PostOffensive
 from visitegypt.core.accounts.entities.roles import Role
@@ -25,47 +27,26 @@ router = APIRouter(responses=generate_response_for_openapi("Post"))
 
 
 @router.get(
-    "/{place_id}",
+    "/",
     response_model=PostsPageResponse,
     status_code=status.HTTP_200_OK,
-    summary="Get place posts",
+    summary="Get Posts By Filter",
     tags=["Post"]
 )
-async def get_place_posts(place_id, page_num: int = 1, limit: int = 15):
+async def get_posts(params: Dict = Depends(common_parameters)):
     try:
-        return await post_service.get_place_posts_paged(
-            place_id,repo, page_num=page_num, limit=limit
+        if params["page_num"] < 1 or params["limit"] < 1:
+            raise HTTPException(422, "Query Params shouldn't be less than 1")
+        return await post_service.get_filtered_post(
+            repo=repo,
+            page_num=params["page_num"],
+            limit=params["limit"],
+            filters=params["filters"],
         )
     except PostNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Posts"))
     except Exception as e: raise e
 
-@router.get(
-    "/user/{user_id}",
-    response_model=PostsPageResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get user posts",
-    tags=["Post"]
-)
-async def get_user_posts(user_id, page_num: int = 1, limit: int = 15):
-    try:
-        return await post_service.get_user_posts_paged(
-            user_id,repo, page_num=page_num, limit=limit
-        )
-    except PostNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Posts"))
-    except Exception as e: raise e
 
-@router.get(
-    "/place/{post_id}",
-    response_model=PostInDB,
-    status_code=status.HTTP_200_OK,
-    summary="Get Post",
-    tags=["Post"]
-)
-async def get_post_by_id(post_id):
-    try:
-        return await post_service.get_post_by_id(repo, post_id)
-    except PostNotFoundError: raise HTTPException(404, detail=MESSAGE_404("Post"))
-    except Exception as e: raise e
 
 @router.post(
     "/",

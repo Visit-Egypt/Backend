@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 
 users_collection_name = "Users"
@@ -11,7 +11,7 @@ restaurants_collection_name = "Restaurants"
 pharmacies_collection_name = "Pharmacies"
 badges_collection_name = "Badges"
 tags_collection_name = "Tags"
-
+notifications_collection_name = "Notifications"
 def calculate_start_index(page_size, page_num) -> Tuple[int, int]:
     """returns a set of documents belonging to page number `page_num`
     where size of each page is `page_size`.
@@ -27,9 +27,8 @@ def calculate_start_index(page_size, page_num) -> Tuple[int, int]:
     return (start_index, end_index)
 
 
-async def check_has_next(start_index: int, db_session) -> bool:
-    docs_count = await db_session.count_documents({})
-    return not (docs_count - 1 <= start_index)
+def check_has_next(start_index: int, document_count: int) -> bool:
+    return not (document_count - 1 <= start_index)
 
 def check_next(limit:int,items:List):
     return not(len(items)<limit)

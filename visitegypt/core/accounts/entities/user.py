@@ -4,8 +4,7 @@ from datetime import date
 from pydantic import BaseModel, EmailStr, Field
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
-
-
+from visitegypt.core.badges.entities.badge import BadgeInDB
 
 class PlaceActivity(MongoModel):
     id: str
@@ -36,6 +35,13 @@ class BadgeResponse(MongoModel):
     pinned: bool = False
     badge_tasks: List[BadgeTask] = []
 
+class BadgeResponseDetail(MongoModel):
+    badge:BadgeInDB = None
+    progress: int = 0
+    owned: bool = False
+    pinned: bool = False
+    badge_tasks: List[BadgeTask] = []
+
 class ProfileFrame(MongoModel):
     id: int
     imgUrl: str
@@ -60,16 +66,22 @@ class UserBase(MongoModel):
     phone_number: Optional[str] = None
     photo_link: Optional[str] = None
     bio : Optional[str] = None
-    birthdate: Optional[date] = None
+    birthdate: Optional[str] = None
     interests: Optional[List[OID]] = []
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
     fav_places: Optional[List[OID]] = []
 
+
+
 # Properties to receive via API on creation
 class UserCreate(UserBase):
+    birthdate: Optional[date] = None
     password: str
+
+class UserCreateToken(UserBase):
+    hashed_password: str
 
 
 # Properties to receive via API on update
@@ -84,18 +96,25 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
-    password: Optional[str] = None
     photo_link: Optional[str] = None
     xp:Optional[int] = 0
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[int] = 0
     bio : Optional[str] = None
-    birthdate: Optional[date] = None
+    birthdate: Optional[str] = None
     interests: Optional[List[OID]] = None
     followers: Optional[List[OID]] = [] # a list containing followers ids
     following: Optional[List[OID]] = []
     trip_mate_requests: Optional[List[RequestTripMateInDB]] = []
     fav_places: Optional[List[OID]] = []
+    device_token: Optional[str] = None
+    device_arn_endpoint: Optional[str] = None
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
+
+class UserUpdatePassword(BaseModel):
+    hashed_password: str
 class UserInDBBase(UserBase):
     # id: str = Field(..., alias='_id')
     id: OID = Field()
@@ -103,6 +122,9 @@ class UserInDBBase(UserBase):
     # created_at: datetime
     # updated_at: datetime
 
+class UserPushNotification(UserInDBBase):
+    device_token: str = ''
+    device_arn_endpoint: str = ''
 
 # Additional properties to return via API
 class User(UserBase):
@@ -129,6 +151,14 @@ class UserResponse(UserInDBBase):
     placeActivities: Optional[List[PlaceActivity]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
+
+class UserAR(BaseModel):
+    ar_obj:str
+    ar_png:str
+    ar_mtl:str
 
 class UserResponseInTags(MongoModel):
     id: OID = Field()
@@ -138,13 +168,14 @@ class UserResponseInTags(MongoModel):
 
 class UsersPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     users: Optional[List[UserResponse]]
-
-
 
 
 
 class UserPrefsReq(BaseModel):
     pref_list: List[str]
 
+class UserFollowResp(BaseModel):
+    followers_num : str

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 from visitegypt.core.places.entities.place import (
     PlacesPageResponse,
     PlaceInDB,
@@ -17,12 +17,37 @@ from visitegypt.core.errors.user_errors import (
     PlaceIsAlreadyInFavs,
     PlaceIsNotInFavs
 )
-
-async def get_all_places_paged(
-    repo: PlaceRepo, page_num: int = 1, limit: int = 15
+async def get_filtered_places(
+    repo: PlaceRepo, page_num: int = 1, limit: int = 15, filters: Dict = None
 ) -> PlacesPageResponse:
     try:
-        place = await repo.get_all_places(page_num, limit)
+        place_page = await repo.get_filtered_places(page_num=page_num, limit=limit, filters=filters)
+        if place_page: return place_page
+        raise PlaceNotFoundError
+    except PlaceNotFoundError as ie:
+        raise ie
+    except Exception as e:
+        raise e
+
+
+async def get_all_places_paged(
+    repo: PlaceRepo, page_num: int = 1, limit: int = 15, filters: Dict = None
+) -> PlacesPageResponse:
+    try:
+        place = await repo.get_all_places(page_num=page_num, limit=limit, filters=filters)
+        if place:
+            return place
+        raise PlaceNotFoundError
+    except PlaceNotFoundError as ie:
+        raise ie
+    except Exception as e:
+        raise e
+
+async def get_some_places(
+    repo: PlaceRepo, places_ids
+) -> PlacesPageResponse:
+    try:
+        place = await repo.get_some_places(places_ids)
         if place:
             return place
         raise PlaceNotFoundError
@@ -70,8 +95,8 @@ async def get_place_by_title(repo: PlaceRepo, place_title: str) -> Optional[Plac
 
 async def create_place(repo: PlaceRepo, new_place: PlaceBase) -> PlaceInDB:
     try:
-        place = await repo.get_place_by_title(new_place.title)
-        if place:
+        place = await repo.get_filtered_places(page_num=1, limit=1, filters={'title': new_place.title})
+        if place.places:
             raise PlaceAlreadyExists
     except PlaceAlreadyExists as iee:
         raise iee

@@ -9,6 +9,7 @@ class Hint(MongoModel):
     imageUrl: str
 class Explore(MongoModel):
     id: str
+    xp: int
     title: str
     imageUrl: str
     hints: List[Hint]
@@ -73,6 +74,7 @@ class PlaceInDB(PlaceWithReviews):
 
 class PlacesPageResponse(MongoModel):
     current_page: int
+    content_range: int
     has_next: bool
     places: Optional[List[PlaceInDB]]
 

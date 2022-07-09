@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 from visitegypt.core.errors.place_error import PlaceNotFoundError, ReviewOffensive
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
@@ -19,30 +19,92 @@ from pymongo import ReturnDocument
 from loguru import logger
 from visitegypt.infra.errors import InfrastructureException
 
-
-async def get_all_places(page_num: int, limit: int) -> PlacesPageResponse:
+async def get_filtered_places(
+    page_num: int, limit: int, filters: Dict
+) -> PlacesPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
         start_index: int = indcies[0]
         cursor = (
             db.client[DATABASE_NAME][places_collection_name]
-            .find()
+            .find(filters)
             .skip(start_index)
-            .limit(limit)
+            .limit(limit+1)
         )
-        places_list = await cursor.to_list(limit)
+        places_list = await cursor.to_list(limit+1)
         if not places_list:
             raise PlaceNotFoundError
+        document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents(filters)
         places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
-        has_next = check_next(limit,places_list_response)
+        has_next = len(places_list) > limit
         return PlacesPageResponse(
-            current_page=page_num, has_next=has_next, places=places_list_response
+            current_page=page_num, has_next=has_next, places=places_list_response, content_range=document_count
         )
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
+
+async def get_all_places(page_num: int, limit: int, filters: Dict) -> PlacesPageResponse:
+    try:
+        indcies = calculate_start_index(limit, page_num)
+        start_index: int = indcies[0]
+        cursor = (
+            db.client[DATABASE_NAME][places_collection_name]
+            .find(filters)
+            .skip(start_index)
+            .limit(limit+1)
+        )
+        places_list = await cursor.to_list(limit+1)
+        document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents(filters)
+        if not places_list:
+            raise PlaceNotFoundError
+        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list[:-1]]
+        has_next = len(places_list) > limit
+        return PlacesPageResponse(
+            current_page=page_num, has_next=has_next, places=places_list_response, content_range=document_count
+        )
+    except PlaceNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def get_some_places(places_ids:List) -> List[PlaceInDB]:
+    try:
+        cursor = (
+            db.client[DATABASE_NAME][places_collection_name].find(
+                {"placeActivities.id":{"$in":places_ids}}
+        ))
+        places_list = await cursor.to_list(length=None)
+        if not places_list:
+            raise PlaceNotFoundError
+        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
+        return places_list_response
+    except PlaceNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def get_place_by_explore(places_ids:List) -> List[PlaceInDB]:
+    try:
+        cursor = (
+            db.client[DATABASE_NAME][places_collection_name].find(
+                {"explores.id":{"$in":places_ids}}
+        ))
+        places_list = await cursor.to_list(length=None)
+        if not places_list:
+            raise PlaceNotFoundError
+        places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
+        return places_list_response
+    except PlaceNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
 
 async def get_all_city_places(city_name: str,page_num: int, limit: int) -> PlacesPageResponse:
     try:
@@ -57,17 +119,17 @@ async def get_all_city_places(city_name: str,page_num: int, limit: int) -> Place
         places_list = await cursor.to_list(limit)
         if not places_list:
             raise PlaceNotFoundError
+        document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents({"city": city_name})
         places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
         has_next = check_next(limit,places_list_response)
         return PlacesPageResponse(
-            current_page=page_num, has_next=has_next, places=places_list_response
+            current_page=page_num, has_next=has_next, places=places_list_response, content_range=document_count
         )
     except PlaceNotFoundError as ue:
         raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
-
 
 async def get_place_by_id(place_id: str) -> Optional[PlaceInDB]:
     try:
@@ -83,7 +145,6 @@ async def get_place_by_id(place_id: str) -> Optional[PlaceInDB]:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-
 async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
     try:
         row = await db.client[DATABASE_NAME][places_collection_name].find_one(
@@ -98,20 +159,19 @@ async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
-
 async def create_place(new_place: PlaceBase) -> PlaceInDB:
     try:
         row = await db.client[DATABASE_NAME][places_collection_name].insert_one(
             new_place.dict()
         )
         if row.inserted_id:
-            added_place = await get_place_by_id(row.inserted_id)
-            return added_place
+            added_place = await get_filtered_places(page_num = 1, limit = 1, filters= {"_id" : ObjectId(row.inserted_id)})
+            return added_place.places[0]
+    except PlaceNotFoundError as ue:
+        raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
-
-
 
 async def delete_place(place_id: str):
     try:
@@ -196,7 +256,7 @@ async def delete_review(place_id: str, review: review):
 
 async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
     search_qu = f"*{search_text}*"
-    pipeline = [{"$search": {"wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
+    pipeline = [{"$search": {'index': 'title', "wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
     try:
        # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
        #     {"title": place_title}
