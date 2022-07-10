@@ -52,9 +52,16 @@ ALLOWED_HOSTS: List[str] = config(
     default="",
 )
 
-RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts"]
+RESOURCES_NAMES: List[str] = ["places", "users", "items", "posts","ar"]
 FILE_UPLOAD_SIZE : str = config("FILE_UPLOAD_SIZE", cast = str, default="4MB")
 PRESIGNED_URL_TIME_INTERVAL: str = config("PRESIGNED_URL_TIME_INTERVAL", cast = str, default="3600")
+
+
+# ELK
+APM_SERVER_URL: str = config("APM_SERVER_URL", cast = str, default="")
+APM_SERVER_TOKEN: str = config("APM_SERVER_TOKEN", cast = str, default="")
+APM_SERVICE_NAME: str = config("APM_SERVICE_NAME", cast = str, default="")
+ELK_ENABLED: str = config("ELK_ENABLED", cast = str, default="false")
 
 # logging configuration
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.INFO

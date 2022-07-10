@@ -10,6 +10,10 @@ from visitegypt.config.environment import (
     DEBUG,
     PROJECT_NAME,
     VERSION,
+    APM_SERVER_URL,
+    APM_SERVER_TOKEN,
+    APM_SERVICE_NAME,
+    ELK_ENABLED
 )
 from visitegypt.infra.database.events import connect_to_db, close_db_connection
 from visitegypt.api.errors.http_error import http_error_handler
@@ -20,8 +24,11 @@ from visitegypt.api.errors.validation_error import (
 from visitegypt.api.routers.root import router
 from visitegypt.infra.errors import InfrastructureException
 
+from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
+
 
 def get_application() -> FastAPI:
+
     application = FastAPI(title=PROJECT_NAME, debug=DEBUG, version=VERSION)
 
     application.add_middleware(
@@ -31,7 +38,17 @@ def get_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
+    if ELK_ENABLED == "true":
+        apm_config = {
+            'SERVICE_NAME': APM_SERVICE_NAME,
+            'SERVER_URL': APM_SERVER_URL,
+            'SECRET_TOKEN': APM_SERVER_TOKEN,
+            'ENVIRONMENT': 'production',
+            'CAPTURE_BODY':'all',
+            'CAPTURE_HEADERS': True,
+        }
+        apm = make_apm_client(apm_config)
+        application.add_middleware(ElasticAPM, client=apm)
     application.add_event_handler("startup", connect_to_db)
     application.add_event_handler("shutdown", close_db_connection)
 

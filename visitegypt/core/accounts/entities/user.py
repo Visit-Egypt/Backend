@@ -1,11 +1,11 @@
 from __future__ import annotations
+from optparse import Option
 from typing import Optional, List
 from datetime import date
 from pydantic import BaseModel, EmailStr, Field
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
-
-
+from visitegypt.core.badges.entities.badge import BadgeInDB
 
 class PlaceActivity(MongoModel):
     id: str
@@ -31,6 +31,13 @@ class BadgeUpdate(MongoModel):
     pinned: Optional[bool]
 class BadgeResponse(MongoModel):
     id: str
+    progress: int = 0
+    owned: bool = False
+    pinned: bool = False
+    badge_tasks: List[BadgeTask] = []
+
+class BadgeResponseDetail(MongoModel):
+    badge:BadgeInDB = None
     progress: int = 0
     owned: bool = False
     pinned: bool = False
@@ -103,6 +110,9 @@ class UserUpdate(BaseModel):
     fav_places: Optional[List[OID]] = []
     device_token: Optional[str] = None
     device_arn_endpoint: Optional[str] = None
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
 
 class UserUpdatePassword(BaseModel):
     hashed_password: str
@@ -142,12 +152,23 @@ class UserResponse(UserInDBBase):
     placeActivities: Optional[List[PlaceActivity]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
+
+class UserAR(BaseModel):
+    ar_obj:str
+    ar_png:str
+    ar_mtl:str
 
 class UserResponseInTags(MongoModel):
     id: OID = Field()
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     photo_link: Optional[str] = None
+    device_arn_endpoint: Optional[str]
+
+
 
 class UsersPageResponse(MongoModel):
     current_page: int

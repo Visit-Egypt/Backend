@@ -1,4 +1,3 @@
-from email import message
 from typing import List, Optional
 from visitegypt.core.base_model import MongoModel, OID
 from visitegypt.core.tags.entities.tag import GetTagResponse
@@ -8,8 +7,8 @@ class Notification(MongoModel):
     title: str = ''
     description: str = ''
     icon_url: Optional[str] = None
-    sent_tags: Optional[List[GetTagResponse]] = []
-    sent_users_ids: Optional[List[OID]] = []
+    sent_tags: Optional[List[str]] = []
+    sent_users_ids: Optional[List[str]] = []
 
 class NotificationSaveInDB(Notification):
     sender_id: OID = Field()
@@ -17,7 +16,6 @@ class NotificationSaveInDB(Notification):
 class NotificationInDB(Notification):
     id: OID = Field()
     
-
 
 class RegisterDeviceTokenRequest(BaseModel):
     device_token : str = None
@@ -27,3 +25,9 @@ class RegisterDeviceTokenResponse(BaseModel):
 
 class NotificationSentResponse(BaseModel):
     message: str = ''
+
+class NotificationsPageResponse(MongoModel):
+    current_page: int
+    content_range: int
+    has_next: bool
+    notifications: Optional[List[NotificationSaveInDB]]
