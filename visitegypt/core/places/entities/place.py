@@ -31,6 +31,7 @@ class Hint(MongoModel):
     imageUrl: str
 class Explore(MongoModel):
     id: str
+    xp: int
     title: str
     imageUrl: str
     hints: List[Hint]
@@ -62,8 +63,10 @@ class PlaceBase(MongoModel):
     default_image: Optional[str]
     opening_hours: Optional[Dict[Any, Any]]
     city: Optional[str]
-    ticket_prices: Optional[List[Ticket]]
-    category: Optional[List[str]]
+    #ticket_prices: Optional[List[Ticket]]
+    #category: Optional[List[str]]
+    ticket_prices: Optional[Dict[Any, Any]]
+    category: List[str] = []
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
     placeActivities: Optional[List[PlaceActivity]]
@@ -85,6 +88,9 @@ class UpdatePlace(MongoModel):
     translations: Optional[Dict[str, TranslatebleAttributes]]
     # ticket_prices: Optional[List[Ticket]]
     # city: Optional[str]
+    opening_hours: Optional[str]
+    category: List[str] = []
+    city: Optional[str]
     views: Optional[int] = 0
     explores: Optional[List[Explore]]
     placeActivities: Optional[List[PlaceActivity]]

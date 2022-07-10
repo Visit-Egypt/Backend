@@ -1,4 +1,3 @@
-from optparse import Option
 from pydantic import BaseModel, Field
 from visitegypt.core.base_model import MongoModel, OID
 from typing import List, Optional
@@ -19,6 +18,7 @@ class TagUpdate(BaseModel):
     description: Optional[str]
     users: Optional[List[OID]]
     posts: Optional[List[OID]]
+    topic_arn: Optional[str]
 
 class UsersTagsReq(BaseModel):
     tags_ids: List[str]

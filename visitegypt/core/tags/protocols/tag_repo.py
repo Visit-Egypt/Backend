@@ -15,3 +15,5 @@ class TagRepo(Protocol):
 
     async def get_all_users_of_tags(self, tag_ids: List[str]) -> Optional[List[UserResponseInTags]]:
         pass
+    async def register_tag_to_notification(tag_id: str) -> bool:
+        pass
