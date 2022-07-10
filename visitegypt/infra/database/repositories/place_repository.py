@@ -32,12 +32,12 @@ async def get_filtered_places(
             .limit(limit+1)
         )
         places_list = await cursor.to_list(limit+1)
-        print(places_list[0]['category'])
+        has_next = len(places_list) > limit
+        del places_list[-1]
         if not places_list:
             raise PlaceNotFoundError
         document_count = await db.client[DATABASE_NAME][places_collection_name].count_documents(filters)
         places_list_response = [PlaceInDB.from_mongo(place) for place in places_list]
-        has_next = len(places_list) > limit
         return PlacesPageResponse(
             current_page=page_num, has_next=has_next, places=places_list_response, content_range=document_count
         )
