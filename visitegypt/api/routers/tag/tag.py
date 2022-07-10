@@ -65,3 +65,11 @@ async def get_tags(tags_ids : UsersTagsReq):
         return await tag_service.get_all_users_of_tags(repo, tags_ids.tags_ids)
     except TagsNotFound: raise HTTPException(404, detail=MESSAGE_404("Tags"))
     except Exception as e: raise e
+
+
+@router.put("/register-notif/{tag_id}", response_model=GetTagResponse, status_code=status.HTTP_201_CREATED, tags=["Tags"])
+async def register_tag_notifications(tag_id: str):
+    try:
+        return await tag_service.register_tag_to_notifications(repo, tag_id)
+    except TagsNotFound: raise HTTPException(404, detail=MESSAGE_404("Tag"))
+    except Exception as e: raise e

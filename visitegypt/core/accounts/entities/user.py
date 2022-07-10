@@ -1,4 +1,5 @@
 from __future__ import annotations
+from optparse import Option
 from typing import Optional, List
 from datetime import date
 from pydantic import BaseModel, EmailStr, Field
@@ -165,6 +166,9 @@ class UserResponseInTags(MongoModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     photo_link: Optional[str] = None
+    device_arn_endpoint: Optional[str]
+
+
 
 class UsersPageResponse(MongoModel):
     current_page: int
