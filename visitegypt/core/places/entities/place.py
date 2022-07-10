@@ -61,10 +61,8 @@ class PlaceBase(MongoModel):
     latitude: Optional[float]
     image_urls: Optional[List[str]]
     default_image: Optional[str]
-    opening_hours: Optional[Dict[Any, Any]]
+    opening_hours: Optional[str]
     city: Optional[str]
-    #ticket_prices: Optional[List[Ticket]]
-    #category: Optional[List[str]]
     ticket_prices: Optional[Dict[Any, Any]]
     category: List[str] = []
     views: Optional[int] = 0
@@ -77,17 +75,13 @@ class PlaceWithReviews(PlaceBase):
 
 
 class UpdatePlace(MongoModel):
-    # title: Optional[str]
-    # description: Optional[str]
-    # location_description: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    location_description: Optional[str]
     longitude: Optional[float]
     latitude: Optional[float]
     image_urls: Optional[List[str]]
     default_image: Optional[str]
-    opening_hours: Optional[Dict[Any, Any]]
-    translations: Optional[Dict[str, TranslatebleAttributes]]
-    # ticket_prices: Optional[List[Ticket]]
-    # city: Optional[str]
     opening_hours: Optional[str]
     category: List[str] = []
     city: Optional[str]
