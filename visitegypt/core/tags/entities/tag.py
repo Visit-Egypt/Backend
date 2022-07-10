@@ -18,6 +18,7 @@ class TagUpdate(BaseModel):
     description: Optional[str]
     users: Optional[List[OID]]
     posts: Optional[List[OID]]
+    topic_arn: Optional[str]
 
 class UsersTagsReq(BaseModel):
     tags_ids: List[str]

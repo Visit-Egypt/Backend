@@ -19,6 +19,8 @@ async def send_notification(repo: NotificationRepo, notification: Notification, 
             return await repo.send_notifications_with_tags(notification, sender_id)
         elif  notification.sent_users_ids:
             return await repo.send_notification_to_specific_users(notification, sender_id)
+        elif notification.sent_tags:
+            return await repo.send_notifications_with_tags(notification, sender_id)
         else: return await repo.send_notification(notification, sender_id)
         
     except Exception as e: raise e

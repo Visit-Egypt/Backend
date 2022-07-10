@@ -7,8 +7,8 @@ class Notification(MongoModel):
     title: str = ''
     description: str = ''
     icon_url: Optional[str] = None
-    sent_tags: Optional[List[GetTagResponse]] = []
-    sent_users_ids: Optional[List[OID]] = []
+    sent_tags: Optional[List[str]] = []
+    sent_users_ids: Optional[List[str]] = []
 
 class NotificationSaveInDB(Notification):
     sender_id: OID = Field()
@@ -16,7 +16,6 @@ class NotificationSaveInDB(Notification):
 class NotificationInDB(Notification):
     id: OID = Field()
     
-
 
 class RegisterDeviceTokenRequest(BaseModel):
     device_token : str = None

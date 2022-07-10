@@ -893,10 +893,10 @@ async def remove_place_from_favs(current_user: UserResponse, place_id: str) -> O
         raise InfrastructureException(e.__repr__)
 
 
-async def get_device_endpoint(user_id: ObjectId) -> Optional[UserPushNotification]:
+async def get_device_endpoint(user_id: str) -> Optional[UserPushNotification]:
     try:
         row = await db.client[DATABASE_NAME][users_collection_name].find_one(
-            {"_id": user_id}
+            {"_id": ObjectId(user_id)}
         )
         if row:
             return UserPushNotification.from_mongo(row)

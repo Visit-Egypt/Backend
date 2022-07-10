@@ -40,3 +40,10 @@ async def get_all_users_of_tags(repo: TagRepo, tag_ids: List[str])-> Optional[Li
         return await repo.get_all_users_of_tags(tag_ids)
     except TagsNotFound as tnf: raise tnf
     except Exception as e: raise e
+
+
+async def register_tag_to_notifications(repo: TagRepo, tag_id: str) -> bool:
+    try:
+        return await repo.register_tag_to_notification(tag_id)
+    except TagsNotFound as tnf: raise tnf
+    except Exception as e: raise e

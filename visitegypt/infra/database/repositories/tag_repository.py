@@ -9,6 +9,7 @@ from visitegypt.core.accounts.entities.user import UserResponseInTags
 from bson import ObjectId
 from loguru import logger
 from pymongo import ReturnDocument
+from visitegypt.infra.database.repositories.notification_repository import get_sns_client
 
 async def get_all_tags(filter: dict) -> List[GetTagResponse]:
     try:
@@ -139,4 +140,18 @@ async def get_all_users_of_tags(tag_ids: List[str]) -> Optional[List[UserRespons
 
 
 
-# Test
+async def register_tag_to_notification(tag_id: str) -> bool:
+    # Get SNS Client
+    try:
+        result = await db.client[DATABASE_NAME][tags_collection_name].find_one({"_id": ObjectId(tag_id)})
+        print(result)
+        if result:
+            sns_client = await get_sns_client()
+            topic_arn_resp = sns_client.create_topic(Name=result['name'])
+            return await update_tag(TagUpdate(topic_arn=topic_arn_resp['TopicArn']), tag_id=tag_id)
+        raise TagsNotFound
+    except TagsNotFound as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
