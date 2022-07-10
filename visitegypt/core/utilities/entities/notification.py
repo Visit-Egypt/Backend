@@ -25,3 +25,9 @@ class RegisterDeviceTokenResponse(BaseModel):
 
 class NotificationSentResponse(BaseModel):
     message: str = ''
+
+class NotificationsPageResponse(MongoModel):
+    current_page: int
+    content_range: int
+    has_next: bool
+    notifications: Optional[List[NotificationSaveInDB]]

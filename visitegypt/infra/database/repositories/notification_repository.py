@@ -1,10 +1,12 @@
 import json
-from pydantic import Json
+from typing import Optional, List, Dict
 from visitegypt.core.utilities.entities.notification import (
     Notification,
-    NotificationSaveInDB
+    NotificationSaveInDB,
+    NotificationsPageResponse
 )
 from visitegypt.core.accounts.entities.user import UserUpdate
+from visitegypt.infra.database.utils import calculate_start_index, check_has_next,check_next
 
 from visitegypt.config.environment import AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID, AWS_NOTIFICATION_PLATFORM_ARN, AWS_NOTIFICATION_TOPIC_ARN
 from bson import ObjectId
@@ -13,8 +15,9 @@ from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
 from visitegypt.infra.database.utils import notifications_collection_name
 from visitegypt.infra.errors import InfrastructureException
+from visitegypt.core.errors.notifications_error import NotificationNotFoundError
+
 from loguru import logger
-from pymongo import ReturnDocument
 
 async def get_sns_client():
     return boto3.client \
@@ -149,6 +152,35 @@ async def send_notification_to_specific_users(notification: Notification, sender
                 )
                 if row.inserted_id: return True
         return False
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
+
+async def get_filtered_notifications(
+    page_num: int, limit: int, filters: Dict
+) -> NotificationsPageResponse:
+    try:
+        indcies = calculate_start_index(limit, page_num)
+        start_index: int = indcies[0]
+        cursor = (
+            db.client[DATABASE_NAME][notifications_collection_name]
+            .find(filters)
+            .skip(start_index)
+            .limit(limit+1)
+        )
+        notifications_list = await cursor.to_list(limit+1)
+        
+        has_next = len(notifications_list) > limit
+        if len(notifications_list) > 1: del notifications_list[-1]
+        if not notifications_list:
+            raise NotificationNotFoundError
+        document_count = await db.client[DATABASE_NAME][notifications_collection_name].count_documents(filters)
+        notifications_list_response = [NotificationSaveInDB.from_mongo(place) for place in notifications_list]
+        return NotificationsPageResponse(
+            current_page=page_num, has_next=has_next, notifications=notifications_list_response, content_range=document_count
+        )
+    except NotificationNotFoundError as ue:
+        raise ue
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
