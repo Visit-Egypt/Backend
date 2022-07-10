@@ -59,7 +59,8 @@ jobs:
 
   DeployToServer:
     needs: [test, BuildDocker]
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Deploy docker container to the erver
