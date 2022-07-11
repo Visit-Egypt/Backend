@@ -75,6 +75,8 @@ class UserRepo(Protocol):
         pass
     async def get_user_badges( user_id: str):
         pass
+    async def get_user_recommendations( user_id: str):
+        pass
     async def get_user_badges_detail( user_id: str):
         pass
     async def update_user_activity(user_id:str,activity_id:str,new_activity:PlaceActivityUpdate):

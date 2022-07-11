@@ -301,6 +301,16 @@ async def get_user_badges(repo: UserRepo, user_id: str):
     except Exception as e:
         raise e
 
+async def get_user_recommendations(repo: UserRepo, user_id: str):
+    try:
+        user_recommendations = await repo.get_user_recommendations(user_id)
+        if user_recommendations:
+            return user_recommendations
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        raise e
+
 async def get_user_badges_detail(repo: UserRepo, user_id: str):
     try:
         user_badges = await repo.get_user_badges_detail(user_id)

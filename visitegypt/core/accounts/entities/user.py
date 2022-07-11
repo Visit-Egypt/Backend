@@ -7,6 +7,7 @@ from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 from visitegypt.core.badges.entities.badge import BadgeInDB
 from datetime import datetime
+from visitegypt.core.places.entities.place import PlaceWithReviews
 
 class PlaceActivity(MongoModel):
     id: str
@@ -114,6 +115,11 @@ class UserUpdate(BaseModel):
     ar_obj:Optional[str] = None
     ar_png:Optional[str] = None
     ar_mtl:Optional[str] = None
+    lastReviewd:Optional[str] = None
+
+class UserRecommendations(BaseModel):
+    user_likes:Optional[List[PlaceWithReviews]]
+    people_likes:Optional[List[PlaceWithReviews]]
 
 class UserUpdatePassword(BaseModel):
     hashed_password: str
@@ -138,6 +144,10 @@ class User(UserBase):
     placeActivities: Optional[List[PlaceActivity]] = []
     profileFrame:Optional[ProfileFrame] = None
     postViews:Optional[List[str]] = []
+    ar_obj:Optional[str] = None
+    ar_png:Optional[str] = None
+    ar_mtl:Optional[str] = None
+    lastReviewd:Optional[str] = None
 
 
 # Additional properties stored in DB
@@ -156,6 +166,7 @@ class UserResponse(UserInDBBase):
     ar_obj:Optional[str] = None
     ar_png:Optional[str] = None
     ar_mtl:Optional[str] = None
+    lastReviewd:Optional[str] = None
 
 class UserAR(BaseModel):
     ar_obj:str

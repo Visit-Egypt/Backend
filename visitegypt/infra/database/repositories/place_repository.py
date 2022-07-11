@@ -12,7 +12,7 @@ from visitegypt.core.places.entities.place import (
 )
 from visitegypt.infra.database.events import db
 from visitegypt.config.environment import DATABASE_NAME
-from visitegypt.infra.database.utils import places_collection_name
+from visitegypt.infra.database.utils import places_collection_name,users_collection_name
 from visitegypt.infra.database.utils import calculate_start_index, check_has_next,check_next
 from visitegypt.infra.database.utils.offensive import check_offensive
 from visitegypt.resources.strings import PLACE_DELETED
@@ -250,6 +250,12 @@ async def add_review(place_id: str, new_reviw: review):
             return_document=ReturnDocument.AFTER,
         )
         if result:
+            await db.client[DATABASE_NAME][
+            users_collection_name
+        ].find_one_and_update(
+            {"_id": ObjectId(new_reviw.user_id)},
+            {"$set": {"lastReviewd":place_id,"updated_at":datetime.utcnow()}},
+        )
             return result["reviews"]
         raise PlaceNotFoundError
     except ReviewOffensive as ro: raise ro

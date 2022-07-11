@@ -9,6 +9,7 @@ from visitegypt.core.accounts.entities.user import (
     UserAR,
     UserUpdatePassword,
     User,
+    UserRecommendations,
     UsersPageResponse,
     Badge,
     BadgeTask,
@@ -35,6 +36,7 @@ from visitegypt.infra.database.utils import (
     badges_collection_name,
     check_next
 )
+from visitegypt.core.places.entities.place import PlaceInDB,PlaceWithReviews
 from visitegypt.core.errors.user_errors import (
     UserNotFoundError,
     UserIsFollower,
@@ -53,8 +55,10 @@ from visitegypt.infra.database.repositories.tag_repository import (
 )
 from visitegypt.infra.database.repositories.place_repository import get_some_places,get_place_by_explore
 from loguru import logger
+import requests
 from fastapi import HTTPException, status
 SOCIAL_BUTTERFLY_ID = "62b71137ff1abae844f3ed60"
+APIURL = "http://129.146.115.196:8000/"
 
 async def create_user(new_user: User) -> Optional[UserResponse]:
     try:
@@ -70,6 +74,34 @@ async def create_user(new_user: User) -> Optional[UserResponse]:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
 
+async def get_user_recommendations(user_id: str):
+    try:
+        row = await db.client[DATABASE_NAME][users_collection_name].find_one(
+            {"_id": ObjectId(user_id)}
+        )
+        user = UserResponse.from_mongo(row)
+        place_id = "6249c7df30170c0174c4419a"
+        if(user.lastReviewd):
+            place_id = user.lastReviewd
+        full_url = APIURL+user_id+"/"+"5"+"/"+"2"+"/"+place_id
+        data = requests.get(full_url)
+        data = data.json()
+        user_likes = []
+        people_likes = []
+        for i in data[0]:
+            if i != "random":
+                place = PlaceWithReviews.from_mongo(await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(i)}))
+                user_likes.append(place)
+        for j in data[1]:
+            if j != "random":
+                place = PlaceWithReviews.from_mongo(await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(j)}))
+                people_likes.append(place)
+        return UserRecommendations(user_likes=user_likes,people_likes=people_likes[:5])
+    except UserNotFoundError as ue:
+        raise ue
+    except Exception as e:
+        logger.exception(e.__cause__)
+        raise InfrastructureException(e.__repr__)
 async def update_user(updated_user: UserUpdate, user_id: str) -> Optional[UserResponse]:
     try:
         updated_at = datetime.utcnow()

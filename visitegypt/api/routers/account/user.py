@@ -11,7 +11,7 @@ from visitegypt.core.accounts.entities.user import (
     Badge,
     BadgeResponseDetail,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq, UserFollowResp
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq, UserFollowResp,UserRecommendations
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody,UserPasswordReset
 from visitegypt.core.authentication.services.auth_service import (
@@ -415,6 +415,19 @@ async def get_user_badges(
     user_id:str):
     try:
         return await user_service.get_user_badges(repo, user_id)
+    except Exception as e:
+        raise e
+
+@router.get(
+    "/recommendation/{user_id}",
+    response_model = UserRecommendations,
+    summary="get recommendations for a user",
+    tags=["User"]
+)
+async def get_user_recommendations(
+    user_id:str):
+    try:
+        return await user_service.get_user_recommendations(repo, user_id)
     except Exception as e:
         raise e
 
