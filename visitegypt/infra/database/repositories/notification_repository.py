@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import Optional, List, Dict
 from visitegypt.core.utilities.entities.notification import (
@@ -75,8 +76,9 @@ async def send_notification(notification: Notification, sender_id: ObjectId) -> 
         res = sns_client.publish(TopicArn=AWS_NOTIFICATION_TOPIC_ARN, Message=json.dumps(msg_to_be_sent), MessageStructure='json')
         if res.get('MessageId'):
             added_notification_to_db = NotificationSaveInDB(**notification.dict(), sender_id = sender_id)
+            created_at = datetime.utcnow()
             row = await db.client[DATABASE_NAME][notifications_collection_name].insert_one(
-            added_notification_to_db.dict()
+            dict(added_notification_to_db, created_at=created_at, updated_at=created_at)
             )
             if row.inserted_id: return True
         return False

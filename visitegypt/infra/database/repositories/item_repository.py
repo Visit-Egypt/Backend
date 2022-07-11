@@ -14,7 +14,7 @@ from pymongo import ReturnDocument
 from bson import ObjectId
 from loguru import logger
 from visitegypt.infra.errors import InfrastructureException
-
+from datetime import datetime
 async def get_filtered_items(
     page_num: int, limit: int, filters: Dict
 ) -> ItemsPageResponse:
@@ -44,8 +44,9 @@ async def get_filtered_items(
 
 async def create_item(item_to_create: ItemBase) -> ItemInDB:
     try:
+        created_at = datetime.utcnow()
         row = await db.client[DATABASE_NAME][items_collection_name].insert_one(
-            item_to_create.dict()
+            dict(item_to_create, created_at=created_at,updated_at=created_at)
         )
         if row.inserted_id:
             new_inserted_item = await get_filtered_items(
@@ -62,7 +63,7 @@ async def update_item(item_to_update: ItemUpdate, item_id: str) -> ItemInDB:
             items_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(item_id)},
-            {"$set": {k: v for k, v in item_to_update.dict().items() if v}},
+            {"$set": dict({k: v for k, v in item_to_update.dict().items() if v}, updated_at=datetime.utcnow())},
             return_document=ReturnDocument.AFTER,
         )
         if result:

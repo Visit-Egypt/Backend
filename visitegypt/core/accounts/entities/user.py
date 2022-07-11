@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 from visitegypt.core.badges.entities.badge import BadgeInDB
+from datetime import datetime
 
 class PlaceActivity(MongoModel):
     id: str
@@ -120,8 +121,8 @@ class UserInDBBase(UserBase):
     # id: str = Field(..., alias='_id')
     id: OID = Field()
     user_role: str = Role.USER.get("name")
-    # created_at: datetime
-    # updated_at: datetime
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
 class UserPushNotification(UserInDBBase):
     device_token: str = ''

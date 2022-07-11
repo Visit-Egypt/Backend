@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from visitegypt.core.base_model import MongoModel, OID
 from typing import List, Optional
+from datetime import datetime
 
 class Tag(MongoModel):
     id: OID = Field()
@@ -8,7 +9,8 @@ class Tag(MongoModel):
     description: Optional[str] = ''
     users: Optional[List[OID]] = []
     posts: Optional[List[OID]] = []
-
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 class TagCreation(BaseModel):
     name: str
     description: Optional[str] = ''
