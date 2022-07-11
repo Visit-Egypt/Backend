@@ -286,7 +286,8 @@ async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
        # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
        #     {"title": place_title}
        # )
-        row = await db.client[DATABASE_NAME][places_collection_name].aggregate(pipeline).to_list(length=None)
+        # row = await db.client[DATABASE_NAME][places_collection_name].aggregate(pipeline).to_list(length=None)
+        row = await db.client[DATABASE_NAME][places_collection_name].find({'$text': { '$search': search_qu } }).to_list(None)
         if not row:
             return None
         places_list_response = [PlaceForSearch.from_mongo(place) for place in row]
