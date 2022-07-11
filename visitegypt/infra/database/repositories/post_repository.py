@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Dict
 from visitegypt.core.errors.post_error import PostNotFoundError, PostOffensive
 from visitegypt.core.posts.entities.post import (
@@ -93,9 +94,11 @@ async def create_post(new_post: PostBase) -> Optional[PostInDB]:
     try:
         new_post.likes = []
         #is_offensive = check_offensive(new_post.caption)
+        created_at = datetime.utcnow()
+        post = dict(new_post, created_at=created_at, updated_at=created_at)
         if True:
             row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
-                new_post.dict()
+                post
             )
             if row.inserted_id:
                 new_inserted_post = await get_filtered_post(
@@ -141,12 +144,14 @@ async def update_post(
         if(post and post.user_id != user_id):
             print(post.user_id + user_id)
             raise HTTPException(401, detail="Unautherized")
-            
+        
+        updated_at = datetime.utcnow()
+        updated_post11 = dict({k: v for k, v in updated_post.dict().items() if v}, updated_at=updated_at)
         result = await db.client[DATABASE_NAME][
             posts_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(post_id)},
-            {"$set": {k: v for k, v in updated_post.dict().items() if v}},
+            {"$set": updated_post11},
             return_document=ReturnDocument.AFTER,
         )
         if result:

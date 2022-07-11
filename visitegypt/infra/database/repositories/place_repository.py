@@ -1,4 +1,5 @@
 from ctypes.wintypes import tagRECT
+from datetime import datetime
 from typing import Optional, List, Dict
 from visitegypt.core.errors.place_error import PlaceNotFoundError, ReviewOffensive
 from visitegypt.core.places.entities.place import (
@@ -182,8 +183,9 @@ async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
 
 async def create_place(new_place: PlaceBase) -> PlaceInDB:
     try:
+        created_at = datetime.utcnow()
         row = await db.client[DATABASE_NAME][places_collection_name].insert_one(
-            new_place.dict()
+            dict(new_place, created_at=created_at, updated_at=created_at)
         )
         if row.inserted_id:
             added_place = await get_filtered_places(page_num = 1, limit = 1, filters= {"_id" : ObjectId(row.inserted_id)})
@@ -215,12 +217,11 @@ async def update_place(
     try:
         # print(updated_place.dict().items())
         place_witout_translations = updated_place.dict().pop('translations', None)
-        print("Places without trans", place_witout_translations)
         result = await db.client[DATABASE_NAME][
             places_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(place_id)},
-            {"$set": {k: v for k, v in updated_place.dict().items() if v}},
+            {"$set": dict({k: v for k, v in updated_place.dict().items() if v}, updated_at=datetime.utcnow())},
             return_document=ReturnDocument.AFTER,
         )
         if result:
@@ -245,7 +246,7 @@ async def add_review(place_id: str, new_reviw: review):
             places_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(place_id)},
-            {"$push": {"reviews": new_reviw.dict()}},
+            {"$push": {"reviews": dict(new_reviw, created_at=datetime.utcnow())}},
             return_document=ReturnDocument.AFTER,
         )
         if result:

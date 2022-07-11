@@ -33,9 +33,7 @@ import uuid
 from visitegypt.api.utils import get_register_user,send_mail,get_reset_password_user,send__reset_password_mail
 from visitegypt.resources.strings import MESSAGE_404
 from datetime import datetime
-from visitegypt.config.environment import CLIENT_ID
-
-API_HOST = "https://visit-egypt.herokuapp.com"
+from visitegypt.config.environment import CLIENT_ID, API_HOST
 
 async def new_register(repo: UserRepo, new_user: UserCreate) -> UserResponse:
     new_user = new_user.dict()

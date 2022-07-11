@@ -25,11 +25,13 @@ JWT_REFRESH_EXPIRATION_DELTA = timedelta(
 )
 CLIENT_ID:str = config("CLIENT_ID",cast=str,default="")
 DATABASE_URL: str = config("DB_CONNECTION", cast=str, default="")
+
+
 DATABASE_NAME: str = config("DB_NAME", cast=str, default="")
 MAIL_USERNAME: str = config("MAIL_USERNAME", cast=str, default="")
 MAIL_PASSWORD:str = config("MAIL_PASSWORD", cast=str, default="")
 MAIL_FROM:str = config("MAIL_FROM", cast=str, default="")
-API_HOST :str = config("API_HOST", cast=str, default="")
+API_HOST :str = config("API_HOST", cast=str, default="http://localhost:8000")
 MAX_CONNECTIONS_COUNT: int = config("MAX_CONNECTIONS_COUNT", cast=int, default=10)
 MIN_CONNECTIONS_COUNT: int = config("MIN_CONNECTIONS_COUNT", cast=int, default=10)
 

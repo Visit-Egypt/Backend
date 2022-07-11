@@ -15,6 +15,7 @@ from pymongo import ReturnDocument
 from bson import ObjectId
 from loguru import logger
 from visitegypt.infra.errors import InfrastructureException
+from datetime import datetime
 
 async def get_filtered_badges(
     page_num: int, limit: int, filters: Dict
@@ -45,8 +46,10 @@ async def get_filtered_badges(
 
 async def create_badge(badge_to_create: BadgeBase) -> BadgeInDB:
     try:
+        created_at=datetime.utcnow()
+        new_badge = dict(badge_to_create, created_at=created_at, updated_at=created_at)
         row = await db.client[DATABASE_NAME][badges_collection_name].insert_one(
-            badge_to_create.dict()
+            new_badge
         )
         if row.inserted_id:
             new_inserted_item = await get_filtered_badges(
@@ -59,11 +62,13 @@ async def create_badge(badge_to_create: BadgeBase) -> BadgeInDB:
 
 async def update_badge(badge_to_update: BadgeUpdate, badge_id: str) -> BadgeInDB:
     try:
+        updated_at = datetime.utcnow()
+        badge_dict = dict({k: v for k, v in badge_to_update.dict().items() if v}, updated_at=updated_at)
         result = await db.client[DATABASE_NAME][
             badges_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(badge_id)},
-            {"$set": {k: v for k, v in badge_to_update.dict().items() if v}},
+            {"$set": badge_dict},
             return_document=ReturnDocument.AFTER,
         )
         if result:

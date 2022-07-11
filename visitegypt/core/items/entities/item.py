@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import Field
 from visitegypt.core.base_model import MongoModel, OID
-
+from datetime import datetime
 
 class ItemBase(MongoModel):
     title: str
@@ -14,8 +14,8 @@ class ItemBase(MongoModel):
 
 class ItemInDB(ItemBase):
     id: OID = Field()
-
-
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 class ItemsPageResponse(MongoModel):
     current_page: int
     content_range: int

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from visitegypt.core.tags.entities.tag import Tag, TagUpdate, TagCreation, GetTagResponse
 from visitegypt.infra.database.events import db
@@ -28,8 +29,10 @@ async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
         # Check if the tag already exists
         tag_m = await db.client[DATABASE_NAME][tags_collection_name].find_one({'name': new_tag.name})
         if tag_m: raise TagAlreadyExists
+        created_at = datetime.utcnow()
+        tag_dict = dict(new_tag, created_at=created_at, updated_at=created_at)
         row = await db.client[DATABASE_NAME][tags_collection_name].insert_one(
-            new_tag.dict()
+            tag_dict
         )
         if row.inserted_id:
             added_tag = await db.client[DATABASE_NAME][tags_collection_name].find_one( {"_id": ObjectId(row.inserted_id)})
@@ -43,11 +46,13 @@ async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
 
 async def update_tag(update_tag: TagUpdate, tag_id: str) -> Optional[GetTagResponse]:
     try:
+        updated_at = datetime.utcnow()
+        tag_upd = dict({k: v for k, v in update_tag.dict().items() if v},updated_at=updated_at)
         result = await db.client[DATABASE_NAME][
             tags_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(tag_id)},
-            {"$set": {k: v for k, v in update_tag.dict().items() if v}},
+            {"$set": tag_upd},
             return_document=ReturnDocument.AFTER,
         )
         if result:

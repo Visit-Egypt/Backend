@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Dict
 from pydantic import EmailStr
 import pymongo
@@ -57,8 +58,11 @@ SOCIAL_BUTTERFLY_ID = "62b71137ff1abae844f3ed60"
 
 async def create_user(new_user: User) -> Optional[UserResponse]:
     try:
+        created_at=datetime.utcnow()
+        user_to_reg = dict(new_user, created_at=created_at, updated_at=created_at)
+        print(user_to_reg)
         row = await db.client[DATABASE_NAME][users_collection_name].insert_one(
-            new_user.dict()
+            user_to_reg
         )
         if row.inserted_id:
             return await get_user_by_id(row.inserted_id)
@@ -68,11 +72,13 @@ async def create_user(new_user: User) -> Optional[UserResponse]:
 
 async def update_user(updated_user: UserUpdate, user_id: str) -> Optional[UserResponse]:
     try:
+        updated_at = datetime.utcnow()
+        user_dict = dict({k: v for k, v in updated_user.dict().items() if v}, updated_at=updated_at)
         result = await db.client[DATABASE_NAME][
             users_collection_name
         ].find_one_and_update(
             {"_id": ObjectId(user_id)},
-            {"$set": {k: v for k, v in updated_user.dict().items() if v}},
+            {"$set": user_dict},
             return_document=ReturnDocument.AFTER,
         )
         if result:
@@ -91,7 +97,7 @@ async def update_user_password(updated_user: UserUpdatePassword, user_id: str) -
                 users_collection_name
             ].find_one_and_update(
                 {"_id": ObjectId(user_id)},
-                {"$set": {"hashed_password": str(updated_user.hashed_password)}},
+                {"$set": {"hashed_password": str(updated_user.hashed_password), "updated_at": datetime.utcnow()}},
                 return_document=ReturnDocument.AFTER,
             )
         if result:
@@ -110,7 +116,7 @@ async def update_user_role(updated_user: str, user_id: str) -> Optional[UserResp
                 users_collection_name
             ].find_one_and_update(
                 {"_id": ObjectId(user_id)},
-                {"$set": {"user_role": updated_user}},
+                {"$set": {"user_role": updated_user, "updated_at": datetime.utcnow()}},
                 return_document=ReturnDocument.AFTER,
             )
         if result:
@@ -227,7 +233,7 @@ async def update_user_tokenID(user_id: str,new_toke_id:str,old_token_id:str=None
     try:
         if  old_token_id != None:
             await check_user_token(user_id=user_id,token_id=old_token_id)
-        await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"tokenID": new_toke_id}})
+        await db.client[DATABASE_NAME][users_collection_name].update_one({"_id": ObjectId(user_id)}, {'$set': {"tokenID": new_toke_id, "updated_at": datetime.utcnow()}})
     except Exception as e:
         raise e
 

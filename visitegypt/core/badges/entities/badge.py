@@ -1,6 +1,7 @@
 from typing import List, Optional
 from pydantic import Field
 from visitegypt.core.base_model import MongoModel, OID
+from datetime import datetime
 
 class BadgeTask(MongoModel):
     imgUrl: str
@@ -21,6 +22,8 @@ class BadgeBase(MongoModel):
 
 class BadgeInDB(BadgeBase):
     id: OID = Field()
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
 class BadgesPageResponse(MongoModel):
     current_page: int

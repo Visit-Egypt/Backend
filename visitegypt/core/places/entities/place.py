@@ -5,7 +5,7 @@ from pydoc import describe
 from typing import Any, List, Optional, Dict
 from pydantic import BaseModel, Field
 from visitegypt.core.base_model import MongoModel, OID, Translatable
-
+from datetime import datetime
 
 
 
@@ -45,12 +45,16 @@ class PlaceActivity(MongoModel):
     description: str
     duration:str
     maxProgress: int
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
 class review(MongoModel):
     rating: float
     review: Optional[str]
     user_id: str
     user_name: str
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
 class PlaceBase(MongoModel):
     title: str
@@ -91,7 +95,8 @@ class UpdatePlace(MongoModel):
 
 class PlaceInDB(PlaceWithReviews):
     id: OID = Field()
-
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
 class PlacesPageResponse(MongoModel):
     current_page: int
