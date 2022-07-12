@@ -422,9 +422,12 @@ async def visit_place(user_id: str ,place_id:str):
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
         visitActivity = next((item for item in place["placeActivities"] if item['type'] == 0), None)
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "place_id":place_id}))
-        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle="visit the place",progress=1))
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activityFromUser = next((item for item in user["placeActivities"] if item['id'] == visitActivity["id"]), None)
+        if activityFromUser:
+            return UserXP(old_xp=user["xp"],new_xp=user["xp"])
+        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
@@ -478,9 +481,12 @@ async def review_place(user_id: str ,place_id:str):
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
         visitActivity = next((item for item in place["placeActivities"] if item['type'] == 4), None)
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({"place_id":place_id}))
-        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle="review the place",progress=1))
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activityFromUser = next((item for item in user["placeActivities"] if item['id'] == visitActivity["id"]), None)
+        if activityFromUser:
+            return UserXP(old_xp=user["xp"],new_xp=user["xp"])
+        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
@@ -503,8 +509,12 @@ async def add_post(user_id: str ,place_id:str):
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
         visitActivity = next((item for item in place["placeActivities"] if item['type'] == 1), None)
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "place_id":place_id}))
-        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle="post a post",progress=1))
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activityFromUser = next((item for item in user["placeActivities"] if item['id'] == visitActivity["id"]), None)
+        if activityFromUser:
+            return UserXP(old_xp=user["xp"],new_xp=user["xp"])
+        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
@@ -528,8 +538,12 @@ async def chatbot_artifact(user_id: str ,place_id:str):
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
         visitActivity = next((item for item in place["placeActivities"] if item['type'] == 2), None)
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "place_id":place_id}))
-        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle="ask Anubis about the artifacts",progress=1))
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activityFromUser = next((item for item in user["placeActivities"] if item['id'] == visitActivity["id"]), None)
+        if activityFromUser:
+            return UserXP(old_xp=user["xp"],new_xp=user["xp"])
+        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
@@ -552,8 +566,12 @@ async def chatbot_place(user_id: str ,place_id:str):
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
         visitActivity = next((item for item in place["placeActivities"] if item['type'] == 3), None)
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "place_id":place_id}))
-        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle="ask Anubis about the place",progress=1))
+        user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
+        activityFromUser = next((item for item in user["placeActivities"] if item['id'] == visitActivity["id"]), None)
+        if activityFromUser:
+            return UserXP(old_xp=user["xp"],new_xp=user["xp"])
+        await update_user_activity(user_id,visitActivity["id"],PlaceActivityUpdate(finished="true",progress=1))
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
@@ -577,6 +595,9 @@ async def scan_object(user_id: str ,place_id:str,explore_id:str):
         place = await db.client[DATABASE_NAME][places_collection_name].find_one({ "_id":ObjectId(place_id)})
         #visitActivity = next((item for item in place["placeActivities"] if item['title'] == "AR"), None)
         explore = next((item for item in place["explores"] if item['id'] == explore_id), None)
+        exploreFromUser = next((item for item in user["placeActivities"] if item['id'] == explore_id), None)
+        if exploreFromUser:
+            return UserXP(old_xp=user["xp"],new_xp=user["xp"])
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({ "place_id":place_id}))
         badgeTask = next((item for item in badge.badge_tasks if item.taskTitle == "explore the artifacts"), None)
         #badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
