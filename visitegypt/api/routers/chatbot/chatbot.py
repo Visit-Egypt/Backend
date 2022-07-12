@@ -80,9 +80,10 @@ async def classes(result):
             return {"response":response}
         except Exception as e: raise e
     elif(result['tag'] == "weather"):
-        if(not result['recognation']):
-            return {"response":"Please Mention the Place You Want To Know Its Weather"}
-        city = result['recognation'][0]['Name'].capitalize()
+        city = ""
+        if(result['recognation']):
+            city = result['recognation'][0]['Name'].capitalize()
+            #return {"response":"Please Mention the Place You Want To Know Its Weather"}
         return {"response":"Weather "+city}
     elif(result['tag'] == "currency"):
         if(not result['recognation'] or result['recognation'][0]['Label'] != "quantity"):
