@@ -4,9 +4,10 @@ from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
 from visitegypt.api.container import get_dependencies
 import requests
 from visitegypt.core.chatbot.services import chatbot_service
+from visitegypt.config.environment import CHAT_BOT_SERVICE_URL
 repo = get_dependencies().chatbot_repo
 
-APIURL = 'http://20.124.230.10:8000/chat'
+
 
 router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
@@ -21,27 +22,23 @@ async  def get_chatbot(message:chatBotBase):
     try:
         res = await callAPI(message.message)
         return res
-    except:
-        return {
-            "response":"Chatbot is currently down"
-        }
+    except Exception as e:
+        return { "response":"Chatbot is currently down" }
 
 async def callAPI(message):
     data = {
         "message":message
     }
-    response = requests.post(APIURL, json=data)
+    response = requests.post(CHAT_BOT_SERVICE_URL, json=data)
     resu = dict(response.json())
-    print(resu)
     res= await classes(resu)
-    print(res)
     return res    
 
 async def classes(result):
-    if(result['response'] == "Hotel"):
-        if(not result['recogniation']):
+    if(result['tag'] == "Hotel"):
+        if(not result['recognation']):
             return {"response":"Please Mention the Goverment"}
-        city = result['recogniation'][0]['Name'].capitalize()
+        city = result['recognation'][0]['Name'].capitalize()
         try:
             res = await chatbot_service.get_hotels_by_city(repo, city)
             response = "Here are some nice hotels in " + city + "\n"
@@ -49,18 +46,18 @@ async def classes(result):
                 response = response + i["Hotel_Name"] + " at " + i["Location"] + "\n"
             return {"response":response}
         except Exception as e: raise e
-    elif(result['response'] == 'search on this topic'):
-        king = result['recogniation'][0]['Name'].capitalize()
+    elif(result['tag'] == 'search on this topic'):
+        king = result['recognation'][0]['Name'].capitalize()
         try:
             res = await chatbot_service.get_king_by_name(repo, king)
             print(res)
             response = res['Main Title'] + " " + res['Name'] + " From The " + res['Dynasty'] + " Was " + res['Comment']
             return {"response":response}
         except Exception as e: raise e
-    elif(result['response'] == "Resturant"):
-        if(not result['recogniation']):
+    elif(result['tag'] == "Resturant"):
+        if(not result['recognation']):
             return {"response":"Please Mention the Goverment"}
-        city = result['recogniation'][0]['Name'].capitalize()
+        city = result['recognation'][0]['Name'].capitalize()
         try:
             res = await chatbot_service.get_restaurants_by_city(repo, city)
             response = "Here are some nice restaurants in " + city + ", "
@@ -68,10 +65,10 @@ async def classes(result):
                 response = response + i["Restaurant_Name"] + ", "
             return {"response":response}
         except Exception as e: raise e
-    elif(result['response'] == "Clinic"):
-        if(not result['recogniation']):
+    elif(result['tag'] == "Clinic"):
+        if(not result['recognation']):
             return {"response":"Please Mention the Goverment"}
-        city = result['recogniation'][0]['Name'].capitalize()
+        city = result['recognation'][0]['Name'].capitalize()
         try:
             res = await chatbot_service.get_pharmacy_by_city(repo, city)
             response = "You can check these pharmacies in " + city + "\n"
@@ -80,4 +77,4 @@ async def classes(result):
             return {"response":response}
         except Exception as e: raise e
     else:
-        return {"response":result['response']}
+        return {"response":result['tag']}

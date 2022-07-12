@@ -88,6 +88,7 @@ jobs:
           APM_SERVER_TOKEN: ${{ secrets.APM_SERVER_TOKEN }}
           ELK_ENABLED: ${{ secrets.ELK_ENABLED }}
           API_HOST: ${{ secrets.API_HOST }}
+          CHAT_BOT_SERVICE_URL: ${{ secrets.CHAT_BOT_SERVICE_URL }}
         with:
           command: |
             sudo rm -f $HOME/.env
@@ -114,6 +115,7 @@ jobs:
             echo "APM_SERVER_TOKEN="${{ env.APM_SERVER_TOKEN }}"" >> $HOME/.env
             echo "ELK_ENABLED="${{ env.ELK_ENABLED }}"" >> $HOME/.env
             echo "API_HOST="${{ env.API_HOST }}"" >> $HOME/.env
+            echo "CHAT_BOT_SERVICE_URL="${{ env.CHAT_BOT_SERVICE_URL }}"" >> $HOME/.env
             sudo docker kill backend-container
             sudo docker rm backend-container
             sudo docker rmi $(sudo docker images -a -q)
