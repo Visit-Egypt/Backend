@@ -4,9 +4,10 @@ from visitegypt.core.chatbot.entities.chatbot import chatBotRes,chatBotBase
 from visitegypt.api.container import get_dependencies
 import requests
 from visitegypt.core.chatbot.services import chatbot_service
+from visitegypt.config.environment import CHAT_BOT_SERVICE_URL
 repo = get_dependencies().chatbot_repo
 
-APIURL = 'http://20.124.230.10:8000/chat'
+
 
 router = APIRouter(responses=generate_response_for_openapi("Chatbot"))
 
@@ -30,7 +31,7 @@ async def callAPI(message):
     data = {
         "message":message
     }
-    response = requests.post(APIURL, json=data)
+    response = requests.post(CHAT_BOT_SERVICE_URL, json=data)
     resu = dict(response.json())
     print(resu)
     res= await classes(resu)
