@@ -37,7 +37,7 @@ from visitegypt.infra.database.utils import (
     badges_collection_name,
     check_next
 )
-from visitegypt.core.places.entities.place import PlaceInDB,PlaceWithReviews
+from visitegypt.core.places.entities.place import PlaceDB,PlaceWithReviews
 from visitegypt.core.errors.user_errors import (
     UserNotFoundError,
     UserIsFollower,
@@ -87,20 +87,20 @@ async def get_user_recommendations(user_id: str):
         data = requests.get(full_url)
         data = data.json()
         user_likes = []
-        user_likes_ids = []
         people_likes = []
-        people_likes_ids = []
         for i in data[0]:
             if i != "random":
-                place = PlaceWithReviews.from_mongo(await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(i)}))
+                base_place = await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(i)})
+                base_place['_id'] = i
+                place = PlaceDB.from_mongo(base_place)
                 user_likes.append(place)
-                user_likes_ids.append(i)
         for j in data[1]:
             if j != "random":
-                place = PlaceWithReviews.from_mongo(await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(j)}))
+                base_place = await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(j)})
+                base_place['_id'] = j
+                place = PlaceDB.from_mongo(base_place)
                 people_likes.append(place)
-                people_likes_ids.append(j)
-        return UserRecommendations(user_likes_ids=user_likes_ids, user_likes=user_likes, people_likes_ids=people_likes_ids[:5], people_likes=people_likes[:5])
+        return UserRecommendations(user_likes=user_likes, people_likes=people_likes[:5])
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:

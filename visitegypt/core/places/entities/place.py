@@ -98,6 +98,11 @@ class PlaceInDB(PlaceWithReviews):
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
+class PlaceDB(PlaceWithReviews):
+    id:str
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    
 class PlacesPageResponse(MongoModel):
     current_page: int
     content_range: int

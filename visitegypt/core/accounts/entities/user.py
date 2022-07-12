@@ -7,7 +7,7 @@ from .roles import Role
 from visitegypt.core.base_model import MongoModel, OID
 from visitegypt.core.badges.entities.badge import BadgeInDB
 from datetime import datetime
-from visitegypt.core.places.entities.place import PlaceWithReviews
+from visitegypt.core.places.entities.place import PlaceWithReviews,PlaceDB
 
 class PlaceActivity(MongoModel):
     id: str
@@ -122,10 +122,8 @@ class UserXP(BaseModel):
     new_xp:int
 
 class UserRecommendations(BaseModel):
-    user_likes_ids:Optional[List[str]]
-    user_likes:Optional[List[PlaceWithReviews]]
-    people_likes_ids:Optional[List[str]]
-    people_likes:Optional[List[PlaceWithReviews]]
+    user_likes:Optional[List[PlaceDB]]
+    people_likes:Optional[List[PlaceDB]]
 
 class UserUpdatePassword(BaseModel):
     hashed_password: str
