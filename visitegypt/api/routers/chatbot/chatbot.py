@@ -31,6 +31,7 @@ async def callAPI(message):
     }
     response = requests.post(CHAT_BOT_SERVICE_URL, json=data)
     resu = dict(response.json())
+    print(resu)
     res= await classes(resu)
     return res    
 

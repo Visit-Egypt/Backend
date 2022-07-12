@@ -87,16 +87,20 @@ async def get_user_recommendations(user_id: str):
         data = requests.get(full_url)
         data = data.json()
         user_likes = []
+        user_likes_ids = []
         people_likes = []
+        people_likes_ids = []
         for i in data[0]:
             if i != "random":
                 place = PlaceWithReviews.from_mongo(await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(i)}))
                 user_likes.append(place)
+                user_likes_ids.append(i)
         for j in data[1]:
             if j != "random":
                 place = PlaceWithReviews.from_mongo(await db.client[DATABASE_NAME][places_collection_name].find_one({"_id": ObjectId(j)}))
                 people_likes.append(place)
-        return UserRecommendations(user_likes=user_likes,people_likes=people_likes[:5])
+                people_likes_ids.append(j)
+        return UserRecommendations(user_likes_ids=user_likes_ids, user_likes=user_likes, people_likes_ids=people_likes_ids[:5], people_likes=people_likes[:5])
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:

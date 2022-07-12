@@ -122,7 +122,9 @@ class UserXP(BaseModel):
     new_xp:int
 
 class UserRecommendations(BaseModel):
+    user_likes_ids:Optional[List[str]]
     user_likes:Optional[List[PlaceWithReviews]]
+    people_likes_ids:Optional[List[str]]
     people_likes:Optional[List[PlaceWithReviews]]
 
 class UserUpdatePassword(BaseModel):
