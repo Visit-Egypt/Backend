@@ -117,6 +117,10 @@ class UserUpdate(BaseModel):
     ar_mtl:Optional[str] = None
     lastReviewd:Optional[str] = None
 
+class UserXP(BaseModel):
+    old_xp:int
+    new_xp:int
+
 class UserRecommendations(BaseModel):
     user_likes:Optional[List[PlaceWithReviews]]
     people_likes:Optional[List[PlaceWithReviews]]

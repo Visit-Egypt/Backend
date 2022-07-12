@@ -21,7 +21,8 @@ from visitegypt.core.accounts.entities.user import (
     UserResponseInTags,
     UserPushNotification,
     UserFollowResp,
-    BadgeResponseDetail
+    BadgeResponseDetail,
+    UserXP
 )
 from visitegypt.core.badges.entities.badge import BadgeInDB
 from visitegypt.core.utilities.entities.notification import Notification
@@ -403,11 +404,14 @@ async def claim_location(user_id:str, city:str):
             await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle=badgeTask.taskTitle,progress=1))
             user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
+        xp = 0
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
             await update_user(UserUpdate(xp=user["xp"]+badge.xp),user_id)
+            xp = badge.xp
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
+        return xp
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -424,11 +428,14 @@ async def visit_place(user_id: str ,place_id:str):
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]+badge.xp),user_id)
-            await claim_location(user_id,place["city"])
+            new_xp=user["xp"]+visitActivity["xp"]+badge.xp
+            await update_user(UserUpdate(xp=new_xp),user_id)
+            new_xp += await claim_location(user_id,place["city"])
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]),user_id)
+            new_xp=user["xp"]+visitActivity["xp"]
+            await update_user(UserUpdate(xp=new_xp),user_id)
+        return UserXP(old_xp=user["xp"],new_xp=new_xp)
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -453,11 +460,14 @@ async def update_social_badge(user_id:str, type:str):
             await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle=badgeTask.taskTitle,progress=1))
             user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
+        xp = 0
         if(badgeFromUser["progress"] == badge.max_progress-1):
                 await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
                 await update_user(UserUpdate(xp=user["xp"]+badge.xp),user_id)
+                xp = badge.xp
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
+        return xp
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -474,12 +484,15 @@ async def review_place(user_id: str ,place_id:str):
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]+badge.xp),user_id)
-            await claim_location(user_id,place["city"])
+            new_xp = user["xp"]+visitActivity["xp"]+badge.xp
+            await update_user(UserUpdate(xp=new_xp),user_id)
+            new_xp += await claim_location(user_id,place["city"])
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]),user_id)
-        await update_social_badge(user_id,"review")
+            new_xp = user["xp"]+visitActivity["xp"]
+            await update_user(UserUpdate(xp=new_xp),user_id)
+        new_xp += await update_social_badge(user_id,"review")
+        return UserXP(old_xp=user["xp"],new_xp=new_xp)
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -496,12 +509,15 @@ async def add_post(user_id: str ,place_id:str):
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]+badge.xp),user_id)
-            await claim_location(user_id,place["city"])
+            new_xp = user["xp"]+visitActivity["xp"]+badge.xp
+            await update_user(UserUpdate(xp=new_xp),user_id)
+            new_xp += await claim_location(user_id,place["city"])
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
+            new_xp = user["xp"]+visitActivity["xp"]
             await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]),user_id)
-        await update_social_badge(user_id,"post")
+        new_xp += await update_social_badge(user_id,"post")
+        return UserXP(old_xp=user["xp"],new_xp=new_xp)
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -518,11 +534,14 @@ async def chatbot_artifact(user_id: str ,place_id:str):
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]+badge.xp),user_id)
-            await claim_location(user_id,place["city"])
+            new_xp = user["xp"]+visitActivity["xp"]+badge.xp
+            await update_user(UserUpdate(xp=new_xp),user_id)
+            new_xp += await claim_location(user_id,place["city"])
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]),user_id)
+            new_xp = user["xp"]+visitActivity["xp"]
+            await update_user(UserUpdate(xp=new_xp),user_id)
+        return UserXP(old_xp=user["xp"],new_xp=new_xp)
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -539,11 +558,14 @@ async def chatbot_place(user_id: str ,place_id:str):
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]+badge.xp),user_id)
-            await claim_location(user_id,place["city"])
+            new_xp = user["xp"]+visitActivity["xp"]+badge.xp
+            await update_user(UserUpdate(xp=new_xp),user_id)
+            new_xp += await claim_location(user_id,place["city"])
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
-            await update_user(UserUpdate(xp=user["xp"]+visitActivity["xp"]),user_id)
+            new_xp = user["xp"]+visitActivity["xp"]
+            await update_user(UserUpdate(xp=new_xp),user_id)
+        return UserXP(old_xp=user["xp"],new_xp=new_xp)
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:
@@ -573,11 +595,14 @@ async def scan_object(user_id: str ,place_id:str,explore_id:str):
         badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         if(badgeFromUser["progress"] == badge.max_progress-1):
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1,owned="true"))
-            await update_user(UserUpdate(xp=user["xp"]+explore["xp"]+badge.xp),user_id)
+            new_xp = user["xp"]+explore["xp"]+badge.xp
+            await update_user(UserUpdate(xp=new_xp),user_id)
             await claim_location(user_id,place["city"])
         else:
             await update_badge(user_id,str(badge.id),BadgeUpdate(progress=badgeFromUser["progress"]+1))
-            await update_user(UserUpdate(xp=user["xp"]+explore["xp"]),user_id)
+            new_xp = user["xp"]+explore["xp"]
+            new_xp += await update_user(UserUpdate(xp=user["xp"]+explore["xp"]),user_id)
+        return UserXP(old_xp=user["xp"],new_xp=new_xp)
     except UserNotFoundError as ue:
         raise ue
     except Exception as e:

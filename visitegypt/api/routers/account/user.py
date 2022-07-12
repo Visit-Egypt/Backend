@@ -11,7 +11,7 @@ from visitegypt.core.accounts.entities.user import (
     Badge,
     BadgeResponseDetail,
     BadgeTask,
-    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq, UserFollowResp,UserRecommendations
+    BadgeUpdate,PlaceActivityUpdate,PlaceActivity,BadgeResponse,RequestTripMate, UserPrefsReq, UserFollowResp,UserRecommendations,UserXP
 )
 from visitegypt.core.authentication.entities.userauth import UserAuthBody,UserGoogleAuthBody,UserPasswordReset
 from visitegypt.core.authentication.services.auth_service import (
@@ -322,7 +322,7 @@ async def update_badge(
 @router.put(
     "/visitplace/{place_id}",
     summary="User Visit Place",
-    tags=["User"]
+    tags=["User"], response_model = UserXP
 )
 async def visit_place(
     place_id:str,
@@ -336,7 +336,7 @@ async def visit_place(
 @router.put(
     "/reviewplace/{place_id}",
     summary="User Review Place",
-    tags=["User"]
+    tags=["User"], response_model = UserXP
 )
 async def review_place(
     place_id:str,
@@ -350,7 +350,7 @@ async def review_place(
 @router.put(
     "/addpost/{place_id}",
     summary="User Added Post",
-    tags=["User"]
+    tags=["User"], response_model = UserXP
 )
 async def add_post(
     place_id:str,
@@ -364,9 +364,9 @@ async def add_post(
 @router.put(
     "/scanobject/{place_id}/{explore_id}",
     summary="User Scanned Object",
-    tags=["User"]
+    tags=["User"], response_model = UserXP
 )
-async def add_post(
+async def scan_object(
     place_id:str,
     explore_id:str,
     current_user: UserResponse = Depends(get_current_user)
@@ -379,7 +379,7 @@ async def add_post(
 @router.put(
     "/chatbotartifact/{place_id}",
     summary="User ask chatbot about artifact",
-    tags=["User"]
+    tags=["User"], response_model = UserXP
 )
 async def chatbot_artifact(
     place_id:str,
@@ -393,7 +393,7 @@ async def chatbot_artifact(
 @router.put(
     "/chatbotplace/{place_id}",
     summary="User ask chatbot about place",
-    tags=["User"]
+    tags=["User"], response_model = UserXP
 )
 async def chatbot_place(
     place_id:str,
