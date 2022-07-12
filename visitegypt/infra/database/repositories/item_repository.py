@@ -45,8 +45,9 @@ async def get_filtered_items(
 async def create_item(item_to_create: ItemBase) -> ItemInDB:
     try:
         created_at = datetime.utcnow()
+        item =  dict(item_to_create.dict(), created_at=created_at,updated_at=created_at)
         row = await db.client[DATABASE_NAME][items_collection_name].insert_one(
-            dict(item_to_create, created_at=created_at,updated_at=created_at)
+           item
         )
         if row.inserted_id:
             new_inserted_item = await get_filtered_items(

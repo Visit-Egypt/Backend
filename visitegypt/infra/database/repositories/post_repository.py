@@ -95,7 +95,7 @@ async def create_post(new_post: PostBase) -> Optional[PostInDB]:
         new_post.likes = []
         #is_offensive = check_offensive(new_post.caption)
         created_at = datetime.utcnow()
-        post = dict(new_post, created_at=created_at, updated_at=created_at)
+        post = dict(new_post.dict(), created_at=created_at, updated_at=created_at)
         if True:
             row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
                 post

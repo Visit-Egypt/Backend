@@ -30,7 +30,7 @@ async def add_tag(new_tag: TagCreation) -> Optional[GetTagResponse]:
         tag_m = await db.client[DATABASE_NAME][tags_collection_name].find_one({'name': new_tag.name})
         if tag_m: raise TagAlreadyExists
         created_at = datetime.utcnow()
-        tag_dict = dict(new_tag, created_at=created_at, updated_at=created_at)
+        tag_dict = dict(new_tag.dict(), created_at=created_at, updated_at=created_at)
         row = await db.client[DATABASE_NAME][tags_collection_name].insert_one(
             tag_dict
         )

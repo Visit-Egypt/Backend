@@ -78,7 +78,7 @@ async def send_notification(notification: Notification, sender_id: ObjectId) -> 
             added_notification_to_db = NotificationSaveInDB(**notification.dict(), sender_id = sender_id)
             created_at = datetime.utcnow()
             row = await db.client[DATABASE_NAME][notifications_collection_name].insert_one(
-            dict(added_notification_to_db, created_at=created_at, updated_at=created_at)
+            dict(added_notification_to_db.dict(), created_at=created_at, updated_at=created_at)
             )
             if row.inserted_id: return True
         return False

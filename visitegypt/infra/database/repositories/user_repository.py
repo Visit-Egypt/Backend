@@ -63,8 +63,7 @@ APIURL = "http://129.146.115.196:8000/"
 async def create_user(new_user: User) -> Optional[UserResponse]:
     try:
         created_at=datetime.utcnow()
-        user_to_reg = dict(new_user, created_at=created_at, updated_at=created_at)
-        print(user_to_reg)
+        user_to_reg = dict(new_user.dict(), created_at=created_at, updated_at=created_at)
         row = await db.client[DATABASE_NAME][users_collection_name].insert_one(
             user_to_reg
         )

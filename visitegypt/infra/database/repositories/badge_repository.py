@@ -47,7 +47,7 @@ async def get_filtered_badges(
 async def create_badge(badge_to_create: BadgeBase) -> BadgeInDB:
     try:
         created_at=datetime.utcnow()
-        new_badge = dict(badge_to_create, created_at=created_at, updated_at=created_at)
+        new_badge = dict(badge_to_create.dict(), created_at=created_at, updated_at=created_at)
         row = await db.client[DATABASE_NAME][badges_collection_name].insert_one(
             new_badge
         )

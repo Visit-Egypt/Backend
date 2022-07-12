@@ -183,9 +183,11 @@ async def get_place_by_title(place_title: str) -> Optional[PlaceInDB]:
 
 async def create_place(new_place: PlaceBase) -> PlaceInDB:
     try:
+        #print(new_place.dict())
         created_at = datetime.utcnow()
+        place_with_time = dict(new_place.dict(), created_at=created_at, updated_at=created_at)
         row = await db.client[DATABASE_NAME][places_collection_name].insert_one(
-            dict(new_place, created_at=created_at, updated_at=created_at)
+            place_with_time
         )
         if row.inserted_id:
             added_place = await get_filtered_places(page_num = 1, limit = 1, lang = 'en', filters= {"_id" : ObjectId(row.inserted_id)})
