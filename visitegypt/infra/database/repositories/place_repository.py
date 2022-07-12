@@ -22,7 +22,7 @@ from loguru import logger
 from visitegypt.infra.errors import InfrastructureException
 
 async def get_filtered_places(
-    page_num: int, limit: int, lang: str, filters: Dict
+    page_num: int, limit: int, filters: Dict, lang: str = 'en'
 ) -> PlacesPageResponse:
     try:
         indcies = calculate_start_index(limit, page_num)
@@ -188,7 +188,7 @@ async def create_place(new_place: PlaceBase) -> PlaceInDB:
             dict(new_place, created_at=created_at, updated_at=created_at)
         )
         if row.inserted_id:
-            added_place = await get_filtered_places(page_num = 1, limit = 1, filters= {"_id" : ObjectId(row.inserted_id)})
+            added_place = await get_filtered_places(page_num = 1, limit = 1, lang = 'en', filters= {"_id" : ObjectId(row.inserted_id)})
             return added_place.places[0]
     except PlaceNotFoundError as ue:
         raise ue

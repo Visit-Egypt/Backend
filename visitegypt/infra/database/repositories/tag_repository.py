@@ -12,7 +12,7 @@ from loguru import logger
 from pymongo import ReturnDocument
 from visitegypt.infra.database.repositories.notification_repository import get_sns_client
 
-async def get_all_tags(filter: dict, lang: str) -> List[GetTagResponse]:
+async def get_all_tags(filter: dict, lang: str = 'en') -> List[GetTagResponse]:
     try:
         cursor = db.client[DATABASE_NAME][tags_collection_name].find(filter)
         tags_list = await cursor.to_list(length=None)
