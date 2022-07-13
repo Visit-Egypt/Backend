@@ -50,6 +50,8 @@ async def classes(result):
             return {"response":response}
         except Exception as e: raise e
     elif(result['tag'] == 'info'):
+        if(not result['recognation']):
+            return {"response":"Please Mention the Name of the King"}
         king = result['recognation'][0]['Name'].capitalize()
         try:
             res = await chatbot_service.get_king_by_name(repo, king)
@@ -57,7 +59,7 @@ async def classes(result):
             response = res['Main Title'] + " " + res['Name'] + " From The " + res['Dynasty'] + " Was " + res['Comment']
             return {"response":response}
         except Exception as e: raise e
-    elif(result['tag'] == "Resturant"):
+    elif(result['tag'] == "Restaurant"):
         if(not result['recognation']):
             return {"response":"Please Mention the Goverment"}
         city = result['recognation'][0]['Name'].capitalize()
