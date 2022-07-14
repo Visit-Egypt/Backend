@@ -307,7 +307,7 @@ async def update_badge_task(user_id:str, new_task:BadgeTask):
             return_document=ReturnDocument.AFTER,
         )
 
-        if next((item for item in result["badge_tasks"] if item['taskTitle'] == new_task.taskTitle and item['badge_id'] == new_task.badge_id), None) != None:
+        if result != None and next((item for item in result["badge_tasks"] if item['taskTitle'] == new_task.taskTitle and item['badge_id'] == new_task.badge_id), None) != None:
 
             return result["badge_tasks"]
         else:
