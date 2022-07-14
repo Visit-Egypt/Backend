@@ -306,7 +306,9 @@ async def update_badge_task(user_id:str, new_task:BadgeTask):
             { "$set": { "badge_tasks.$.progress": new_task.progress} },
             return_document=ReturnDocument.AFTER,
         )
-        if result != None:
+
+        if next((item for item in result["badge_tasks"] if item['taskTitle'] == new_task.taskTitle and item['badge_id'] == new_task.badge_id), None) != None:
+
             return result["badge_tasks"]
         else:
             if(await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id": user_id, "badges.id": new_task.badge_id}) == None):
@@ -400,7 +402,7 @@ async def claim_location(user_id:str, city:str):
         user = await db.client[DATABASE_NAME][users_collection_name].find_one({ "_id":ObjectId(user_id)})
         badge = BadgeInDB.from_mongo(await db.client[DATABASE_NAME][badges_collection_name].find_one({"title":"King of "+city.capitalize()}))
         badgeTask = badge.badge_tasks[0]
-        #badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
+        badgeFromUser = next((item for item in user["badges"] if item['id'] == str(badge.id)), None)
         badgeTaskFromUser = next((item for item in user["badge_tasks"] if item['taskTitle'] == badgeTask.taskTitle and item['badge_id'] == str(badge.id)), None)
         if(badgeTaskFromUser):
             await update_badge_task(user_id,BadgeTask(badge_id=str(badge.id),taskTitle=badgeTask.taskTitle,progress=badgeTaskFromUser["progress"]+1))
