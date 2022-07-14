@@ -47,7 +47,7 @@ async def update_badge_by_id(
     repo: BadgeRepo, badge_to_update: BadgeUpdate, badge_id: str
 ) -> Optional[BadgeInDB]:
     try:
-        return await repo.update_badge(ibadge_id=badge_id, badge_to_update=badge_to_update)
+        return await repo.update_badge(badge_id=badge_id, badge_to_update=badge_to_update)
     except BadgeNotFoundError as ue:
         raise ue
     except Exception as e:
