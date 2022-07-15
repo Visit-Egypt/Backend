@@ -93,18 +93,17 @@ async def get_post_by_id(post_id: str) -> Optional[PostInDB]:
 async def create_post(new_post: PostBase) -> Optional[PostInDB]:
     try:
         new_post.likes = []
-        #is_offensive = check_offensive(new_post.caption)
-        created_at = datetime.utcnow()
-        post = dict(new_post.dict(), created_at=created_at, updated_at=created_at)
-        if True:
-            row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
-                post
-            )
-            if row.inserted_id:
-                new_inserted_post = await get_filtered_post(
-                    page_num=1, limit=1, filters={"_id": ObjectId(row.inserted_id)}
-            )
-            return new_inserted_post.posts[0]
+        is_offensive = check_offensive(new_post.caption)
+        if not is_offensive:
+                created_at = datetime.utcnow()
+                post = dict(new_post.dict(), created_at=created_at, updated_at=created_at)
+                row = await db.client[DATABASE_NAME][posts_collection_name].insert_one(
+                    post
+                )
+                if row.inserted_id:
+                    new_inserted_post = await get_filtered_post(
+                        page_num=1, limit=1, filters={"_id": ObjectId(row.inserted_id)})
+                    return new_inserted_post.posts[0]
         else:
             raise PostOffensive
     except PostOffensive as po: raise po
