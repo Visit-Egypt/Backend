@@ -934,7 +934,7 @@ async def get_bulk_users_by_id(users_ids: List[ObjectId]) -> Optional[List[UserR
         users_list = await cursor.to_list(length=None)
         if len(users_list) <= 0:
             raise UserNotFoundError
-        return [UserResponseInTags.from_mongo(user) for user in users_list]
+        return [UserResponseInTags.from_mongo(dict(user, followers_num=len(user.get('followers') or []))) for user in users_list]
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)

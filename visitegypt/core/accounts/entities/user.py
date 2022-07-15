@@ -182,6 +182,7 @@ class UserResponseInTags(MongoModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     photo_link: Optional[str] = None
+    followers_num: Optional[str] = '0'
     device_arn_endpoint: Optional[str]
 
 

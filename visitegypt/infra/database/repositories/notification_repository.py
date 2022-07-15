@@ -109,10 +109,13 @@ async def send_notifications_with_tags(notification: Notification, sender_id: Ob
             for tag in notification.sent_tags:
                 from visitegypt.infra.database.repositories.tag_repository import get_all_users_of_tags
                 users_of_tag = await get_all_users_of_tags(tag_ids=[tag])
-                print(users_of_tag)
-                for user in users_of_tag:            
-                    res = sns_client.publish(TargetArn=user.device_arn_endpoint, Message=json.dumps(msg_to_be_sent), MessageStructure='json')
-                    print(res)
+                devices_endpoints = [user.device_arn_endpoint for user in users_of_tag]
+                for device_endpoint in devices_endpoints:
+                    device_token_is_enabled = sns_client.get_endpoint_attributes(EndpointArn=device_endpoint).get('Attributes').get('Enabled')
+                    if device_token_is_enabled == 'true':
+                        res = sns_client.publish(TargetArn=device_endpoint, Message=json.dumps(msg_to_be_sent), MessageStructure='json')
+                    
+
             added_notification_to_db = NotificationSaveInDB(**notification.dict(), sender_id = sender_id)
             row = await db.client[DATABASE_NAME][notifications_collection_name].insert_one(
             added_notification_to_db.dict()
@@ -144,15 +147,16 @@ async def send_notification_to_specific_users(notification: Notification, sender
             # Get device endpoint for a user with id
             from visitegypt.infra.database.repositories.user_repository import get_device_endpoint
             user_endpoint = (await get_device_endpoint(notification.sent_users_ids[0])).device_arn_endpoint
-            
             sns_client = await get_sns_client()
-            res = sns_client.publish(TargetArn=user_endpoint, Message=json.dumps(msg_to_be_sent), MessageStructure='json')
-            if res.get('MessageId'):
-                added_notification_to_db = NotificationSaveInDB(**notification.dict(), sender_id = sender_id)
-                row = await db.client[DATABASE_NAME][notifications_collection_name].insert_one(
-                added_notification_to_db.dict()
-                )
-                if row.inserted_id: return True
+            device_token_is_enabled = sns_client.get_endpoint_attributes(EndpointArn=user_endpoint).get('Attributes').get('Enabled')
+            if device_token_is_enabled == 'true':
+                res = sns_client.publish(TargetArn=user_endpoint, Message=json.dumps(msg_to_be_sent), MessageStructure='json')
+                if res.get('MessageId'):
+                    added_notification_to_db = NotificationSaveInDB(**notification.dict(), sender_id = sender_id)
+                    row = await db.client[DATABASE_NAME][notifications_collection_name].insert_one(
+                    added_notification_to_db.dict()
+                    )
+                    if row.inserted_id: return True
         return False
     except Exception as e:
         logger.exception(e.__cause__)
