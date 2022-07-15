@@ -65,6 +65,10 @@ APM_SERVER_TOKEN: str = config("APM_SERVER_TOKEN", cast = str, default="")
 APM_SERVICE_NAME: str = config("APM_SERVICE_NAME", cast = str, default="")
 ELK_ENABLED: str = config("ELK_ENABLED", cast = str, default="false")
 
+APP_SEARCH_ENDPOINT: str = config("APP_SEARCH_ENDPOINT", cast = str, default="")
+APP_SEARCH_TOKEN: str = config("APP_SEARCH_TOKEN", cast = str, default="")
+
+
 # Chatbot service
 CHAT_BOT_SERVICE_URL: str = config('CHAT_BOT_SERVICE_URL', cast=str, default='http://129.146.107.57/api/predict')
 # logging configuration

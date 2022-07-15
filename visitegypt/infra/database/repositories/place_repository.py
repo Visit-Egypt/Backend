@@ -1,6 +1,8 @@
-from ctypes.wintypes import tagRECT
 from datetime import datetime
 from typing import Optional, List, Dict
+
+import requests
+
 from visitegypt.core.errors.place_error import PlaceNotFoundError, ReviewOffensive
 from visitegypt.core.places.entities.place import (
     PlaceInDB,
@@ -11,7 +13,7 @@ from visitegypt.core.places.entities.place import (
     PlaceForSearch
 )
 from visitegypt.infra.database.events import db
-from visitegypt.config.environment import DATABASE_NAME
+from visitegypt.config.environment import DATABASE_NAME, APP_SEARCH_TOKEN, APP_SEARCH_ENDPOINT
 from visitegypt.infra.database.utils import places_collection_name,users_collection_name
 from visitegypt.infra.database.utils import calculate_start_index, check_has_next,check_next
 from visitegypt.infra.database.utils.offensive import check_offensive
@@ -291,15 +293,29 @@ async def search_place(search_text:str) -> Optional[List[PlaceForSearch]]:
     search_qu = f"*{search_text}*"
     pipeline = [{"$search": {'index': 'title', "wildcard": {"query": search_qu, "path": "title","allowAnalyzedField": True}}}]
     try:
-       # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
-       #     {"title": place_title}
-       # )
-        # row = await db.client[DATABASE_NAME][places_collection_name].aggregate(pipeline).to_list(length=None)
-        row = await db.client[DATABASE_NAME][places_collection_name].find({'$text': { '$search': search_qu } }).to_list(None)
+        # ElasticSearch
+        query = {
+                    "query": search_text,
+                    "page": {
+                            "size": 10
+                }
+            }
+        result = requests.post(APP_SEARCH_ENDPOINT, json=query, headers={"Authorization": f'Bearer {APP_SEARCH_TOKEN}'}).json()
+        places = result.get('results')
+        if not places: return None
+        resp = [PlaceForSearch(id=ObjectId(place['id']['raw']), title=place['title']['raw'], default_image=place['default_image']['raw']) for place in places]
+            # row = await db.client[DATABASE_NAME][places_collection_name].find_one(
+            #     {"title": place_title}
+            # )
+                # row = await db.client[DATABASE_NAME][places_collection_name].aggregate(pipeline).to_list(length=None)
+        # row = await db.client[DATABASE_NAME][places_collection_name].find({'$text': { '$search': search_qu } }).to_list(None)
+        """
         if not row:
             return None
         places_list_response = [PlaceForSearch.from_mongo(place) for place in row]
         return places_list_response
+        """
+        return resp
     except Exception as e:
         logger.exception(e.__cause__)
         raise InfrastructureException(e.__repr__)
