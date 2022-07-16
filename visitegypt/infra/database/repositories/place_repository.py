@@ -241,11 +241,11 @@ async def update_place(
 
 async def add_review(place_id: str, new_reviw: review):
     try:
-        #is_offensive = False
-        #if new_reviw.review:
-        #    is_offensive = check_offensive(new_reviw.review)
-        #if is_offensive:
-        #    raise ReviewOffensive
+        is_offensive = False
+        if new_reviw.review:
+            is_offensive = check_offensive(new_reviw.review)
+        if is_offensive:
+            raise ReviewOffensive
         result = await db.client[DATABASE_NAME][
             places_collection_name
         ].find_one_and_update(
