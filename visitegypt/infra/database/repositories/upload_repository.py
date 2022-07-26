@@ -17,8 +17,8 @@ async def generate_presigned_url(upload_req: UploadRequest) -> UploadResponse:
     # Generate S3 Client
     s3_client = boto3.client(
     's3',
-    aws_access_key_id="AKIAZLLK7ARPO2V66STR",
-    aws_secret_access_key="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",
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     region_name = "us-west-2")
     content_extension: str = upload_req.content_type.split('/')[1]
     image_id = uuid.uuid4()
